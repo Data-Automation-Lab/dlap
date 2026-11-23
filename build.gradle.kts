@@ -173,7 +173,7 @@ object SecurityPatches {
      * The module's force of Guava 33.4.0-jre no longer decides: the plugin's managed Guava wins, and the
      * Guava row of CONSTRAINTS raises it to the patched release.
      */
-    const val GOOGLE_CLOUD_LIBRARIES_BOM = "com.google.cloud:libraries-bom:26.90.0"
+    const val GOOGLE_CLOUD_LIBRARIES_BOM = "com.google.cloud:libraries-bom:26.94.0"
 }
 
 allprojects {
