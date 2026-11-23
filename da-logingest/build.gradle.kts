@@ -83,7 +83,7 @@ dependencies {
 // dependency-management plugin). The root build's verifyDependencyConvergence task enforces that.
 configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
     imports {
-        mavenBom("com.google.cloud:libraries-bom:26.90.0")
+        mavenBom("com.google.cloud:libraries-bom:26.94.0")
         mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
     }
 }

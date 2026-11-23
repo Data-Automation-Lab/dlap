@@ -28,7 +28,7 @@ val archunitJunit5Version = "1.2.1"
 // spring-cloud-gcp 8.2.x is the line for Spring Boot 4.0 and 4.1 (start.spring.io bom-ranges);
 // 8.2.4 is built against Spring Boot 4.1.1.
 val springCloudGcpVersion = "8.2.4"
-val googleCloudLibrariesBomVersion = "26.60.0"
+val googleCloudLibrariesBomVersion = "26.94.0"
 val googleAuthVersion = "1.23.0"
 val googleCloudAssetVersion = "3.41.0"
 val awsSdkVersion = "2.25.1" // Assuming AWS SDK v2
