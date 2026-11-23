@@ -5,7 +5,7 @@ plugins {
 	id("io.spring.dependency-management")
 	id("checkstyle")
 	jacoco
-	id("com.google.cloud.tools.jib") version "3.4.0" // Jib plugin for Docker image building
+	id("com.google.cloud.tools.jib") version "3.5.4" // Jib plugin for Docker image building
 	// id("com.diffplug.spotless") version "6.25.0" // Spotless plugin
 	// Consider adding other plugins like git-commit-id if needed
 }
