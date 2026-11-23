@@ -131,7 +131,7 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
 	implementation("org.springframework.boot:spring-boot-starter-kafka")
-	implementation("org.springframework.retry:spring-retry:2.0.5")
+	implementation("org.springframework.retry:spring-retry:2.0.13")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
 	implementation("org.assertj:assertj-core:3.13.2")
