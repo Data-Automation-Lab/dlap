@@ -50,7 +50,7 @@ dependencies {
 
     // Provider SDKs - moved verbatim from da-autolabel; no new dependency added.
     implementation("com.theokanning.openai-gpt3-java:service:0.18.2")
-    implementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.6.5")
 
     // SEC-03: the Bean Validation constraints on MLConfigRequest. The API (Apache-2.0, version from the
     // Spring Boot BOM) is compile-only: the services that validate the request carry the implementation.
