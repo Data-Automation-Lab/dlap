@@ -47,7 +47,7 @@ dependencies {
     implementation("software.amazon.awssdk:cloudtrail:2.25.1")
     // AWS-01: the S3 client of the CloudTrail trail-file and S3 server access log transports
     // (providers/aws/s3 only). Apache-2.0, the same SDK release as the cloudtrail client above.
-    implementation("software.amazon.awssdk:s3:2.25.1")
+    implementation("software.amazon.awssdk:s3:2.59.5")
     // LOG-05: STS for credentials-ref role ARNs (StsAssumeRoleCredentialsProvider) and for the
     // web-identity provider of the default chain (EKS IRSA), which the SDK loads from this module at
     // runtime. Apache-2.0, the same SDK release as the s3 and cloudtrail clients above.
