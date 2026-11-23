@@ -143,7 +143,7 @@ dependencies {
     // protoc 3.25.3 (BSD-3-Clause), the compiler da-protos uses; only its descriptor output is kept.
     protocTool("com.google.protobuf:protoc:3.25.3:$protocClassifier@exe")
     // The well-known type protos (google/protobuf) for the imports, from the protobuf-java release that matches protoc.
-    protobufWellKnownTypes("com.google.protobuf:protobuf-java:3.25.3")
+    protobufWellKnownTypes("com.google.protobuf:protobuf-java:4.36.2")
 }
 
 abstract class ProtoDescriptorSet : DefaultTask() {
