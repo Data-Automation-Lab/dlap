@@ -8,6 +8,25 @@ one — do not edit history.
 
 ---
 
+## ADR-0143 - The public repository starts from one commit, and the working documents stay private
+
+**Date**: 2026-11-22
+**Status**: Accepted (founder decision of 2026-11-22; public release cut)
+
+**Context**: DLAP was developed in a private repository. Its history holds a self-signed keystore with a published password (SECURITY.md, "Key material previously committed") and three service keys that were removed from the tree but not from history. The repository also carried working documents that were never written for outside readers: a session log, an operating plan, a question log of about 900 entries, an audit snapshot and a draft incubation proposal. The founder decided to release the code as open source under Apache 2.0 without waiting for a foundation.
+
+**Decision**:
+1. The public repository (Data-Automation-Lab/dlap) and the UI repository it uses as the new-ui submodule (Data-Automation-Lab/dlap-ui) each start from a single release commit. No earlier history is published, so no burned key material is reachable from them.
+2. The session log, the operating plan, the question log, the audit snapshot, the incubation draft and the donation runbook are not published. docs/OPEN_QUESTIONS.md is a short page that explains the Q-nnn ids and points to GitHub issues. This log (docs/DECISIONS.md) is published whole: it is the record of why the code is the way it is. Its entries cite package ids, wave numbers, Q-nnn ids and short commit ids from the private history; those references stay as written and do not resolve here.
+3. CLAUDE.md is published as the engineering rules, with its section numbers unchanged, because about a hundred source comments cite it by section. The parts that described the private working process are replaced.
+4. The public repositories are the home of the code from this commit on. New work lands there.
+5. DLAP is not an Apache Software Foundation project and no incubation proposal is filed. Source files keep the ASF-style licence header they were written with, so that a later donation needs no mass edit; README.md and GOVERNANCE.md state the project's real status. If no proposal follows, a later ADR replaces the header with the plain Apache 2.0 form.
+6. There is no project mailbox. Security and conduct reports go through GitHub private vulnerability reporting.
+
+**Consequences**: Readers meet references they cannot follow (Q-nnn ids, package ids, commit ids). docs/OPEN_QUESTIONS.md says what they are. Known limits are stated in the README status note and in docs/guides/deployment.md, section 10, in place of the question log. Sample addresses on a domain the project does not use (support@dalab.com, noreply@dalab.com, the seeded users) remain in the reporting service and the seed data and are to be replaced with example.com values. Several guides lag the code in places that the deployment guide names; they are to be corrected through issues.
+
+---
+
 ## ADR-0142 - Audience validation is on in the demo and in the pilot base overlay
 
 **Date**: 2026-11-03
