@@ -1,0 +1,266 @@
+[
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "storage.googleapis.com",
+    "operation": "storage.buckets.create",
+    "changeType": "CREATE",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:00:00Z",
+    "principalId": "112233445566778899001",
+    "principalType": "USER",
+    "principalDisplayName": "dana@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "storage.googleapis.com/Bucket",
+    "targetResourceId": "gs://dlap-gcp-e2e-analytics",
+    "targetResourceName": "dlap-gcp-e2e-analytics",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "us-central1",
+    "callerIp": "203.0.113.51",
+    "userAgent": "google-cloud-sdk/468.0.0 gcloud/storage",
+    "requestId": "gcp-e2e-0001-create-analytics-bucket",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "storage.buckets.create",
+        "resourceName": "projects/_/buckets/dlap-gcp-e2e-analytics"
+      }
+    }
+  },
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "storage.googleapis.com",
+    "operation": "storage.buckets.create",
+    "changeType": "CREATE",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:01:30Z",
+    "principalId": "112233445566778899001",
+    "principalType": "USER",
+    "principalDisplayName": "dana@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "storage.googleapis.com/Bucket",
+    "targetResourceId": "gs://dlap-gcp-e2e-raw-events",
+    "targetResourceName": "dlap-gcp-e2e-raw-events",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "us-central1",
+    "callerIp": "203.0.113.51",
+    "userAgent": "google-cloud-sdk/468.0.0 gcloud/storage",
+    "requestId": "gcp-e2e-0002-create-raw-events-bucket",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "storage.buckets.create",
+        "resourceName": "projects/_/buckets/dlap-gcp-e2e-raw-events"
+      }
+    }
+  },
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "bigquery.googleapis.com",
+    "operation": "bigquery.tables.create",
+    "changeType": "CREATE",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:03:00Z",
+    "principalId": "998877665544332211009",
+    "principalType": "USER",
+    "principalDisplayName": "etl-loader@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "bigquery.googleapis.com/Table",
+    "targetResourceId": "projects/dlap-gcp-e2e/datasets/analytics/tables/orders",
+    "targetResourceName": "orders",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "US",
+    "callerIp": "203.0.113.52",
+    "userAgent": "google-api-python-client/2.130.0 (gzip)",
+    "requestId": "gcp-e2e-0003-create-orders-table",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "google.cloud.bigquery.v2.TableService.InsertTable",
+        "resourceName": "projects/dlap-gcp-e2e/datasets/analytics/tables/orders"
+      }
+    }
+  },
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "bigquery.googleapis.com",
+    "operation": "bigquery.tables.create",
+    "changeType": "CREATE",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:04:15Z",
+    "principalId": "998877665544332211009",
+    "principalType": "USER",
+    "principalDisplayName": "etl-loader@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "bigquery.googleapis.com/Table",
+    "targetResourceId": "projects/dlap-gcp-e2e/datasets/marketing/tables/campaign_events",
+    "targetResourceName": "campaign_events",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "US",
+    "callerIp": "203.0.113.52",
+    "userAgent": "google-api-python-client/2.130.0 (gzip)",
+    "requestId": "gcp-e2e-0004-create-campaign-events-table",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "google.cloud.bigquery.v2.TableService.InsertTable",
+        "resourceName": "projects/dlap-gcp-e2e/datasets/marketing/tables/campaign_events"
+      }
+    }
+  },
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "storage.googleapis.com",
+    "operation": "storage.buckets.create",
+    "changeType": "CREATE",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:05:40Z",
+    "principalId": "112233445566778899001",
+    "principalType": "USER",
+    "principalDisplayName": "dana@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "storage.googleapis.com/Bucket",
+    "targetResourceId": "gs://dlap-gcp-e2e-archive",
+    "targetResourceName": "dlap-gcp-e2e-archive",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "us-central1",
+    "callerIp": "203.0.113.51",
+    "userAgent": "google-cloud-sdk/468.0.0 gcloud/storage",
+    "requestId": "gcp-e2e-0005-create-archive-bucket",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "storage.buckets.create",
+        "resourceName": "projects/_/buckets/dlap-gcp-e2e-archive"
+      }
+    }
+  },
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "storage.googleapis.com",
+    "operation": "storage.objects.get",
+    "changeType": "ACCESS",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:10:00Z",
+    "principalId": "554433221100998877665",
+    "principalType": "SERVICE_ACCOUNT",
+    "principalDisplayName": "analytics-reader@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "storage.googleapis.com/Bucket",
+    "targetResourceId": "gs://dlap-gcp-e2e-analytics",
+    "targetResourceName": "dlap-gcp-e2e-analytics",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "us-central1",
+    "callerIp": "198.51.100.23",
+    "userAgent": "apitools Python/3.11 gsutil/5.27",
+    "requestId": "gcp-e2e-0006-access-analytics-bucket",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Fdata_access",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "storage.objects.get",
+        "resourceName": "projects/_/buckets/dlap-gcp-e2e-analytics/objects/2026/07/orders.parquet"
+      }
+    }
+  },
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "bigquery.googleapis.com",
+    "operation": "bigquery.tables.update",
+    "changeType": "UPDATE",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:12:30Z",
+    "principalId": "998877665544332211009",
+    "principalType": "USER",
+    "principalDisplayName": "etl-loader@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "bigquery.googleapis.com/Table",
+    "targetResourceId": "projects/dlap-gcp-e2e/datasets/analytics/tables/orders",
+    "targetResourceName": "orders",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "US",
+    "callerIp": "203.0.113.52",
+    "userAgent": "google-api-python-client/2.130.0 (gzip)",
+    "requestId": "gcp-e2e-0007-update-orders-table-schema",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "google.cloud.bigquery.v2.TableService.UpdateTable",
+        "resourceName": "projects/dlap-gcp-e2e/datasets/analytics/tables/orders"
+      }
+    }
+  },
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "storage.googleapis.com",
+    "operation": "storage.buckets.setIamPolicy",
+    "changeType": "PERMISSION",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:15:00Z",
+    "principalId": "112233445566778899001",
+    "principalType": "USER",
+    "principalDisplayName": "dana@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "storage.googleapis.com/Bucket",
+    "targetResourceId": "gs://dlap-gcp-e2e-raw-events",
+    "targetResourceName": "dlap-gcp-e2e-raw-events",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "us-central1",
+    "callerIp": "203.0.113.51",
+    "userAgent": "google-cloud-sdk/468.0.0 gcloud/storage",
+    "requestId": "gcp-e2e-0008-setiam-raw-events-bucket",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "storage.setIamPermissions",
+        "resourceName": "projects/_/buckets/dlap-gcp-e2e-raw-events",
+        "serviceData": {
+          "@type": "type.googleapis.com/google.iam.v1.logging.AuditData",
+          "policyDelta": {
+            "bindingDeltas": [
+              {
+                "action": "ADD",
+                "role": "roles/storage.objectViewer",
+                "member": "user:contractor@example.com"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "sourceProvider": "GCP",
+    "sourceService": "storage.googleapis.com",
+    "operation": "storage.buckets.delete",
+    "changeType": "DELETE",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:20:00Z",
+    "principalId": "112233445566778899001",
+    "principalType": "USER",
+    "principalDisplayName": "dana@dlap-gcp-e2e.iam.gserviceaccount.com",
+    "principalAccountId": "dlap-gcp-e2e",
+    "targetResourceKind": "storage.googleapis.com/Bucket",
+    "targetResourceId": "gs://dlap-gcp-e2e-archive",
+    "targetResourceName": "dlap-gcp-e2e-archive",
+    "targetProject": "dlap-gcp-e2e",
+    "targetRegion": "us-central1",
+    "callerIp": "203.0.113.51",
+    "userAgent": "google-cloud-sdk/468.0.0 gcloud/storage",
+    "requestId": "gcp-e2e-0009-delete-archive-bucket",
+    "rawEvent": {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "methodName": "storage.buckets.delete",
+        "resourceName": "projects/_/buckets/dlap-gcp-e2e-archive"
+      }
+    }
+  }
+]

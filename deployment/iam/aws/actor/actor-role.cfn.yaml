@@ -1,0 +1,189 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# DLAP Actor role for AWS (IAM-04), one stack per retire executor: Executor delete
+# (da-autodelete) or archive (da-autoarchival). The Action lists must equal permissions.yaml;
+# da-admin-service ActorRoleTraceabilityTest fails when they do not, and when a Resource names
+# anything but the BucketNames parameter. The AWS::LanguageExtensions transform expands
+# Fn::ForEach into one inline policy per named bucket: the bucket scope on the bucket ARN and,
+# only with ObjectActions=true, the bucket_objects scope on that bucket's objects. Never "*".
+# Intrinsic functions use the long form so the file is plain YAML.
+# See docs/guides/cloud-permissions.md.
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::LanguageExtensions
+Description: >-
+  DLAP Actor role for one retire executor. Lifecycle rules, and optionally single-object actions,
+  on the named buckets only.
+
+Parameters:
+  RoleName:
+    Type: String
+    AllowedPattern: "[A-Za-z0-9+=,.@_-]{1,64}"
+    Description: Name of the IAM role, for example dlap-delete-actor.
+  Executor:
+    Type: String
+    AllowedValues:
+      - delete
+      - archive
+    Description: The executor this Actor serves, delete (da-autodelete) or archive (da-autoarchival).
+  BucketNames:
+    Type: CommaDelimitedList
+    AllowedPattern: "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+    Description: >-
+      Names of the buckets this Actor may change, comma separated. Each is a bucket name (an ARN
+      or a wildcard is refused). The role holds no action on any other bucket.
+  ObjectActions:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: >-
+      true grants the single-object actions (delete one object, or archive and restore one
+      object) on the objects of the named buckets. false keeps the Actor to lifecycle rules.
+  TrustedPrincipalArn:
+    Type: String
+    Default: ""
+    Description: >-
+      ARN of DLAP's runtime identity (the IRSA role or the pilot VM's instance profile role) that
+      assumes this role. Leave empty when the executor host runs in this account; the role then
+      trusts EC2 and gets its own instance profile.
+  ExternalId:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: >-
+      External id that the trusted principal must send. Required when TrustedPrincipalArn is set.
+
+Rules:
+  ExternalIdWithPrincipal:
+    RuleCondition:
+      Fn::Not:
+        - Fn::Equals:
+            - Ref: TrustedPrincipalArn
+            - ""
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Equals:
+                - Ref: ExternalId
+                - ""
+        AssertDescription: ExternalId is required when TrustedPrincipalArn is set.
+
+Conditions:
+  IsDelete:
+    Fn::Equals:
+      - Ref: Executor
+      - delete
+  GrantObjects:
+    Fn::Equals:
+      - Ref: ObjectActions
+      - "true"
+  TrustPrincipal:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: TrustedPrincipalArn
+          - ""
+  TrustEc2:
+    Fn::Equals:
+      - Ref: TrustedPrincipalArn
+      - ""
+
+Resources:
+  ActorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Ref: RoleName
+      Description:
+        Fn::Sub: "DLAP ${Executor} Actor. Lifecycle rules on the named buckets only."
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Fn::If:
+              - TrustPrincipal
+              - Effect: Allow
+                Principal:
+                  AWS:
+                    Ref: TrustedPrincipalArn
+                Action: sts:AssumeRole
+                Condition:
+                  StringEquals:
+                    sts:ExternalId:
+                      Ref: ExternalId
+              - Effect: Allow
+                Principal:
+                  Service: ec2.amazonaws.com
+                Action: sts:AssumeRole
+
+  Fn::ForEach::BucketPolicies:
+    - BucketName
+    - Ref: BucketNames
+    - ActorBucketPolicy&{BucketName}:
+        Type: AWS::IAM::RolePolicy
+        Properties:
+          RoleName:
+            Ref: ActorRole
+          PolicyName:
+            Fn::Sub: "dlap-actor-bucket-${BucketName}"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: DlapActorBucket
+                Effect: Allow
+                Action:
+                  Fn::If:
+                    - IsDelete
+                    - - s3:GetBucketLocation
+                      - s3:GetBucketVersioning
+                      - s3:GetLifecycleConfiguration
+                      - s3:PutLifecycleConfiguration
+                    - - s3:GetLifecycleConfiguration
+                      - s3:ListBucket
+                      - s3:PutLifecycleConfiguration
+                Resource:
+                  Fn::Sub: "arn:${AWS::Partition}:s3:::${BucketName}"
+      ActorObjectPolicy&{BucketName}:
+        Type: AWS::IAM::RolePolicy
+        Condition: GrantObjects
+        Properties:
+          RoleName:
+            Ref: ActorRole
+          PolicyName:
+            Fn::Sub: "dlap-actor-objects-${BucketName}"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: DlapActorObjects
+                Effect: Allow
+                Action:
+                  Fn::If:
+                    - IsDelete
+                    - - s3:DeleteObject
+                    - - s3:GetObject
+                      - s3:PutObject
+                      - s3:RestoreObject
+                Resource:
+                  Fn::Sub: "arn:${AWS::Partition}:s3:::${BucketName}/*"
+
+  ActorInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Condition: TrustEc2
+    Properties:
+      Roles:
+        - Ref: ActorRole
+
+Outputs:
+  ActorRoleArn:
+    Description: The Actor role. Name it in dlap.permission-check.aws.executors.<executor>.role-arn.
+    Value:
+      Fn::GetAtt:
+        - ActorRole
+        - Arn
+  ActorInstanceProfileName:
+    Condition: TrustEc2
+    Description: Attach this instance profile to the host that runs the executor.
+    Value:
+      Ref: ActorInstanceProfile

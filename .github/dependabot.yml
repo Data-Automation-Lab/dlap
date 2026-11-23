@@ -1,0 +1,70 @@
+# Dependabot configuration for DLAP.
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+updates:
+  # Gradle dependencies for the backend services (root build).
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "gradle"
+    commit-message:
+      prefix: "chore(deps)"
+
+  # npm dependencies for the React frontend.
+  # NOTE: new-ui is a git submodule (see .gitmodules); the frontend package.json
+  # lives at new-ui/frontend. Dependency PRs for submodule-tracked files are
+  # raised in the submodule's own repository, not here. This entry covers the
+  # frontend manifest if/when it is vendored into this repo; the submodule
+  # pointer itself is refreshed by the git-submodule updater below.
+  - package-ecosystem: "npm"
+    directory: "/new-ui/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "javascript"
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Keep the new-ui submodule pointer current.
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "submodule"
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Keep GitHub Actions workflows current.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Keep the pinned distroless base image current (Q-588). Each service Dockerfile pins
+  # gcr.io/distroless/java21-debian13:nonroot by digest (Q-587), so a patched base reaches
+  # the repository as a pull request instead of a hand bump. The glob covers the ten
+  # da-*/src/main/docker directories, including any service added later.
+  - package-ecosystem: "docker"
+    directories:
+      - "/da-*/src/main/docker"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(deps)"

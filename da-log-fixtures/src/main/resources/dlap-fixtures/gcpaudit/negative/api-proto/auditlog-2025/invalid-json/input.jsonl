@@ -1,0 +1,1 @@
+{"insertId":"a25-neg-3","logName":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity","timestamp":"2026-09-02T11:00:03.5Z","protoPayload":{"@type":"type.googleapis.com/google.cloud.audit.AuditLog","authorizationInfo":[{"permission":"storage.buckets.create","granted":true,"permissionType":ADMIN_WRITE}]}}

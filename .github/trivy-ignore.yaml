@@ -1,0 +1,38 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Trivy suppressions (work package CI-02b). Read by scripts/ci-guards/scan/trivy.sh.
+#
+# Rules for every entry:
+#   - a statement that says why the finding does not apply (not "false positive");
+#   - an expired_at date, at most one year away, so the decision is made again;
+#   - paths, so the suppression covers the files it was written for and nothing else.
+# scripts/ci-guards/pre/scan-suppressions.sh fails the build on an entry without a statement or an
+# expiry date, or past its expiry date.
+
+# There are none. The three DS-0002 entries (no USER line in a Dockerfile) went with VULN-01: every
+# shipped Dockerfile now states USER 65532:65532, and the unused JHipster variants (Dockerfile.native,
+# .layered, .distroless, .alpine-jlink and da-discovery/.devcontainer) were deleted (Q-305).
+#
+# Example (a comment, so it suppresses nothing):
+#
+# vulnerabilities:
+#   - id: CVE-2099-0001
+#     statement: The vulnerable function is never called; checked by the call graph on 2026-10-20 (Q-000).
+#     expired_at: 2027-04-30
+#     paths:
+#       - "da-example/src/main/docker/Dockerfile"

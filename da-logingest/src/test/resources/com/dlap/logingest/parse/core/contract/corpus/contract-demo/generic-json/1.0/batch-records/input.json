@@ -1,0 +1,1 @@
+{"records":[{"v":"1.0","id":"evt-0010","at":"2026-02-01T09:00:00Z","svc":"store","op":"GetObject","who":{"type":"IAMUser","name":"user-7"},"object":"s3://bucket-a/a.csv"},{"v":"1.0","id":"evt-0011","at":"2026-02-01T09:00:01Z","svc":"store","op":"GetObject","who":{"type":"IAMUser","name":"user-7"},"object":"s3://bucket-a/b.csv"}]}

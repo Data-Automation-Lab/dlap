@@ -1,0 +1,2 @@
+com.dlap.common.auth.ServiceAuthAutoConfiguration
+com.dlap.common.security.DevSecretGuard

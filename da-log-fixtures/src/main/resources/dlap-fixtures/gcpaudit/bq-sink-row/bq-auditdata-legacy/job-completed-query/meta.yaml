@@ -1,0 +1,21 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:jobservice.jobcompleted
+variant_ids:
+  - envelope.bq-protopayload-column
+  - envelope.bq-servicedata-struct
+  - envelope.bq-sharded-and-partitioned
+  - entry.protopayload-without-type
+  - bq1.referenced-tables-objects
+  - bq1.table-data-read-events
+  - bq1.referenced-views
+  - bq1.resource-type
+  - bq1.deprecated-fields
+  - log.data-access
+  - actor.principal-email
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. A completed query whose AuditData arrives as the typed servicedata_v1_bigquery column (INTEGER columns as numbers): one read per referenced table and view, the table that tableDataReadEvents also names read once, the anonymous destination no asset, the deprecated reservationUsage ignored. The row stands for the date-sharded table cloudaudit_googleapis_com_data_access_20260914 (BqSinkTransportTest reads sharded and partitioned tables)."

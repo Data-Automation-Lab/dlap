@@ -1,0 +1,70 @@
+{
+  "content": [
+    {
+      "assetId": "00000000-0000-4000-8000-000000000001",
+      "assetUri": "arn:aws:rds:eu-west-1:111122223333:db:prod-postgres",
+      "assetName": "prod-postgres",
+      "cloudProvider": "AWS",
+      "serviceType": "RDS_INSTANCE",
+      "assetType": "DATABASE",
+      "region": "eu-west-1",
+      "status": "ACTIVE",
+      "ownerInfo": "dba-team@example.com",
+      "discoveredAt": "2026-09-01T00:00:00Z",
+      "discoverySource": "CRAWLER",
+      "cloudCreatedAt": "2025-01-10T08:00:00Z",
+      "cloudCreatedSource": "CRAWLER",
+      "ageDays": 647,
+      "sizeBytes": 536870912000,
+      "sizeObservedAt": "2026-10-18T00:00:00Z",
+      "lastAccessedAt": null,
+      "lastAccessSource": null,
+      "idleDays": null,
+      "readCoverage": "FULL_EXTENDED",
+      "lastModifiedAt": "2026-10-18T22:30:00Z",
+      "lastPermissionChangeAt": null,
+      "recreatedAt": null,
+      "retentionStatus": "QUARANTINED",
+      "retentionExpiresAt": "2027-01-10T08:00:00Z",
+      "retentionEvaluatedAt": "2026-10-19T11:15:00Z",
+      "retentionDays": 730,
+      "retentionBasis": "CREATED",
+      "retentionSource": "MANUAL",
+      "retentionPolicyId": null,
+      "legalHold": true,
+      "labels": [
+        "Finance",
+        "Prod"
+      ],
+      "asOf": "2026-10-19T12:00:00Z",
+      "aFieldAddedLater": {
+        "x": 1
+      }
+    }
+  ],
+  "pageable": {
+    "pageNumber": 0,
+    "pageSize": 2,
+    "offset": 0,
+    "paged": true,
+    "unpaged": false,
+    "sort": {
+      "empty": true,
+      "sorted": false,
+      "unsorted": true
+    }
+  },
+  "last": false,
+  "totalPages": 3,
+  "totalElements": 5,
+  "size": 2,
+  "number": 0,
+  "sort": {
+    "empty": true,
+    "sorted": false,
+    "unsorted": true
+  },
+  "first": true,
+  "numberOfElements": 1,
+  "empty": false
+}

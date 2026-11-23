@@ -1,0 +1,16 @@
+{
+  "version": 3,
+  "etag": "BwYQorg",
+  "bindings": [
+    { "role": "roles/resourcemanager.organizationAdmin", "members": ["group:admins@example.com"] }
+  ],
+  "auditConfigs": [
+    {
+      "service": "allServices",
+      "auditLogConfigs": [
+        { "logType": "DATA_READ" },
+        { "logType": "DATA_WRITE" }
+      ]
+    }
+  ]
+}

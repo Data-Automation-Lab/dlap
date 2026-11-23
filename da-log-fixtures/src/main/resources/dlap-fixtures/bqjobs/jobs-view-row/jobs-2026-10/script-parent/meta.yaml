@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SCRIPT
+variant_ids:
+  - read.script-parent-excluded
+expected_outcome: SKIPPED:NOT_AN_EVENT
+anonymised: false
+notes: "The parent of a multi-statement script (statement type SCRIPT, cache_hit NULL): no event; the child jobs carry the reads."

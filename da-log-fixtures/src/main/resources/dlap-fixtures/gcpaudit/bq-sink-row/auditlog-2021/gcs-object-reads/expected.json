@@ -1,0 +1,4 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-11T13:00:01.123456Z|r21-reads-1","operation":"storage.objects.get","changeType":"ACCESS","eventCategory":"EVENT_CATEGORY_DATA_READ","resultStatus":"SUCCESS","principal":{"type":"USER","id":"analyst@example.com"},"targetResource":{"canonicalUri":"gs://dlap-fixture-bucket/exports/2026/09/orders.csv"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"auditlog"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-11T13:00:02.234567Z|r21-reads-2","operation":"storage.objects.list","changeType":"ACCESS","eventCategory":"EVENT_CATEGORY_MANAGEMENT","resultStatus":"SUCCESS","targetResource":{"canonicalUri":"gs://dlap-fixture-bucket"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"auditlog"}
+]}

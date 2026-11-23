@@ -1,0 +1,2796 @@
+{
+  "components": {
+    "schemas": {
+      "ActionItem": {
+        "properties": {
+          "actionRequired": {
+            "type": "string"
+          },
+          "assignedTeam": {
+            "type": "string"
+          },
+          "assignedTo": {
+            "type": "string"
+          },
+          "businessImpactScore": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "businessJustification": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detailsUrl": {
+            "type": "string"
+          },
+          "dueDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "estimatedEffort": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastUpdated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "sourceEntityId": {
+            "type": "string"
+          },
+          "sourceEntityName": {
+            "type": "string"
+          },
+          "sourceEntityType": {
+            "type": "string"
+          },
+          "sourceService": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ActionItemsDTO": {
+        "properties": {
+          "actionItems": {
+            "items": {
+              "$ref": "#/components/schemas/ActionItem"
+            },
+            "type": "array"
+          },
+          "businessImpact": {
+            "$ref": "#/components/schemas/BusinessImpactSummary"
+          },
+          "dataAvailable": {
+            "type": "boolean"
+          },
+          "includedServices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastAggregated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "slaMetrics": {
+            "$ref": "#/components/schemas/SlaMetrics"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ActionItemsSummary"
+          },
+          "totalActionItems": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ActionItemsSummary": {
+        "properties": {
+          "assignedCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "completedCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "criticalCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "dueThisWeekCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "dueTodayCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "highCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "inProgressCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lowCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "mediumCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "overdueCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "unassignedCount": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "BenchmarkComparison": {
+        "properties": {
+          "comparisonNote": {
+            "type": "string"
+          },
+          "industryAverage": {
+            "format": "double",
+            "type": "number"
+          },
+          "isEstimate": {
+            "type": "boolean"
+          },
+          "peerAverage": {
+            "format": "double",
+            "type": "number"
+          },
+          "percentile": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "ranking": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BusinessImpactSummary": {
+        "properties": {
+          "averageImpactScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "highImpactItems": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "highestImpactCategory": {
+            "type": "string"
+          },
+          "impactAreas": {
+            "items": {
+              "$ref": "#/components/schemas/ImpactArea"
+            },
+            "type": "array"
+          },
+          "lowImpactItems": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "mediumImpactItems": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "CostSavingsBreakdown": {
+        "properties": {
+          "archivalSavings": {
+            "type": "number"
+          },
+          "archivalStorageUsed": {
+            "type": "string"
+          },
+          "archivedAssetsCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "computeSavings": {
+            "type": "number"
+          },
+          "decommissionedResources": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "deletedAssetsCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "deletionSavings": {
+            "type": "number"
+          },
+          "netSavings": {
+            "type": "number"
+          },
+          "optimizedAssetsCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "platformCosts": {
+            "type": "number"
+          },
+          "storageReclaimed": {
+            "type": "string"
+          },
+          "tierOptimizationSavings": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "CostSavingsDTO": {
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "breakdown": {
+            "$ref": "#/components/schemas/CostSavingsBreakdown"
+          },
+          "dataAccuracy": {
+            "type": "string"
+          },
+          "dataAvailable": {
+            "type": "boolean"
+          },
+          "historicalTrend": {
+            "items": {
+              "$ref": "#/components/schemas/SavingsTrendPoint"
+            },
+            "type": "array"
+          },
+          "isEstimate": {
+            "type": "boolean"
+          },
+          "lastCalculated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "monthlySavingsRate": {
+            "type": "number"
+          },
+          "providerSavings": {
+            "items": {
+              "$ref": "#/components/schemas/ProviderSavings"
+            },
+            "type": "array"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "roiPercentage": {
+            "format": "double",
+            "type": "number"
+          },
+          "savingsOpportunities": {
+            "items": {
+              "$ref": "#/components/schemas/SavingsOpportunity"
+            },
+            "type": "array"
+          },
+          "totalSavings": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "DriftFindingDTO": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "decisionId": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "detectedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "readAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "subjectId": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "UNENFORCED_READ",
+              "ENFORCEMENT_BYPASS"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ExpiryReportPage": {
+        "properties": {
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "contractVersion": {
+            "type": "string"
+          },
+          "filters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExpiryReportRow"
+            },
+            "type": "array"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageInfo"
+          },
+          "report": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ExpiryReportRow": {
+        "properties": {
+          "account": {
+            "type": "string"
+          },
+          "ageDays": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetUri": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdSource": {
+            "type": "string"
+          },
+          "idleDays": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastReadAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastReadSource": {
+            "type": "string"
+          },
+          "legalHold": {
+            "type": "boolean"
+          },
+          "lifecycleStatus": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "readCoverage": {
+            "description": "Read-logging coverage as the catalog states it: FULL, PARTIAL, NONE, or null",
+            "type": "string"
+          },
+          "readCoverageObservedAt": {
+            "description": "When the catalog last read the logging configuration behind readCoverage, or null",
+            "format": "date-time",
+            "type": "string"
+          },
+          "readCoverageSince": {
+            "description": "First observation of the current unbroken run of FULL read coverage, or null",
+            "format": "date-time",
+            "type": "string"
+          },
+          "readSignalState": {
+            "description": "READ, NOT_READ (only with FULL read coverage), PARTIAL_COVERAGE, NO_COVERAGE or UNKNOWN",
+            "enum": [
+              "READ",
+              "NOT_READ",
+              "PARTIAL_COVERAGE",
+              "NO_COVERAGE",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "readSignalText": {
+            "description": "'not read since YYYY-MM-DD' for a NOT_READ asset whose coverage start is known, else null",
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "retentionBasis": {
+            "type": "string"
+          },
+          "retentionDays": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "retentionEvaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retentionExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retentionSource": {
+            "type": "string"
+          },
+          "retentionStatus": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GeneratedReportOutputDTO": {
+        "properties": {
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "failureReason": {
+            "type": "string"
+          },
+          "generationParameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "reportContent": {
+            "type": "object"
+          },
+          "reportDisplayName": {
+            "type": "string"
+          },
+          "reportKey": {
+            "type": "string"
+          },
+          "requestedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "requestedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "GENERATING",
+              "COMPLETED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GovernanceBreakdown": {
+        "properties": {
+          "activePolicies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsWithBusinessContext": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsWithLineage": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsWithMetadata": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "classificationRate": {
+            "format": "double",
+            "type": "number"
+          },
+          "classifiedAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "complianceRate": {
+            "format": "double",
+            "type": "number"
+          },
+          "dataClassificationScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "lineageCoverageRate": {
+            "format": "double",
+            "type": "number"
+          },
+          "lineageCoverageScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "metadataCompletenessScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "metadataCompletionRate": {
+            "format": "double",
+            "type": "number"
+          },
+          "policyComplianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "totalAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalLineageConnections": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "violationsCount": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "GovernanceIssue": {
+        "properties": {
+          "actionRequired": {
+            "type": "string"
+          },
+          "affectedAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assignedTeam": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GovernanceScoreDTO": {
+        "properties": {
+          "benchmark": {
+            "$ref": "#/components/schemas/BenchmarkComparison"
+          },
+          "benchmarkAvailable": {
+            "type": "boolean"
+          },
+          "breakdown": {
+            "$ref": "#/components/schemas/GovernanceBreakdown"
+          },
+          "dataAvailable": {
+            "type": "boolean"
+          },
+          "dataFreshnessMinutes": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "historicalTrend": {
+            "items": {
+              "$ref": "#/components/schemas/GovernanceTrendPoint"
+            },
+            "type": "array"
+          },
+          "historyAvailable": {
+            "type": "boolean"
+          },
+          "lastCalculated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "overallScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scoredComponents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "topIssues": {
+            "items": {
+              "$ref": "#/components/schemas/GovernanceIssue"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GovernanceTrendPoint": {
+        "properties": {
+          "date": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "period": {
+            "type": "string"
+          },
+          "score": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ImpactArea": {
+        "properties": {
+          "affectedItems": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "areaName": {
+            "type": "string"
+          },
+          "averageImpactScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "riskLevel": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NotificationPreferenceDTO": {
+        "properties": {
+          "channel": {
+            "enum": [
+              "EMAIL",
+              "SLACK"
+            ],
+            "type": "string"
+          },
+          "channelConfiguration": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "notificationTypeKey": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "notificationTypeKey",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "PageDriftFindingDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/DriftFindingDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageGeneratedReportOutputDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/GeneratedReportOutputDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageInfo": {
+        "properties": {
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "type": "string"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageNotificationPreferenceDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationPreferenceDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageReportDefinitionDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ReportDefinitionDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Pageable": {
+        "properties": {
+          "page": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sort": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PageableObject": {
+        "properties": {
+          "offset": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "unpaged": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ProviderSavings": {
+        "properties": {
+          "contributionPercentage": {
+            "format": "double",
+            "type": "number"
+          },
+          "monthlyRate": {
+            "type": "number"
+          },
+          "primarySavingsSource": {
+            "type": "string"
+          },
+          "providerName": {
+            "type": "string"
+          },
+          "savings": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ReportDefinitionDTO": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "defaultParameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "defaultScheduleCron": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "displayName": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "reportKey": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "displayName",
+          "reportKey"
+        ],
+        "type": "object"
+      },
+      "ReportGenerationRequestDTO": {
+        "properties": {
+          "parameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "requestedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SavingsOpportunity": {
+        "properties": {
+          "actionRequired": {
+            "type": "string"
+          },
+          "affectedAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "effortLevel": {
+            "type": "string"
+          },
+          "monthlyImpact": {
+            "type": "number"
+          },
+          "opportunityType": {
+            "type": "string"
+          },
+          "potentialSavings": {
+            "type": "number"
+          },
+          "providerName": {
+            "type": "string"
+          },
+          "timeframe": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SavingsTrendPoint": {
+        "properties": {
+          "assetsProcessed": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "cumulativeSavings": {
+            "type": "number"
+          },
+          "month": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "monthlySavings": {
+            "type": "number"
+          },
+          "netSavings": {
+            "type": "number"
+          },
+          "platformCosts": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "SlaByCategory": {
+        "properties": {
+          "averageResolutionHours": {
+            "format": "double",
+            "type": "number"
+          },
+          "breachedSla": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "complianceRate": {
+            "format": "double",
+            "type": "number"
+          },
+          "onTimeResolved": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalItems": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SlaMetrics": {
+        "properties": {
+          "averageResolutionTimeHours": {
+            "format": "double",
+            "type": "number"
+          },
+          "breachedSlaCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "complianceViolations": {
+            "$ref": "#/components/schemas/SlaByCategory"
+          },
+          "discoveryIssues": {
+            "$ref": "#/components/schemas/SlaByCategory"
+          },
+          "metadataIssues": {
+            "$ref": "#/components/schemas/SlaByCategory"
+          },
+          "nearBreachCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "policyBreaches": {
+            "$ref": "#/components/schemas/SlaByCategory"
+          },
+          "slaComplianceRate": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "SortObject": {
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@dalab.com",
+      "name": "DLAP Support"
+    },
+    "description": "API for DLAP Reporting and Notification Service. Handles report generation, management, and user notifications via various channels.",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "title": "da-reporting",
+    "version": "v1.2.0"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/api/v1/reporting/dashboards/cache/refresh": {
+      "get": {
+        "description": "Manually triggers cache refresh for all dashboard endpoints to ensure fresh data",
+        "operationId": "refreshDashboardCache",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Cache refresh initiated successfully"
+          }
+        },
+        "summary": "Refresh dashboard cache",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/reporting/dashboards/cdo/action-items": {
+      "get": {
+        "description": "Provides comprehensive action items aggregation across all DLAP services with SLA compliance metrics and business impact assessment",
+        "operationId": "getActionItems",
+        "parameters": [
+          {
+            "description": "Filter to show only items assigned to current user",
+            "in": "query",
+            "name": "assignedToUser",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Filter by severity level",
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by status",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum number of items to return",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionItemsDTO"
+                }
+              }
+            },
+            "description": "Action items retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionItemsDTO"
+                }
+              }
+            },
+            "description": "Invalid filter parameters"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionItemsDTO"
+                }
+              }
+            },
+            "description": "Access denied - insufficient privileges"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionItemsDTO"
+                }
+              }
+            },
+            "description": "Internal server error during aggregation"
+          }
+        },
+        "summary": "Get aggregated action items dashboard",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/reporting/dashboards/cdo/cost-savings": {
+      "get": {
+        "description": "Provides comprehensive cost analysis including archival savings, deletion reclamation, and ROI calculations across multiple cloud providers",
+        "operationId": "getCostSavings",
+        "parameters": [
+          {
+            "description": "Include future savings projections",
+            "in": "query",
+            "name": "includeProjections",
+            "required": false,
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Analysis timeframe",
+            "in": "query",
+            "name": "timeframe",
+            "required": false,
+            "schema": {
+              "default": "12_MONTHS",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CostSavingsDTO"
+                }
+              }
+            },
+            "description": "Cost savings data retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CostSavingsDTO"
+                }
+              }
+            },
+            "description": "Access denied - insufficient privileges"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CostSavingsDTO"
+                }
+              }
+            },
+            "description": "Internal server error during cost calculation"
+          },
+          "503": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CostSavingsDTO"
+                }
+              }
+            },
+            "description": "Cloud provider API temporarily unavailable"
+          }
+        },
+        "summary": "Get cost savings dashboard",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/reporting/dashboards/cdo/governance-score": {
+      "get": {
+        "description": "Provides comprehensive governance metrics with weighted scoring across policy compliance, data classification, metadata completeness, and lineage coverage",
+        "operationId": "getGovernanceScore",
+        "parameters": [
+          {
+            "description": "Include 30-day historical trend data",
+            "in": "query",
+            "name": "includeHistory",
+            "required": false,
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Include industry benchmark comparison",
+            "in": "query",
+            "name": "includeBenchmark",
+            "required": false,
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernanceScoreDTO"
+                }
+              }
+            },
+            "description": "Governance score retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernanceScoreDTO"
+                }
+              }
+            },
+            "description": "Access denied - insufficient privileges"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernanceScoreDTO"
+                }
+              }
+            },
+            "description": "Internal server error during cross-service aggregation"
+          }
+        },
+        "summary": "Get governance score dashboard",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/v1/reporting/definitions": {
+      "get": {
+        "operationId": "getAllReportDefinitions",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      },
+      "post": {
+        "operationId": "createReportDefinition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportDefinitionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/definitions/key/{reportKey}": {
+      "get": {
+        "operationId": "getReportDefinitionByKey",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reportKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/definitions/{id}": {
+      "delete": {
+        "operationId": "deleteReportDefinition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      },
+      "get": {
+        "operationId": "getReportDefinitionById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      },
+      "put": {
+        "operationId": "updateReportDefinition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportDefinitionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/drift/findings": {
+      "get": {
+        "description": "Lists Consumed-stage drift findings (unenforced reads / enforcement bypasses) with optional filters on type, asset, subject, and read-time window.",
+        "operationId": "listFindings",
+        "parameters": [
+          {
+            "description": "Filter by drift type",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "UNENFORCED_READ",
+                "ENFORCEMENT_BYPASS"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by asset id",
+            "in": "query",
+            "name": "assetId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by subject (principal) id",
+            "in": "query",
+            "name": "subjectId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive lower bound on read time (ISO-8601)",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive upper bound on read time (ISO-8601)",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDriftFindingDTO"
+                }
+              }
+            },
+            "description": "Findings retrieved"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDriftFindingDTO"
+                }
+              }
+            },
+            "description": "Invalid filter parameter"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDriftFindingDTO"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDriftFindingDTO"
+                }
+              }
+            },
+            "description": "Access denied - insufficient privileges"
+          }
+        },
+        "summary": "List drift findings",
+        "tags": [
+          "Drift"
+        ]
+      }
+    },
+    "/api/v1/reporting/exports/csv/{generatedReportId}": {
+      "get": {
+        "operationId": "exportAsCsv",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "generatedReportId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv; charset=UTF-8": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/csv;charset=UTF-8": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Download a generated report as CSV",
+        "tags": [
+          "Report Exports"
+        ]
+      }
+    },
+    "/api/v1/reporting/id/{id}/generate": {
+      "post": {
+        "operationId": "regenerateReport",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratedReportOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/key/{reportKey}/generate": {
+      "post": {
+        "operationId": "generateReport",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reportKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportGenerationRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratedReportOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/notifications/preferences": {
+      "get": {
+        "operationId": "getAllNotificationPreferences",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageNotificationPreferenceDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "notification-controller"
+        ]
+      },
+      "post": {
+        "operationId": "saveNotificationPreference",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationPreferenceDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferenceDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "notification-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/notifications/preferences/my": {
+      "get": {
+        "operationId": "getMyNotificationPreferences",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationPreferenceDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "notification-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/notifications/preferences/user/{userId}": {
+      "get": {
+        "operationId": "getUserNotificationPreferences",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationPreferenceDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "notification-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/notifications/preferences/{preferenceId}": {
+      "delete": {
+        "operationId": "deleteNotificationPreference",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "preferenceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "notification-controller"
+        ]
+      },
+      "get": {
+        "operationId": "getNotificationPreferenceById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "preferenceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferenceDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "notification-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/notifications/test/{channelName}": {
+      "post": {
+        "operationId": "sendTestNotification",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channelName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "notification-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/reports": {
+      "get": {
+        "operationId": "getAllGeneratedReports",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageGeneratedReportOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/reports/expiry": {
+      "get": {
+        "description": "Every asset with its age, size, last read, last write and retention state as of one instant. A missing value is null and means unknown. readSignalState says whether a missing last read means 'not read' (NOT_READ, only with FULL read coverage) or that the read logs did not watch (PARTIAL_COVERAGE, NO_COVERAGE, UNKNOWN). readCoverage is shown as the catalog states it.",
+        "operationId": "getAssetActivityExpiryReport",
+        "parameters": [
+          {
+            "description": "Cloud providers, for example AWS or GCP; repeat or comma-separate",
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "description": "Cloud providers, for example AWS or GCP; repeat or comma-separate",
+              "items": {
+                "description": "Cloud providers, for example AWS or GCP; repeat or comma-separate",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Asset kinds (service types), for example GCS_BUCKET; repeat or comma-separate",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "description": "Asset kinds (service types), for example GCS_BUCKET; repeat or comma-separate",
+              "items": {
+                "description": "Asset kinds (service types), for example GCS_BUCKET; repeat or comma-separate",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Lifecycle statuses: ACTIVE, ARCHIVED, PENDING_DELETION, DELETED",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "description": "Lifecycle statuses: ACTIVE, ARCHIVED, PENDING_DELETION, DELETED",
+              "items": {
+                "description": "Lifecycle statuses: ACTIVE, ARCHIVED, PENDING_DELETION, DELETED",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Only assets last read strictly before this ISO-8601 instant, for example 2026-07-19T00:00:00Z",
+            "in": "query",
+            "name": "lastReadBefore",
+            "required": false,
+            "schema": {
+              "description": "Only assets last read strictly before this ISO-8601 instant, for example 2026-07-19T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only assets last read strictly after this ISO-8601 instant",
+            "in": "query",
+            "name": "lastReadAfter",
+            "required": false,
+            "schema": {
+              "description": "Only assets last read strictly after this ISO-8601 instant",
+              "type": "string"
+            }
+          },
+          {
+            "description": "true: only assets with a recorded last read; false: only assets without one",
+            "in": "query",
+            "name": "lastReadKnown",
+            "required": false,
+            "schema": {
+              "description": "true: only assets with a recorded last read; false: only assets without one",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only assets last read at least this many days before asOf; assets with no recorded read never match",
+            "in": "query",
+            "name": "idleDaysMin",
+            "required": false,
+            "schema": {
+              "description": "Only assets last read at least this many days before asOf; assets with no recorded read never match",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Stored retention status: UNKNOWN, NO_POLICY, RETAINED, DUE, ON_HOLD",
+            "in": "query",
+            "name": "retentionStatus",
+            "required": false,
+            "schema": {
+              "description": "Stored retention status: UNKNOWN, NO_POLICY, RETAINED, DUE, ON_HOLD",
+              "items": {
+                "description": "Stored retention status: UNKNOWN, NO_POLICY, RETAINED, DUE, ON_HOLD",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "true: only assets on legal hold; false: only assets not held",
+            "in": "query",
+            "name": "legalHold",
+            "required": false,
+            "schema": {
+              "description": "true: only assets on legal hold; false: only assets not held",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Read coverage: FULL, PARTIAL, NONE, or UNKNOWN for none recorded",
+            "in": "query",
+            "name": "readCoverage",
+            "required": false,
+            "schema": {
+              "description": "Read coverage: FULL, PARTIAL, NONE, or UNKNOWN for none recorded",
+              "items": {
+                "description": "Read coverage: FULL, PARTIAL, NONE, or UNKNOWN for none recorded",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "ISO-8601 instant the day counts are computed against; now when absent",
+            "in": "query",
+            "name": "asOf",
+            "required": false,
+            "schema": {
+              "description": "ISO-8601 instant the day counts are computed against; now when absent",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page number (JSON only)",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": "0",
+              "description": "Zero-based page number (JSON only)",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Rows per page, 1 to 200 (JSON only)",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": "50",
+              "description": "Rows per page, 1 to 200 (JSON only)",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort: property or property,asc|desc (JSON only); default assetUri,asc",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "description": "Sort: property or property,asc|desc (JSON only); default assetUri,asc",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpiryReportPage"
+                }
+              }
+            },
+            "description": "One page of the report"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpiryReportPage"
+                }
+              }
+            },
+            "description": "A filter, the sort, the page or a time is malformed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpiryReportPage"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpiryReportPage"
+                }
+              }
+            },
+            "description": "Forbidden - insufficient permissions"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpiryReportPage"
+                }
+              }
+            },
+            "description": "The catalog cannot deliver the rows; the report is never partial"
+          }
+        },
+        "summary": "Asset Activity and Expiry report (JSON, paged)",
+        "tags": [
+          "Asset Activity and Expiry report"
+        ]
+      }
+    },
+    "/api/v1/reporting/reports/expiry.csv": {
+      "get": {
+        "description": "The same columns as the JSON report for every matching asset, one row per asset in assetUri order. The response carries X-Export-Id; GET /api/v1/reporting/reports/expiry/exports/{exportId}/manifest returns the SHA-256 of the exact bytes, the row count and the filters. A file with no matching manifest is incomplete. Empty cells are unknown values. The export walks the catalog by keyset, so an asset written while it runs is never skipped or repeated; one written ahead of the walk is included and one written behind it is not.",
+        "operationId": "exportAssetActivityExpiryReportCsv",
+        "parameters": [
+          {
+            "description": "Cloud providers, for example AWS or GCP; repeat or comma-separate",
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "description": "Cloud providers, for example AWS or GCP; repeat or comma-separate",
+              "items": {
+                "description": "Cloud providers, for example AWS or GCP; repeat or comma-separate",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Asset kinds (service types), for example GCS_BUCKET; repeat or comma-separate",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "description": "Asset kinds (service types), for example GCS_BUCKET; repeat or comma-separate",
+              "items": {
+                "description": "Asset kinds (service types), for example GCS_BUCKET; repeat or comma-separate",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Lifecycle statuses: ACTIVE, ARCHIVED, PENDING_DELETION, DELETED",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "description": "Lifecycle statuses: ACTIVE, ARCHIVED, PENDING_DELETION, DELETED",
+              "items": {
+                "description": "Lifecycle statuses: ACTIVE, ARCHIVED, PENDING_DELETION, DELETED",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Only assets last read strictly before this ISO-8601 instant, for example 2026-07-19T00:00:00Z",
+            "in": "query",
+            "name": "lastReadBefore",
+            "required": false,
+            "schema": {
+              "description": "Only assets last read strictly before this ISO-8601 instant, for example 2026-07-19T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only assets last read strictly after this ISO-8601 instant",
+            "in": "query",
+            "name": "lastReadAfter",
+            "required": false,
+            "schema": {
+              "description": "Only assets last read strictly after this ISO-8601 instant",
+              "type": "string"
+            }
+          },
+          {
+            "description": "true: only assets with a recorded last read; false: only assets without one",
+            "in": "query",
+            "name": "lastReadKnown",
+            "required": false,
+            "schema": {
+              "description": "true: only assets with a recorded last read; false: only assets without one",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only assets last read at least this many days before asOf; assets with no recorded read never match",
+            "in": "query",
+            "name": "idleDaysMin",
+            "required": false,
+            "schema": {
+              "description": "Only assets last read at least this many days before asOf; assets with no recorded read never match",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Stored retention status: UNKNOWN, NO_POLICY, RETAINED, DUE, ON_HOLD",
+            "in": "query",
+            "name": "retentionStatus",
+            "required": false,
+            "schema": {
+              "description": "Stored retention status: UNKNOWN, NO_POLICY, RETAINED, DUE, ON_HOLD",
+              "items": {
+                "description": "Stored retention status: UNKNOWN, NO_POLICY, RETAINED, DUE, ON_HOLD",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "true: only assets on legal hold; false: only assets not held",
+            "in": "query",
+            "name": "legalHold",
+            "required": false,
+            "schema": {
+              "description": "true: only assets on legal hold; false: only assets not held",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Read coverage: FULL, PARTIAL, NONE, or UNKNOWN for none recorded",
+            "in": "query",
+            "name": "readCoverage",
+            "required": false,
+            "schema": {
+              "description": "Read coverage: FULL, PARTIAL, NONE, or UNKNOWN for none recorded",
+              "items": {
+                "description": "Read coverage: FULL, PARTIAL, NONE, or UNKNOWN for none recorded",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "ISO-8601 instant the day counts are computed against; now when absent",
+            "in": "query",
+            "name": "asOf",
+            "required": false,
+            "schema": {
+              "description": "ISO-8601 instant the day counts are computed against; now when absent",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page number (JSON only)",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": "0",
+              "description": "Zero-based page number (JSON only)",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Rows per page, 1 to 200 (JSON only)",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": "50",
+              "description": "Rows per page, 1 to 200 (JSON only)",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort: property or property,asc|desc (JSON only); default assetUri,asc",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "description": "Sort: property or property,asc|desc (JSON only); default assetUri,asc",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The CSV export"
+          },
+          "400": {
+            "description": "A filter or a time is malformed"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions"
+          },
+          "413": {
+            "description": "The result is larger than the export limit; narrow the filters"
+          },
+          "503": {
+            "description": "The catalog cannot deliver the rows"
+          }
+        },
+        "summary": "Asset Activity and Expiry report (CSV export, streamed)",
+        "tags": [
+          "Asset Activity and Expiry report"
+        ]
+      }
+    },
+    "/api/v1/reporting/reports/expiry/exports/{exportId}/manifest": {
+      "get": {
+        "description": "SHA-256 and size of the exported bytes, the row count, the columns, the report instant and the filters. Kept in the memory of the instance that served the export for 24 hours by default.",
+        "operationId": "getAssetActivityExpiryExportManifest",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exportId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The manifest"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The export id is not a UUID"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Forbidden - insufficient permissions"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No completed export with this id is known here"
+          }
+        },
+        "summary": "Manifest of a completed CSV export",
+        "tags": [
+          "Asset Activity and Expiry report"
+        ]
+      }
+    },
+    "/api/v1/reporting/reports/jobs/{generatedReportId}": {
+      "get": {
+        "operationId": "getGeneratedReportStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "generatedReportId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratedReportOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      }
+    },
+    "/api/v1/reporting/reports/key/{reportKey}": {
+      "get": {
+        "operationId": "getGeneratedReportsByReportKey",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reportKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageGeneratedReportOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "report-controller"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "description": "Age, last read, size and retention of every asset, as JSON or CSV",
+      "name": "Asset Activity and Expiry report"
+    },
+    {
+      "description": "Dashboard aggregation and analytics APIs",
+      "name": "Dashboard"
+    },
+    {
+      "description": "Consumed-stage decision-vs-access-log drift findings (ADR-0040)",
+      "name": "Drift"
+    },
+    {
+      "description": "Download report findings in portable formats",
+      "name": "Report Exports"
+    }
+  ]
+}

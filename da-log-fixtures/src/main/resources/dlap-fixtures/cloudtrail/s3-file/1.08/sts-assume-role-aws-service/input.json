@@ -1,0 +1,48 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "AWSService",
+        "invokedBy": "inspector2.amazonaws.com"
+      },
+      "eventTime": "2023-07-10T11:55:24Z",
+      "eventSource": "sts.amazonaws.com",
+      "eventName": "AssumeRole",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "inspector2.amazonaws.com",
+      "userAgent": "inspector2.amazonaws.com",
+      "requestParameters": {
+        "roleArn": "arn:aws:iam::999945223994:role/aws-service-role/inspector2.amazonaws.com/AWSServiceRoleForAmazonInspector2",
+        "roleSessionName": "MandoService-4719190630289683262",
+        "durationSeconds": 3600
+      },
+      "responseElements": {
+        "credentials": {
+          "accessKeyId": "ASIAEXAMPLE1A2R0QGHV",
+          "sessionToken": "IQoJb3JpZ2luX2VjEXAMPLEC6DD29B7EXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEE",
+          "expiration": "Jul 10, 2023, 12:55:24 PM"
+        },
+        "assumedRoleUser": {
+          "assumedRoleId": "AROAEXAMPLE9KTG9PDZB9:MandoService-4719190630289683262",
+          "arn": "arn:aws:sts::999945223994:assumed-role/AWSServiceRoleForAmazonInspector2/MandoService-4719190630289683262"
+        }
+      },
+      "requestID": "e25b1890-289b-4d0d-bbb7-1ce2298cb992",
+      "eventID": "a4a7b25e-c2d5-436f-8a7e-ea89f50541ab",
+      "readOnly": true,
+      "resources": [
+        {
+          "accountId": "999945223994",
+          "type": "AWS::IAM::Role",
+          "ARN": "arn:aws:iam::999945223994:role/aws-service-role/inspector2.amazonaws.com/AWSServiceRoleForAmazonInspector2"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "sharedEventID": "71797d26-1286-4204-81d4-cbcce8819672",
+      "eventCategory": "Management"
+    }
+  ]
+}

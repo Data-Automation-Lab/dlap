@@ -1,0 +1,101 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Prometheus configuration of the DLAP monitoring stack (OBS-01).
+#
+# Check it with promtool, from the repository root (the same image tag as the dev compose):
+#
+#   docker run --rm -v "$PWD/deployment/platform/prometheus:/p:ro" --entrypoint promtool \
+#     prom/prometheus:v2.53.0 check config /p/prometheus.yml
+#   docker run --rm -v "$PWD/deployment/platform/prometheus:/p:ro" --entrypoint promtool \
+#     prom/prometheus:v2.53.0 test rules /p/alerts.test.yml
+#
+# or run deployment/platform/prometheus/check.sh, which does both.
+#
+# Storage retention is a command-line flag of the Prometheus container, not a setting of this file
+# (see the prometheus service in deployment/environments/dev/docker-compose.yml).
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: dlap
+
+rule_files:
+  - alerts.yml
+  - recording_rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  # Prometheus itself.
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # The 11 DLAP services. Every service serves /actuator/prometheus on its management port, which is
+  # set with the environment variable MANAGEMENT_SERVER_PORT. The port is open without a token there
+  # and nowhere else (docs/observability.md, section 2). 9091 is the port the monitoring overlay of the
+  # dev compose sets: deployment/environments/dev/docker-compose.monitoring.yml.
+  #
+  # da-mcp-pep is a standalone reference deployable and is not part of the dev compose. Its target is
+  # listed so that a deployment that runs it is scraped without a change here; the alerts treat it as
+  # optional (alerts.yml, McpPepDown).
+  - job_name: dlap-services
+    metrics_path: /actuator/prometheus
+    scrape_timeout: 10s
+    static_configs:
+      - targets:
+          - da-admin-service:9091
+          - da-autoarchival:9091
+          - da-autocompliance:9091
+          - da-autodelete:9091
+          - da-autolabel:9091
+          - da-catalog:9091
+          - da-discovery:9091
+          - da-logingest:9091
+          - da-mcp-pep:9091
+          - da-policyengine:9091
+          - da-reporting:9091
+    relabel_configs:
+      # service = the container name, instance = host:port as scraped.
+      - source_labels: [__address__]
+        regex: '([^:]+):.*'
+        target_label: service
+        replacement: '${1}'
+
+  # PostgreSQL, through postgres_exporter (the postgres-exporter service of the monitoring profile).
+  - job_name: postgres
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Kafka, through kafka_exporter (the kafka-exporter service of the monitoring profile).
+  - job_name: kafka
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+
+  # Alertmanager and Grafana expose their own metrics.
+  - job_name: alertmanager
+    static_configs:
+      - targets: ['alertmanager:9093']
+
+  - job_name: grafana
+    static_configs:
+      - targets: ['grafana:3000']

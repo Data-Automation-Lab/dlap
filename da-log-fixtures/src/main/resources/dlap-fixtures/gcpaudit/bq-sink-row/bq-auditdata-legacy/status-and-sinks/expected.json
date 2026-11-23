@@ -1,0 +1,6 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"folders/999900000002/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:07:00.898012Z|r1-st-1","resultStatus":"FAILURE","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"organizations/999900000001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:07:01.909123Z|r1-st-2","resultStatus":"FAILURE","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fpolicy|2026-09-14T09:07:02.010234Z|r1-st-3","resultStatus":"FAILURE","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fpolicy|2026-09-14T09:07:03.121345Z|r1-st-4","resultStatus":"FAILURE","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"}
+]}

@@ -1,0 +1,2500 @@
+{
+  "components": {
+    "schemas": {
+      "AdminConnectionSummary": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "providerType": {
+            "type": "string"
+          },
+          "scannable": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "AnalysisOptions": {
+        "properties": {
+          "batchSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "changeTypes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "filters": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "includeMetadata": {
+            "type": "boolean"
+          },
+          "logLevel": {
+            "type": "string"
+          },
+          "parallelism": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resourceTypes": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceType"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AnalyzeLogsRequest": {
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "endTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "options": {
+            "$ref": "#/components/schemas/AnalysisOptions"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "startTime": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AwsScope": {
+        "properties": {
+          "accountIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "includeServices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "serviceSpecificRefinements": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "AzureScope": {
+        "properties": {
+          "includeServices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "resourceGroups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "serviceSpecificRefinements": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "subscriptionIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CloudService": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "provider": {
+            "enum": [
+              "GCP",
+              "AWS",
+              "AZURE",
+              "OCI",
+              "DATABRICKS",
+              "UNITY",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ConfigDTO": {
+        "properties": {
+          "folderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "folderName": {
+            "type": "string"
+          },
+          "projectId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "region": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "searchText": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "folderId",
+          "projectId",
+          "region"
+        ],
+        "type": "object"
+      },
+      "ConnectionDiscoveryConfigDTO": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "cloudConnectionId": {
+            "type": "string"
+          },
+          "customOutputLocation": {
+            "type": "string"
+          },
+          "customParameters": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "lastScanStartedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "resourceTypesToExclude": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "resourceTypesToInclude": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scanIntervalHours": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "specificRegions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CreateJobRequest": {
+        "properties": {
+          "accountId": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "jobName": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "resourceTypeIds": {
+            "items": {
+              "maxLength": 255,
+              "minLength": 0,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "accountId"
+        ],
+        "type": "object"
+      },
+      "DiscoveryJob": {
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "cloudProvider": {
+            "enum": [
+              "GCP",
+              "AWS",
+              "AZURE",
+              "OCI",
+              "DATABRICKS",
+              "UNITY",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "context": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "executable": {
+            "$ref": "#/components/schemas/Executable"
+          },
+          "executionConfig": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "executionMode": {
+            "enum": [
+              "DEFAULT",
+              "SPARK",
+              "NIFI"
+            ],
+            "type": "string"
+          },
+          "executorId": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "jobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "jobName": {
+            "type": "string"
+          },
+          "jobType": {
+            "enum": [
+              "RESOURCE_CRAWLER",
+              "LOG_ANALYZER"
+            ],
+            "type": "string"
+          },
+          "lastExecutionId": {
+            "type": "string"
+          },
+          "oneTimeJob": {
+            "type": "boolean"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "periodicJob": {
+            "type": "boolean"
+          },
+          "progressMessage": {
+            "type": "string"
+          },
+          "progressPercentage": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "scheduleInfo": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/JobStatistics"
+          },
+          "status": {
+            "enum": [
+              "CREATED",
+              "PENDING",
+              "RUNNING",
+              "COMPLETED",
+              "FAILED",
+              "CANCELLED",
+              "PAUSED",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "triggerJob": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DiscoveryScanDetail": {
+        "properties": {
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/ScanConfiguration"
+          },
+          "durationMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scanId": {
+            "type": "string"
+          },
+          "scanName": {
+            "type": "string"
+          },
+          "scanType": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ScanScope"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "summaryResults": {
+            "$ref": "#/components/schemas/ScanSummaryResults"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DiscoveryScanRequest": {
+        "properties": {
+          "cloudConnectionId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/ScanConfiguration"
+          },
+          "scanName": {
+            "type": "string"
+          },
+          "scanType": {
+            "enum": [
+              "GCP_PROJECTS",
+              "GCP_ORGANIZATION",
+              "GCP_BIGQUERY_DATASETS",
+              "AWS_ACCOUNT_FULL",
+              "AWS_S3_BUCKETS",
+              "AWS_EC2_INSTANCES",
+              "AZURE_SUBSCRIPTION",
+              "AZURE_RESOURCE_GROUP",
+              "OCI_TENANCY",
+              "OCI_COMPARTMENT",
+              "FULL",
+              "INCREMENTAL"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          }
+        },
+        "required": [
+          "cloudConnectionId",
+          "scanType",
+          "scope"
+        ],
+        "type": "object"
+      },
+      "DiscoveryScanSummary": {
+        "properties": {
+          "assetsAddedOrUpdated": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsScanned": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "scanId": {
+            "type": "string"
+          },
+          "scanName": {
+            "type": "string"
+          },
+          "scanType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DiscoveryStatsDTO": {
+        "properties": {
+          "assetsAddedToCatalogLast24h": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsAddedToCatalogLast7d": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsDiscoveredLast24h": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsDiscoveredLast7d": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "averageScanDurationSeconds": {
+            "format": "double",
+            "type": "number"
+          },
+          "scansCancelled": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansCancelledLast24h": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansFailed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansFailedLast24h": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansPending": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansPendingLast24h": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansRunning": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansRunningLast24h": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansSubmittedLast24h": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansSucceeded": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansSucceededLast24h": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scansSucceededLast7d": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalAssetsInCatalog": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalScansSubmitted": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ExclusionFiltersDto": {
+        "properties": {
+          "filters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Executable": {
+        "properties": {
+          "mode": {
+            "enum": [
+              "DEFAULT",
+              "SPARK",
+              "NIFI"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GcpScope": {
+        "properties": {
+          "includeServices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "projectIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "serviceSpecificRefinements": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "GlobalDiscoveryConfigDTO": {
+        "properties": {
+          "defaultOutputLocation": {
+            "type": "string"
+          },
+          "defaultResourceTypesToExclude": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "defaultScanIntervalMinutes": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "enableAutoRemediation": {
+            "type": "boolean"
+          },
+          "globalCrawlerProperties": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "JobStatistics": {
+        "properties": {
+          "resources": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "resourcesAdded": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resourcesDiscovered": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resourcesFailed": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resourcesSkipped": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resourcesUpdated": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "KafkaMessageRequest": {
+        "properties": {
+          "message": {
+            "maxLength": 100000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "topic": {
+            "maxLength": 249,
+            "minLength": 0,
+            "pattern": "[A-Za-z0-9._-]+",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "topic"
+        ],
+        "type": "object"
+      },
+      "OciScope": {
+        "properties": {
+          "compartmentIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "includeServices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "serviceSpecificRefinements": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "PageDiscoveryScanSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/DiscoveryScanSummary"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Pageable": {
+        "properties": {
+          "page": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sort": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PageableObject": {
+        "properties": {
+          "offset": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "unpaged": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ResourceType": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/components/schemas/CloudService"
+          }
+        },
+        "type": "object"
+      },
+      "ScanConfiguration": {
+        "properties": {
+          "incremental": {
+            "type": "boolean"
+          },
+          "maxDepth": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "overrides": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "schedule": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ScanScope": {
+        "properties": {
+          "awsAccountId": {
+            "type": "string"
+          },
+          "awsRegions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "awsResourceTypes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "azureResourceGroup": {
+            "type": "string"
+          },
+          "azureSubscriptionId": {
+            "type": "string"
+          },
+          "excludePatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "gcpOrganizationId": {
+            "type": "string"
+          },
+          "gcpProjectId": {
+            "type": "string"
+          },
+          "gcpProjectIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "includePatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ociCompartmentId": {
+            "type": "string"
+          },
+          "ociTenancyId": {
+            "type": "string"
+          },
+          "tags": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ScanSummaryResults": {
+        "properties": {
+          "assetsAdded": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsMatched": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsScanned": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsUnchanged": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsUpdated": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "errorMessages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "errorsEncountered": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Scope": {
+        "properties": {
+          "aws": {
+            "$ref": "#/components/schemas/AwsScope"
+          },
+          "azure": {
+            "$ref": "#/components/schemas/AzureScope"
+          },
+          "gcp": {
+            "$ref": "#/components/schemas/GcpScope"
+          },
+          "oci": {
+            "$ref": "#/components/schemas/OciScope"
+          }
+        },
+        "type": "object"
+      },
+      "SortObject": {
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SourceDetailsDto": {
+        "properties": {
+          "details": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/api/discovery-examples/config/validate": {
+      "post": {
+        "operationId": "validateConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": {
+                  "type": "object"
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-examples-controller"
+        ]
+      }
+    },
+    "/api/discovery-examples/errors/{errorType}": {
+      "get": {
+        "operationId": "simulateSystemError",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "errorType",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-examples-controller"
+        ]
+      }
+    },
+    "/api/discovery-examples/providers/{providerId}/operations/{operation}": {
+      "get": {
+        "operationId": "simulateProviderOperation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "providerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "operation",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-examples-controller"
+        ]
+      }
+    },
+    "/api/discovery-examples/resources/{resourceId}": {
+      "get": {
+        "operationId": "getResource",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resourceId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-examples-controller"
+        ]
+      }
+    },
+    "/api/discovery-examples/validate": {
+      "get": {
+        "operationId": "validateParameters",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "providerId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "region",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-examples-controller"
+        ]
+      }
+    },
+    "/api/kafka/publish": {
+      "post": {
+        "operationId": "publish",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KafkaMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "kafka-controller"
+        ]
+      }
+    },
+    "/api/shell/app-status": {
+      "get": {
+        "operationId": "appStatus",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "shell-controller"
+        ]
+      }
+    },
+    "/api/shell/create-job": {
+      "post": {
+        "operationId": "createJob_1",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "jobName",
+            "required": false,
+            "schema": {
+              "default": "",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "resourceIds",
+            "required": false,
+            "schema": {
+              "default": "",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "shell-controller"
+        ]
+      }
+    },
+    "/api/shell/exec-job/{jobId}": {
+      "post": {
+        "operationId": "executeJob_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "shell-controller"
+        ]
+      }
+    },
+    "/api/shell/get-job/{jobId}": {
+      "get": {
+        "operationId": "getJob_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "shell-controller"
+        ]
+      }
+    },
+    "/api/shell/list-crawlers": {
+      "get": {
+        "operationId": "listCrawlers",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "shell-controller"
+        ]
+      }
+    },
+    "/api/shell/list-jobs": {
+      "get": {
+        "operationId": "listJobs",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "default": "",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "shell-controller"
+        ]
+      }
+    },
+    "/api/shell/profiles": {
+      "get": {
+        "operationId": "profiles",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "shell-controller"
+        ]
+      }
+    },
+    "/api/shell/status": {
+      "get": {
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "shell-controller"
+        ]
+      }
+    },
+    "/api/update-config": {
+      "post": {
+        "operationId": "updateConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "config-update"
+        ]
+      }
+    },
+    "/api/v1/discovery/activities": {
+      "get": {
+        "operationId": "getDiscoveryActivities",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": {
+                      "type": "object"
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/assets": {
+      "delete": {
+        "operationId": "deleteAssets",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      },
+      "get": {
+        "operationId": "getDiscoveredAssets",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "lastDiscoveredAt,desc",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dataSource",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "assetType",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fileType",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dateRange",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/assets/{assetId}": {
+      "delete": {
+        "operationId": "deleteAsset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      },
+      "patch": {
+        "operationId": "updateAsset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": {
+                  "type": "object"
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/config/connections/{connectionId}": {
+      "delete": {
+        "operationId": "deleteConnectionConfig",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "discovery-config-controller"
+        ]
+      },
+      "get": {
+        "operationId": "getConnectionConfig",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionDiscoveryConfigDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-config-controller"
+        ]
+      },
+      "put": {
+        "operationId": "updateConnectionConfig",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionDiscoveryConfigDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionDiscoveryConfigDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-config-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/config/global": {
+      "get": {
+        "operationId": "getGlobalConfig",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalDiscoveryConfigDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-config-controller"
+        ]
+      },
+      "put": {
+        "operationId": "updateGlobalConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GlobalDiscoveryConfigDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalDiscoveryConfigDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-config-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/connections": {
+      "get": {
+        "operationId": "listConnections",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AdminConnectionSummary"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/data-sources": {
+      "get": {
+        "operationId": "getDataSources",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": {
+                      "type": "object"
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/job-stats": {
+      "get": {
+        "operationId": "getDiscoveryJobStats",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/job-statuses": {
+      "get": {
+        "operationId": "getJobStatuses",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": {
+                      "type": "object"
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/jobs": {
+      "get": {
+        "operationId": "getAllJobs",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "CREATED",
+                "PENDING",
+                "RUNNING",
+                "COMPLETED",
+                "FAILED",
+                "CANCELLED",
+                "PAUSED",
+                "UNKNOWN"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DiscoveryJob"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/jobs/{jobId}": {
+      "get": {
+        "operationId": "getJob",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryJob"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/jobs/{jobId}/execute": {
+      "post": {
+        "operationId": "executeJob",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/scans": {
+      "get": {
+        "operationId": "getAllDiscoveryScans",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cloudConnectionId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDiscoveryScanSummary"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      },
+      "post": {
+        "operationId": "triggerScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscoveryScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/scans/{scanId}": {
+      "get": {
+        "operationId": "getDiscoveryScanById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scanId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryScanDetail"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/statistics": {
+      "get": {
+        "operationId": "getDiscoveryStats",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryStatsDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-stats-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/trends": {
+      "get": {
+        "operationId": "getDiscoveryTrends",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": {
+                      "type": "object"
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/{provider}/jobs": {
+      "post": {
+        "operationId": "createJob",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryJob"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/discovery/{provider}/jobs/latest": {
+      "get": {
+        "operationId": "getLatestJob",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryJob"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "discovery-job-controller"
+        ]
+      }
+    },
+    "/api/v1/gcp/log-config/{accountId}/filters": {
+      "get": {
+        "operationId": "getExclusionFilters",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "gcp-log-config-controller"
+        ]
+      },
+      "post": {
+        "operationId": "setExclusionFilters",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExclusionFiltersDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "gcp-log-config-controller"
+        ]
+      }
+    },
+    "/api/v1/gcp/log-config/{accountId}/source/{sourceType}": {
+      "get": {
+        "operationId": "getSourceDetails",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sourceType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "API",
+                "BIGQUERY",
+                "GCS"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "gcp-log-config-controller"
+        ]
+      },
+      "post": {
+        "operationId": "setSourceDetails",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sourceType",
+            "required": true,
+            "schema": {
+              "enum": [
+                "API",
+                "BIGQUERY",
+                "GCS"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceDetailsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "gcp-log-config-controller"
+        ]
+      }
+    },
+    "/api/v1/logs/analyze": {
+      "post": {
+        "operationId": "analyzeLogs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeLogsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "log-analyzer-controller"
+        ]
+      }
+    }
+  }
+}

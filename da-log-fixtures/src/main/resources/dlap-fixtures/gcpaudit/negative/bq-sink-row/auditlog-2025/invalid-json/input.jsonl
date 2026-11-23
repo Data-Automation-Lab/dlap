@@ -1,0 +1,1 @@
+{"logName":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access","protopayload_auditlog":{"serviceName":"storage.googleapis.com","methodName":"storage.objects.get","authorizationInfo":[{"permission":"storage.objects.get","granted":true,"permissionType":"DATA_READ"}]}

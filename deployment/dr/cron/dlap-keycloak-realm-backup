@@ -1,0 +1,28 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# /etc/cron.d/dlap-keycloak-realm-backup (DR-03, Q-751). Install: copy this file to /etc/cron.d/ (owner root,
+# mode 644, no dot in the name), adjust the two paths, create /etc/dlap/keycloak-realm-backup.env (the guide,
+# docs/guides/backup-and-restore.md section 8.7, lists the settings). Cron mails any output to MAILTO, so a
+# failed run reaches a person and a good one is silent.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=root
+# Every day at 03:10 (the host's time zone). Keycloak is down for the length of a container copy, so pick a quiet hour.
+10 3 * * * root /opt/dlap/deployment/dr/keycloak-realm-backup.sh run --env-file /etc/dlap/keycloak-realm-backup.env >> /var/log/dlap-keycloak-realm-backup.log 2>&1
+# Every hour: print only when the last successful backup is older than 26 hours or the last run failed.
+40 * * * * root /opt/dlap/deployment/dr/keycloak-realm-backup.sh check --quiet --env-file /etc/dlap/keycloak-realm-backup.env

@@ -1,0 +1,87 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Recording rules of the DLAP monitoring stack (OBS-01). The Grafana dashboards under
+# deployment/platform/grafana/provisioning/dashboards read these series. Like the alerts they
+# use only series that exist (alerts.yml, docs/observability.md). Naming: level:metric:operation.
+
+groups:
+  - name: dlap-service-recording
+    rules:
+      # Requests per second, without the actuator paths the scrape and the probes use.
+      - record: service:http_requests:rate5m
+        expr: sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", uri!~"/actuator.*"}[5m]))
+
+      - record: service:http_server_errors:rate5m
+        expr: sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", status=~"5..", uri!~"/actuator.*"}[5m]))
+
+      - record: service:http_server_errors:ratio5m
+        expr: service:http_server_errors:rate5m / service:http_requests:rate5m
+
+      - record: service:http_request_duration_seconds:mean5m
+        expr: >
+          sum by (service) (rate(http_server_requests_seconds_sum{job="dlap-services", uri!~"/actuator.*"}[5m]))
+            / sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", uri!~"/actuator.*"}[5m]))
+
+      - record: service:jvm_heap_used:ratio
+        expr: >
+          sum by (service, instance) (jvm_memory_used_bytes{job="dlap-services", area="heap"})
+            / sum by (service, instance) (jvm_memory_max_bytes{job="dlap-services", area="heap"} > 0)
+
+      - record: service:jvm_gc_pause:ratio5m
+        expr: sum by (service, instance) (rate(jvm_gc_pause_seconds_sum{job="dlap-services"}[5m]))
+
+      - record: service:db_pool_used:ratio
+        expr: >
+          sum by (service, instance, pool) (hikaricp_connections_active{job="dlap-services"})
+            / sum by (service, instance, pool) (hikaricp_connections_max{job="dlap-services"})
+
+      - record: service:uptime:seconds
+        expr: time() - process_start_time_seconds{job="dlap-services"}
+
+  - name: dlap-data-plane-recording
+    rules:
+      - record: kafka:consumergroup_lag:sum
+        expr: sum by (consumergroup, topic) (kafka_consumergroup_lag{job="kafka"})
+
+      - record: postgres:connections_used:ratio
+        expr: >
+          sum by (instance, server) (pg_stat_activity_count{job="postgres"})
+            / max by (instance, server) (pg_settings_max_connections{job="postgres"})
+
+  - name: dlap-lifecycle-recording
+    rules:
+      # DLAP meters, listed in docs/observability.md section 1.
+      - record: dlap:pdp_decisions:rate5m
+        expr: sum by (decision) (rate(dlap_pdp_decisions_total[5m]))
+
+      - record: dlap:pdp_evaluation_duration_seconds:mean5m
+        expr: >
+          sum(rate(dlap_pdp_evaluation_duration_seconds_sum[5m]))
+            / sum(rate(dlap_pdp_evaluation_duration_seconds_count[5m]))
+
+      - record: dlap:mcppep_decisions:rate5m
+        expr: sum by (allow, failClosed) (rate(dlap_mcppep_decisions_total[5m]))
+
+      - record: dlap:discovery_assets:rate5m
+        expr: sum by (provider) (rate(dlap_discovery_assets_total[5m]))
+
+      - record: dlap:drift_findings:rate1h
+        expr: sum by (type) (rate(dlap_drift_findings_total[1h]))
+
+      - record: dlap:catalog_events:rate5m
+        expr: sum by (consumer, outcome) (rate(dlap_catalog_events_total[5m]))

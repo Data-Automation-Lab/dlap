@@ -1,0 +1,135 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# BigQuery INFORMATION_SCHEMA.JOBS_BY_PROJECT as read and write history (GCP-02).
+#
+# One record is one row of the view as a JSON object keyed by column name. The view has no version
+# field, so the version is the documented column set; the transport fingerprints it per run. The
+# column list, the source of every statement category below and the rows that are no event come from
+# the JOBS page and the Job REST reference (opened 2026-10-19) via the independent coverage spec
+# da-log-fixtures/.../bqjobs/coverage-spec.yaml. The fan-out of a row into one event per table is
+# code (BqJobsParser); everything that can be said declaratively is said here.
+#
+# `location` is the one column the view does not have: the transport adds the region it queried,
+# because a job id is only unique with it (docs/specs/log-event.md section 5.2).
+spec-version: 1
+family: bqjobs
+source-kind: GCP_BQ_JOBS_VIEW
+source-provider: GCP
+description: BigQuery INFORMATION_SCHEMA.JOBS_BY_PROJECT rows; one DATA_READ per table a finished query read and a write event for the table it wrote.
+settings:
+  on-mismatch: PARSE_WITH_DETECTED
+  # A row with 50 referenced tables is a few kilobytes; 256 KiB leaves room for labels and statistics.
+  max-record-bytes: 262144
+  # The view shows a finished job within minutes. The transport settles 5 minutes behind the clock and
+  # re-reads this much before its cursor; the event ids make the re-read free of duplicates.
+  overlap: PT30M
+  poll-interval: PT5M
+envelopes:
+  - id: jobs-view-row
+    description: One row of region-qualified INFORMATION_SCHEMA.JOBS_BY_PROJECT as a JSON object keyed by column name, plus the transport's location.
+    framing: [record]
+    version-detection:
+      scheme: named
+      rules:
+        # The identity columns of a JOBS row; the full required set is checked by the parser, so a row
+        # that lost a column is quarantined as column drift instead of being unrecognized.
+        - version: jobs-2026-10
+          when:
+            - pointer: /job_id
+              present: true
+            - pointer: /project_id
+              present: true
+    native-key:
+      # GCP_BQ_JOBS_VIEW|project|location|job_id (log-event.md section 5.2). The parser appends the
+      # table to the key of every event but the first.
+      namespaced: true
+      parts:
+        - pointer: /project_id
+        - pointer: /location
+        - pointer: /job_id
+    fields:
+      # Event time is the job's end time, never the poll time (plan rule R6).
+      event-time: /end_time
+      service:
+        const: bigquery.googleapis.com
+      # The statement type of a query ("SELECT", "MERGE"), else the job type ("LOAD", "COPY").
+      operation: [/statement_type, /job_type]
+      # user_email first; principal_subject identifies callers that have no email.
+      principal.id: [/user_email, /principal_subject]
+      request.request-id: /job_id
+    result:
+      failure-when:
+        - pointer: /error_result
+          present: true
+    skip-when:
+      # Running and pending jobs are picked up when they finish.
+      - reason: NOT_AN_EVENT
+        when:
+          - pointer: /state
+            not-equals: DONE
+      # job_type is null for background jobs.
+      - reason: NOT_AN_EVENT
+        when:
+          - pointer: /job_type
+            present: false
+      # The parent of a multi-statement script has no reads of its own; its child jobs carry them.
+      - reason: NOT_AN_EVENT
+        when:
+          - pointer: /statement_type
+            equals: SCRIPT
+      # A cache hit reads no table.
+      - reason: NOT_AN_EVENT
+        when:
+          - pointer: /cache_hit
+            equals: true
+      # referenced_tables is populated for query jobs only, so an extract job names no table here.
+      - reason: NOT_AN_EVENT
+        when:
+          - pointer: /job_type
+            equals: EXTRACT
+    classification:
+      rules:
+        # What the statement itself does to the table it names. Reads of other tables are added by the
+        # parser (ACCESS/DATA_READ), whatever the statement is.
+        - { service: bigquery.googleapis.com, operation: SELECT, change-type: ACCESS, category: DATA_READ }
+        - { service: bigquery.googleapis.com, operation: EXPORT_DATA, change-type: ACCESS, category: DATA_READ }
+        - { service: bigquery.googleapis.com, operation: INSERT, change-type: UPDATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: UPDATE, change-type: UPDATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: DELETE, change-type: UPDATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: MERGE, change-type: UPDATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: TRUNCATE_TABLE, change-type: UPDATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: LOAD_DATA, change-type: UPDATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: LOAD, change-type: UPDATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: COPY, change-type: UPDATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: CREATE_TABLE_AS_SELECT, change-type: CREATE, category: DATA_WRITE }
+        - { service: bigquery.googleapis.com, operation: CREATE_TABLE, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: CREATE_VIEW, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: CREATE_MATERIALIZED_VIEW, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: CREATE_EXTERNAL_TABLE, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: CREATE_SNAPSHOT_TABLE, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: DROP_TABLE, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: DROP_VIEW, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: DROP_MATERIALIZED_VIEW, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: DROP_EXTERNAL_TABLE, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: DROP_SNAPSHOT_TABLE, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: ALTER_TABLE, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: ALTER_VIEW, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: ALTER_MATERIALIZED_VIEW, change-type: UPDATE, category: MANAGEMENT }
+    versions:
+      - id: jobs-2026-10
+        description: The JOBS_BY_PROJECT column set documented in October 2026, including edition, continuous and principal_subject.

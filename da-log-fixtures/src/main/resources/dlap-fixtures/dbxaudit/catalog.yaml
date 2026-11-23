@@ -1,0 +1,72 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Documented operations and variants for the cells the seed corpus fills (FIX-02).
+#
+# The lists were taken from the independent coverage spec written by SPEC-01 for this family
+# (hardening plan, 2026-10-19). Where coverage-spec.yaml is present next to this file, it is the
+# denominator of the score and this file only says which cells a parser claims. Nothing is
+# claimed yet: every cell is supported: false until a parser package takes it over.
+
+family: dbxaudit
+description: "Databricks audit logs as delivered (JSON Lines)."
+envelopes:
+  - id: delivered-json
+    versions:
+      - id: "2.0"
+        supported: false
+        operations:
+          - "unityCatalog:getTable"
+          - "unityCatalog:createTable"
+          - "unityCatalog:deleteTable"
+          - "unityCatalog:updateTables"
+          - "unityCatalog:generateTemporaryTableCredential"
+          - "unityCatalog:generateTemporaryPathCredential"
+          - "unityCatalog:getVolume"
+          - "unityCatalog:deltaSharingQueryTable"
+          - "unityCatalog:deltaSharingQueryTableChanges"
+          - "unityCatalog:deltaSharingQueriedTable"
+          - "unityCatalog:deltaSharingQueriedTableChanges"
+          - "unityCatalog:deltaSharingGetQueryInfo"
+          - "unityCatalog:deltaSharingProxyQueryTable"
+          - "unityCatalog:deltaSharingProxyQueryTableChanges"
+          - "filesystem:filesGet"
+          - "filesystem:filesHead"
+          - "filesystem:directoriesGet"
+          - "cloudStorageMetadata:listObjects"
+          - "notebook:runCommand"
+          - "jobs:runCommand"
+          - "databrickssql:commandSubmit"
+          - "databrickssql:commandFinish"
+        variants:
+          - "record.invalid-json"
+          - "record.unknown-fields"
+          - "version.unknown-future"
+          - "status.error-response"
+          - "scope.account-level-workspace-zero"
+          - "scope.workspace-level"
+          - "field.workspace-id-string-or-number"
+          - "actor.email"
+          - "actor.system-user"
+          - "time.epoch-milliseconds"
+          - "params.truncated-suffix"
+          - "params.truncated-key"
+          - "asset.uc-full-name"
+          - "credential.read-operation"
+          - "credential.read-write-operation"
+          - "pair.request-response-same-request-id"
+          - "delivery.rewritten-file"

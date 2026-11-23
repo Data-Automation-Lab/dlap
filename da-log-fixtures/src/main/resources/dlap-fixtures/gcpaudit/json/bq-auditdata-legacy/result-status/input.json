@@ -1,0 +1,225 @@
+[
+  {
+    "insertId": "bq1-status-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-04T10:00:24.123456813Z",
+    "resource": {
+      "type": "bigquery_resource",
+      "labels": {
+        "project_id": "proj-0d1a0001"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {
+        "code": 7,
+        "message": "PERMISSION_DENIED"
+      },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "tabledataservice.list",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": false,
+          "resourceAttributes": { }
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+        "tableDataListRequest": {
+          "maxResults": 100
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-04T10:00:25.023456813Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq1-status-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-04T10:00:25.123456814Z",
+    "resource": {
+      "type": "bigquery_resource",
+      "labels": {
+        "project_id": "proj-0d1a0001"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "tabledataservice.list",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": false,
+          "resourceAttributes": { }
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+        "tableDataListRequest": {
+          "maxResults": 100
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-04T10:00:26.023456814Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq1-status-3",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fpolicy",
+    "timestamp": "2026-09-04T10:00:26.123456815Z",
+    "resource": {
+      "type": "bigquery_resource",
+      "labels": {
+        "project_id": "proj-0d1a0001"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {
+        "code": 9,
+        "message": "FAILED_PRECONDITION"
+      },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "tabledataservice.list",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+        "tableDataListRequest": {
+          "maxResults": 100
+        }
+      },
+      "policyViolationInfo": {
+        "orgPolicyViolationInfo": {
+          "resourceType": "bigquery.googleapis.com/Table",
+          "violationInfo": [
+            {
+              "constraint": "constraints/gcp.resourceLocations",
+              "errorMessage": "Location us-central1 violates constraint constraints/gcp.resourceLocations",
+              "checkedValue": "us-central1",
+              "policyType": "LIST_CONSTRAINT"
+            }
+          ]
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-04T10:00:27.023456815Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq1-status-4",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fpolicy",
+    "timestamp": "2026-09-04T10:00:27.123456816Z",
+    "resource": {
+      "type": "bigquery_resource",
+      "labels": {
+        "project_id": "proj-0d1a0001"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {
+        "code": 7,
+        "message": "PERMISSION_DENIED"
+      },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "tabledataservice.list",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+        "tableDataListRequest": {
+          "maxResults": 100
+        }
+      },
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.VpcServiceControlAuditMetadata",
+        "violationReason": "NO_MATCHING_ACCESS_LEVEL",
+        "resourceNames": [
+          "projects/proj-0d1a0001"
+        ],
+        "securityPolicyInfo": {
+          "servicePerimeterName": "accessPolicies/999900000003/servicePerimeters/dlap_fixture_perimeter",
+          "organizationId": "999900000001"
+        },
+        "ingressViolations": [
+          {
+            "servicePerimeter": "accessPolicies/999900000003/servicePerimeters/dlap_fixture_perimeter",
+            "targetResource": "projects/proj-0d1a0001",
+            "source": {
+              "accessLevel": "accessPolicies/999900000003/accessLevels/corp_network"
+            }
+          }
+        ],
+        "egressViolations": [
+          {
+            "servicePerimeter": "accessPolicies/999900000003/servicePerimeters/dlap_fixture_perimeter",
+            "targetResource": "projects/999900000004",
+            "sourceType": "Resource"
+          }
+        ],
+        "vpcServiceControlsUniqueId": "dlapFixtureVpcScId0001",
+        "deviceState": { }
+      }
+    },
+    "receiveTimestamp": "2026-09-04T10:00:28.023456816Z",
+    "severity": "INFO"
+  }
+]

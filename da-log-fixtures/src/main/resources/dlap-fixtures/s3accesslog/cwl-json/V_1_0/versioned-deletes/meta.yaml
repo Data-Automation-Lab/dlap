@@ -1,0 +1,18 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-and-other-bucket-config.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3.amazonaws.com:S3.EXPIRE.OBJECT
+  - s3.amazonaws.com:S3.CREATE.DELETEMARKER
+  - s3.amazonaws.com:REST.DELETE.OBJECT
+variant_ids:
+  - lifecycle.noncurrent-expire
+  - lifecycle.delete-marker
+  - request.version-id
+  - requester.null
+  - requester.user-arn
+  - field.json-nulls
+expected_outcome: PARSED
+anonymised: false
+notes: "Written by PARSE-03 (D36, Q-651) for version-qualified deletes, which are UPDATE events of the object, never asset DELETEs. Sources opened 2026-11-01: the S3 Lifecycle and logging table of lifecycle-and-other-bucket-config (source_url) lists S3.EXPIRE.OBJECT as the only permanent deletion and no separate operation for a NoncurrentVersionExpiration, so a noncurrent expiration is told apart only by the record's version id; https://docs.aws.amazon.com/AmazonS3/latest/userguide/sal-cw-log-format.html defines version_id as the version id in the request, or null when the operation does not involve a versioned object; https://docs.aws.amazon.com/AmazonS3/latest/userguide/LogFormat.html (Version Id) says the same for the text format. Every value is invented. Whether S3 writes the expired version id into version_id for S3.EXPIRE.OBJECT, and the marker's id for S3.CREATE.DELETEMARKER, is [unverified] until a live capture."

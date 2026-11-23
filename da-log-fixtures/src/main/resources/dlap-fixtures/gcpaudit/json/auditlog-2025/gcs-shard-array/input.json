@@ -1,0 +1,122 @@
+[
+  {
+    "insertId": "a25-shard-array-3",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-02T10:00:36.123456825Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.get",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "DATA_READ"
+        }
+      ]
+    },
+    "receiveTimestamp": "2026-09-02T10:00:36.823456825Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a25-shard-array-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-02T10:00:34.123456823Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.get",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "DATA_READ"
+        }
+      ]
+    },
+    "receiveTimestamp": "2026-09-02T10:00:34.823456823Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a25-shard-array-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-02T10:00:35.123456824Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.get",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "DATA_READ"
+        }
+      ]
+    },
+    "receiveTimestamp": "2026-09-02T10:00:35.823456824Z",
+    "severity": "INFO"
+  }
+]

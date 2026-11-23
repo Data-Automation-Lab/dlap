@@ -1,0 +1,44 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# Databricks Reader: the single source of truth (IAM-03). main.tf reads this file with
+# yamldecode and da-discovery ReaderRoleTraceabilityTest checks it (call sites, privileges limited
+# to BROWSE, USE_CATALOG and USE_SCHEMA, every Unity Catalog client file cited).
+#
+# Unity Catalog privileges, granted on each catalog DLAP discovers and inherited by its schemas.
+# The Reader holds no SELECT, MODIFY or other data privilege.
+#
+# Today only the Unity Catalog crawler calls Databricks. The Databricks job list is an offline
+# stub (StubDatabricksJobListClient), so it needs no permission. A real implementation adds its
+# entries here, with its call site, in the same change.
+cloud: databricks
+permissions:
+  - permission: USE_CATALOG
+    scopes: [catalog]
+    purpose: List catalogs. GET /api/2.1/unity-catalog/catalogs returns only catalogs the caller owns or holds USE_CATALOG on.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/unity/UnityCatalogResourceCrawler.java
+        line: 219
+        call: catalogsApi.listCatalogs(
+  - permission: USE_SCHEMA
+    scopes: [catalog]
+    purpose: List schemas. GET /api/2.1/unity-catalog/schemas returns only schemas the caller owns or holds USE_SCHEMA on.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/unity/UnityCatalogResourceCrawler.java
+        line: 233
+        call: schemasApi.listSchemas(
+  - permission: BROWSE
+    scopes: [catalog]
+    purpose: >-
+      Table metadata without data access. GET /api/2.1/unity-catalog/tables returns BROWSE-only
+      tables only when the request sets include_browse=true.
+    known_gap: >-
+      The crawler does not send include_browse=true today, so without SELECT it lists only the
+      tables the principal owns. Fix the crawler (open question), not the role: SELECT would let
+      the Reader read table content.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/unity/UnityCatalogResourceCrawler.java
+        line: 248
+        call: tablesApi.listTables(
+no_permission_sources: []

@@ -1,0 +1,46 @@
+# Enforcement: act on stamped compliance violations. Because the verdict is a label,
+# one policy enforces controls from ANY source (DLAP-native OR an external tool's ingest).
+# Split into two policies so the destructive action requires approval.
+apiVersion: dlap/v1
+kind: Policy
+metadata:
+  id: enforce-compliance-alert
+  name: "Alert on any compliance violation"
+  owner: "security@example.com"
+  enabled: true
+spec:
+  triggers:
+    - type: event
+      topic: dlap.catalog.asset.upserted
+  match:
+    labels:
+      anyOf:
+        - "compliance:gdpr:violation"
+        - "compliance:hipaa:violation"
+  action:
+    type: alert
+    parameters:
+      severity: high
+      auditNote: "Compliance violation detected on a governed asset."
+---
+apiVersion: dlap/v1
+kind: Policy
+metadata:
+  id: enforce-pii-retention-archive
+  name: "Archive PII past retention"
+  owner: "data-governance@example.com"
+  enabled: true
+spec:
+  triggers:
+    - type: schedule
+      cron: "0 30 4 * * ?"
+  match:
+    labels:
+      allOf: ["compliance:pii:retention-exceeded"]
+  action:
+    type: archive
+    requireApproval: true       # destructive-ish: gate behind approval
+    dryRun: false
+    parameters:
+      targetStorageClass: ARCHIVE
+      auditNote: "Auto-archive PII past its retention window."

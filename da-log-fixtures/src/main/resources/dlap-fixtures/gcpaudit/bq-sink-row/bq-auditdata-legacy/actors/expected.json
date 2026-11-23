@@ -1,0 +1,7 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:08:00.232456Z|r1-act-1","principal":{"type":"USER","id":"principal://iam.googleapis.com/locations/global/workforcePools/dlap-pool/subject/user-1"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:08:01.343567Z|r1-act-2","principal":{"type":"SERVICE_ACCOUNT","id":"sa-0d1a00d2@proj-0d1a0002.iam.gserviceaccount.com"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:08:02.454678Z|r1-act-3","principal":{"type":"SERVICE_ACCOUNT","id":"sa-0d1a00e1@proj-0d1a0001.iam.gserviceaccount.com"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:08:03.565789Z|r1-act-4","principal":{"displayName":"..."},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:08:04.676890Z|r1-act-5","principal":{"type":"SYSTEM","id":"google-internal"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"}
+]}

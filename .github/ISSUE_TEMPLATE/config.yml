@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/Data-Automation-Lab/dlap/discussions
+    about: Use GitHub Discussions for general questions and design conversations.
+  - name: Report a security vulnerability
+    url: https://github.com/Data-Automation-Lab/dlap/blob/main/SECURITY.md
+    about: Do not file public issues for security problems - follow SECURITY.md.

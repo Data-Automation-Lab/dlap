@@ -1,0 +1,12 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2026-01-02T00:00:00Z",
+      "operation": "READ",
+      "target": "demo://bucket-b/object-1",
+      "actor": "user-3",
+      "result": "SUCCESS"
+    }
+  ]
+}

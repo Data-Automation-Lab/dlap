@@ -1,0 +1,13 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2025-09-17T14:22:45.987654300Z",
+      "sourceProvider": "AZURE",
+      "operation": "ListBlobs",
+      "resultStatus": "FAILURE",
+      "sourceFormat": "AZURE_STORAGE_RESOURCE_LOG/resource-log",
+      "sourceSchemaVersion": "2.1"
+    }
+  ]
+}

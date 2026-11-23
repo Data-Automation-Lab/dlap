@@ -1,0 +1,28 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "4d675aff-b76c-3d07-9248-8d08f35551e2",
+      "eventTime": "2024-01-15T10:45:23Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "PutBucketLogging",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::111111111111:role/sample-role-quirky-greider/sso.amazonaws.com/us-west-2/sample-role-dreamy-yonath"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    },
+    {
+      "nativeEventId": "951b6a4e-075c-3eac-9c83-74c09a962c47",
+      "eventTime": "2024-01-15T10:45:23Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "PutBucketLogging",
+      "resultStatus": "SUCCESS",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    }
+  ]
+}

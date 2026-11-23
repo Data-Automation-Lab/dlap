@@ -1,0 +1,25 @@
+# Label BigQuery tables created more than two years ago (POL-01 createdAt clause).
+# createdAt reads the provider's creation time (cloudCreatedAt), never when DLAP first
+# saw the table. A table whose creation time the catalog does not know is UNKNOWN and
+# is not labelled.
+apiVersion: dlap/v1
+kind: Policy
+metadata:
+  id: label-old-datasets
+  name: "Label tables older than two years"
+  owner: "data-governance@example.com"
+  enabled: true
+spec:
+  triggers:
+    - type: schedule
+      cron: "0 15 3 * * MON"     # 03:15 UTC every Monday
+  match:
+    assetType:
+      anyOf: [BIGQUERY_TABLE]
+    createdAt:
+      olderThan: P730D
+  action:
+    type: addLabel
+    parameters:
+      labelName: "lifecycle:older-than-2y"
+      auditNote: "Created more than 730 days ago."

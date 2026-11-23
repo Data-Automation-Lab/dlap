@@ -1,0 +1,41 @@
+[
+  {
+    "insertId": "a21-shard-addendum-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-01T10:00:39.123456828Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.get",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ]
+    },
+    "receiveTimestamp": "2026-09-01T10:00:39.823456828Z",
+    "severity": "INFO"
+  }
+]

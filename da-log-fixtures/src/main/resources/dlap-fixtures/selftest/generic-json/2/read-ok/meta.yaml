@@ -1,0 +1,10 @@
+origin: synthetic-from-doc
+source_url: https://www.rfc-editor.org/rfc/rfc8259
+doc_date: 2017-12-01
+license: synthetic
+covers:
+  - demo:read
+variant_ids: []
+expected_outcome: PARSED
+anonymised: false
+notes: Version 2 is planned; only the read operation has a case so far, so the report shows gaps.

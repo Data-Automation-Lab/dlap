@@ -1,0 +1,13 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:jobservice.jobcompleted
+variant_ids:
+  - bq1.referenced-tables-objects
+  - bq1.resource-type
+  - envelope.bq-servicedata-struct
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Completed load, copy, MERGE and extract jobs: a load, a copy and a DML statement write their destination; the copy's source, the extract's source and the tables a MERGE references are reads."

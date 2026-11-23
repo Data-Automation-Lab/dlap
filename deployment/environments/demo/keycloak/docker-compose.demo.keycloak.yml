@@ -1,0 +1,216 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP hosted-demo identity overlay (DEMO-02).
+#
+# The last file of the demo stack. up.sh and the demo scripts (scripts/lib.sh, demo_compose_files) apply
+# it after
+#
+#   deployment/environments/dev/docker-compose.yml
+#   deployment/environments/dev/docker-compose.microservices.yml
+#   deployment/environments/demo/docker-compose.demo.yml
+#
+# as soon as this file exists, and the launcher then stops asking for DEMO_ALLOW_DEV_REALM. Paths are
+# relative to the first file (deployment/environments/dev). Needs Docker Compose 2.24 or later.
+#
+# What it does:
+#   1. Keycloak: the patched 26.8.1 image pinned by digest, production mode (kc.sh start), its own
+#      Postgres database so accounts survive a container recreation, and the hardened realm
+#      keycloak/dlap-demo-realm.json in place of the quickstart realm. The memory limit, the loopback
+#      port and the two networks of docker-compose.demo.yml stay.
+#   2. One issuer: Keycloak's front-end URL is fixed to https://$DEMO_ID_HOST$DEMO_ID_PORT_SUFFIX, so
+#      every token carries that issuer, also the service tokens fetched on the internal network.
+#      Back-channel requests (keys, tokens) keep working on http://keycloak:8080.
+#   3. The services: every JVM checks that issuer and the audience dlap-api (Q-913) and nothing else,
+#      and reads the signing keys from the internal URL. Environment variables only; no application
+#      file changes.
+#
+# Issuer and key URLs of the services. The plan says "issuer-uri public, jwk-set-uri internal". Seven
+# services build their key URL from spring.security.oauth2.resourceserver.jwt.issuer-uri itself (for
+# example da-policyengine SecurityConfiguration.java:108-109, NimbusJwtDecoder.withJwkSetUri(issuerUri +
+# "/protocol/openid-connect/certs")), and the service network has no route out, so a public issuer-uri
+# would make them fetch keys from the internet and refuse every token. The public issuer is therefore
+# set where every service checks it, DLAP_SECURITY_JWT_EXPECTED_ISSUER with
+# DLAP_SECURITY_JWT_VALIDATE_ISSUER=true (the tokenValidator of each SecurityConfiguration), and every
+# key URL stays internal: KEYCLOAK_AUTH_SERVER_URL for the services that derive it,
+# SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI for the ones that read jwk-set-uri.
+#
+# Settings read from .env.demo (besides those of docker-compose.demo.yml):
+#   KEYCLOAK_ADMIN, KEYCLOAK_ADMIN_PASSWORD   the temporary master-realm admin, created at the first
+#                                             start only (a later change of the file does not apply)
+#   KEYCLOAK_DB_PASSWORD                      optional: password of the "keycloak" database role. Unset,
+#                                             it is KEYCLOAK_ADMIN_PASSWORD, a secret the Keycloak
+#                                             container holds anyway; never the Postgres superuser's.
+#   DEMO_APP_HOST, DEMO_ID_HOST, DEMO_ID_PORT_SUFFIX
+#                                             the public origins. DEMO_ID_PORT_SUFFIX is the HTTPS port
+#                                             suffix that Caddy serves both host names on (empty on the
+#                                             demo host, ":18443" in the local rehearsal).
+#
+# Accounts and the realm. The realm file is imported once, into an empty database
+# (--import-realm skips a realm that exists). Accounts the founder creates live in the "keycloak"
+# database, which the nightly reset does not restore and seed.sh only removes with --fresh. A change
+# to the realm file reaches a running demo only through a new database (seed.sh --fresh) or a partial
+# import in the admin console.
+#
+# The "keycloak" database is created by the Postgres init script (00-create-multiple-databases.sh,
+# KEYCLOAK_DB_NAME) when the Postgres volume is new. A volume from before this overlay has no such
+# database, and Keycloak then stops with "database keycloak does not exist". Create it once, with the
+# password of the role (KEYCLOAK_DB_PASSWORD, or KEYCLOAK_ADMIN_PASSWORD when that is unset) in PW:
+#   printf '%s\n' "CREATE ROLE keycloak LOGIN PASSWORD :'pw';" "CREATE DATABASE keycloak OWNER keycloak;" \
+#     | ./up.sh exec -T postgresql psql -U dlap -d dlap -v ON_ERROR_STOP=1 -v pw="$PW"
+#
+# Check it: keycloak/verify-issuer.sh (live, against the running stack) and
+# keycloak/verify-issuer.sh --static (the files only).
+
+# The issuer settings every JVM gets. A mapping, so it merges with the lists of the files before.
+x-demo-issuer-env: &demo-issuer-env
+  # Issuer and audience are both checked (SEC-12, ADR-0137, Q-913). The boot guard (DevSecretGuard) refuses a
+  # prod start while either check is off, and the demo accepts no waiver. The audience is dlap-api: the demo
+  # realm's dlap-api-audience mapper writes it into the access tokens of dlap-ui and dlap-backend (the default
+  # of ${DLAP_API_AUDIENCE:dlap-api} in dlap-demo-realm.json, a variable this overlay never sets), exactly as the
+  # pilot realm does. keycloak/verify-issuer.sh S-13 and I-08 check both halves.
+  DLAP_SECURITY_JWT_VALIDATE_ISSUER: "true"
+  DLAP_SECURITY_JWT_EXPECTED_ISSUER: "https://${DEMO_ID_HOST:-id.localhost}${DEMO_ID_PORT_SUFFIX:-}/realms/dlap"
+  DLAP_SECURITY_JWT_VALIDATE_AUDIENCE: "true"
+  DLAP_SECURITY_JWT_EXPECTED_AUDIENCE: "dlap-api"
+  KEYCLOAK_AUTH_SERVER_URL: "http://keycloak:8080"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/dlap/protocol/openid-connect/certs"
+
+services:
+
+  postgresql:
+    environment:
+      # Read by 00-create-multiple-databases.sh on a new volume: a "keycloak" role that owns nothing
+      # but its own database.
+      KEYCLOAK_DB_NAME: "keycloak"
+      KEYCLOAK_DB_USER: "keycloak"
+      KEYCLOAK_DB_PASSWORD: "${KEYCLOAK_DB_PASSWORD:-${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD must be set in .env.demo}}"
+
+  keycloak:
+    # Keycloak 26.8.1 (2026-10-13), the current 26.x patch release. It fixes, among others,
+    # CVE-2026-96445 (conditional OTP trusted skip headers on untrusted proxy paths) and CVE-2026-94218
+    # (2FA setup enforcement bypass through login-actions/restart), both relevant to this realm's
+    # OTP for ROLE_ADMIN. The digest is the multi-architecture index of the 26.8.1 tag on quay.io.
+    image: quay.io/keycloak/keycloak:26.8.1@sha256:79c623a22abacf3fe6c00a5fb30f5b7843d717b234033b80995891c06116d244
+    # Production mode. --import-realm reads /opt/keycloak/data/import once; the realm then lives in
+    # the database. No --optimized: the stock image is not pre-built for these options, so the start
+    # runs the build step first (about 10 s).
+    command: !override
+      - "start"
+      - "--import-realm"
+    # Keycloak insists that an import file is named after its realm: <realm>-realm.json.
+    volumes: !override
+      - ../demo/keycloak/dlap-demo-realm.json:/opt/keycloak/data/import/dlap-realm.json:ro
+    environment: !override
+      # Database: Postgres, not the quickstart's file in the container.
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgresql:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD:-${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD must be set in .env.demo}}
+      - KC_DB_POOL_INITIAL_SIZE=1
+      - KC_DB_POOL_MIN_SIZE=1
+      - KC_DB_POOL_MAX_SIZE=10
+      # Temporary master-realm admin, created at the first start only. Reach it through the SSH
+      # tunnel to the loopback port (README, "Administration").
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KEYCLOAK_ADMIN:-admin}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD must be set in .env.demo}
+      # Host names. The front-end URL is fixed, so the issuer is the same whichever URL a request
+      # used. Back-channel URLs follow the request, so services on the internal network fetch keys
+      # and tokens from http://keycloak:8080. The admin console answers on the loopback port only;
+      # Caddy never proxies /admin.
+      - KC_HOSTNAME=https://${DEMO_ID_HOST:-id.localhost}${DEMO_ID_PORT_SUFFIX:-}
+      - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
+      - KC_HOSTNAME_ADMIN=http://localhost:${DLAP_PORT_KEYCLOAK:-8180}
+      # Caddy terminates TLS and sets X-Forwarded-For, -Proto and -Host itself (it ignores what a
+      # client sends). Plain HTTP inside the two networks only.
+      - KC_HTTP_ENABLED=true
+      - KC_HTTP_PORT=8080
+      - KC_PROXY_HEADERS=xforwarded
+      # Health on the management port 9000, which nothing publishes. No metrics endpoint.
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=false
+      # Features the demo has no use for.
+      - KC_FEATURES_DISABLED=impersonation,device-flow,ciba,kerberos
+      - KC_LOG_LEVEL=info
+      # Heap, metaspace and an exit on out of memory inside the 768 MiB limit of docker-compose.demo.yml.
+      # Measured for DEMO-02 (Docker Desktop, 2026-10-20): with -Xmx512m the container reached 657 MiB
+      # of 768 after the identity checks; with these values it peaked at 617 MiB during them.
+      - JAVA_OPTS_KC_HEAP=-Xms128m -Xmx384m
+      - JAVA_OPTS_APPEND=-XX:MaxMetaspaceSize=192m -XX:+ExitOnOutOfMemoryError
+      # Read by the realm import (dlap-demo-realm.json). There is no default: the launcher refuses a
+      # weak secret, and compose refuses a missing one.
+      - DLAP_BACKEND_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:?DLAP_BACKEND_CLIENT_SECRET must be set in .env.demo}
+      - DLAP_DEMO_APP_URL=https://${DEMO_APP_HOST:-demo.localhost}${DEMO_ID_PORT_SUFFIX:-}
+    depends_on: !override
+      postgresql:
+        condition: service_healthy
+    cap_drop:
+      - ALL
+    # The image has no curl or wget; bash talks HTTP over /dev/tcp to the management port.
+    healthcheck: !override
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && timeout 5 cat <&3 | grep -q '\"status\": \"UP\"'"]
+      interval: 10s
+      timeout: 8s
+      retries: 30
+      start_period: 60s
+
+  # --- The services: one issuer, internal keys ---------------------------------------------------
+
+  da-catalog:
+    environment: *demo-issuer-env
+  da-policyengine:
+    environment: *demo-issuer-env
+  da-discovery:
+    environment:
+      <<: *demo-issuer-env
+      # da-discovery still carries a JHipster OIDC login registration ("oidc" in config/application.yml)
+      # that nothing calls, but that CrawlerSecurityConfiguration wires in (.oauth2Client). Its provider
+      # has an issuer-uri, so at start Spring reads http://keycloak:8080/realms/dlap/.well-known/
+      # openid-configuration, finds the public issuer there and stops ("Unable to resolve
+      # Configuration with the provided Issuer"). The demo points the registration at a provider
+      # "demo" with explicit endpoints instead, so nothing is discovered at start; the "oidc"
+      # provider's issuer-uri stays internal because CrawlerSecurityConfiguration builds its key URL
+      # from it. SPRING_APPLICATION_JSON outranks plain variables and is replaced as a whole, so the
+      # quickstart's keys (docker-compose.microservices.yml, da-discovery) are repeated here.
+      SPRING_APPLICATION_JSON: >-
+        {"dlap.catalog-service.url":"http://da-catalog:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend",
+        "dlap.service-auth.client-secret":"${DLAP_BACKEND_CLIENT_SECRET:?DLAP_BACKEND_CLIENT_SECRET must be set in .env.demo}",
+        "spring.security.oauth2.client.registration.oidc.provider":"demo",
+        "spring.security.oauth2.client.registration.oidc.authorization-grant-type":"authorization_code",
+        "spring.security.oauth2.client.provider.demo.authorization-uri":"https://${DEMO_ID_HOST:-id.localhost}${DEMO_ID_PORT_SUFFIX:-}/realms/dlap/protocol/openid-connect/auth",
+        "spring.security.oauth2.client.provider.demo.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token",
+        "spring.security.oauth2.client.provider.demo.jwk-set-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/certs",
+        "spring.security.oauth2.client.provider.demo.user-info-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/userinfo",
+        "spring.security.oauth2.client.provider.demo.user-name-attribute":"preferred_username"}
+  da-logingest:
+    environment: *demo-issuer-env
+  da-reporting:
+    environment: *demo-issuer-env
+  da-autolabel:
+    environment: *demo-issuer-env
+  da-autoarchival:
+    environment: *demo-issuer-env
+  da-autodelete:
+    environment: *demo-issuer-env
+  # Plus profile (COMPOSE_PROFILES=plus).
+  da-autocompliance:
+    environment: *demo-issuer-env
+  da-admin-service:
+    environment: *demo-issuer-env

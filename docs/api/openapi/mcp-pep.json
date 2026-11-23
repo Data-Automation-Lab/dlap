@@ -1,0 +1,128 @@
+{
+  "components": {
+    "schemas": {
+      "McpAccessRequest": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "context": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "principalId": {
+            "type": "string"
+          },
+          "resourceUri": {
+            "type": "string"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tier": {
+            "type": "string"
+          },
+          "tool": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/mcp/v1/authorize": {
+      "post": {
+        "description": "Maps the request to an AuthZEN evaluation, calls the DLAP PDP, and returns the enforced verdict: allow (200, with obligations) or deny (403, with reason). Any authenticated caller whose token carries the PEP audience gets a decision. The subject is taken from the bearer token; only a ROLE_SERVICE_ACCOUNT caller may name principalId, roles and tier in the body, and any other caller naming another principal is refused with 403.",
+        "operationId": "authorize",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/McpAccessRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Access allowed; obligations (if any) returned"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Malformed access request"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No bearer token, or the token is invalid (signature, expiry, issuer, or it does not carry the PEP audience)"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Access denied by the PDP verdict, or a non-service-account token names another principal"
+          }
+        },
+        "summary": "Enforce an MCP access request",
+        "tags": [
+          "MCP PEP"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Reference MCP Policy Enforcement Point - maps a tool-call/resource-read to an AuthZEN verdict (ADR-0040)",
+      "name": "MCP PEP"
+    }
+  ]
+}

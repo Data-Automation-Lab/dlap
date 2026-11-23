@@ -1,0 +1,10 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers: []
+variant_ids:
+  - row.missing-required-column
+expected_outcome: QUARANTINED:UNKNOWN_ENVELOPE
+anonymised: false
+notes: "Closest documented variant: the view lost a column. What the transport hands over instead of rows when the view no longer has a load-bearing optional column that the previous run saw (cache_hit, error_result): one marker record per run, which the registry quarantines. Without it a cache hit would count as a read and a failed job as a success. Hashes are placeholders."

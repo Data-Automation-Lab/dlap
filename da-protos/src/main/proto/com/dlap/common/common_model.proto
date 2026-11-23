@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package com.dlap.common;
+
+option java_package = "com.dlap.common.protos";
+option java_outer_classname = "CommonModelProtos";
+option java_multiple_files = true;
+
+// A simple wrapper for UUID string values.
+message UUIDValue {
+    string value = 1;
+}
+
+// Example of a timestamp message if needed (though protobuf.Timestamp is standard)
+// message TimestampValue {
+//    int64 seconds = 1;
+//    int32 nanos = 2;
+// } 

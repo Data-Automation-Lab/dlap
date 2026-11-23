@@ -1,0 +1,96 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# Kafka ACLs of the pilot (SEC-06). kafka-init.sh applies them; test-tls.sh checks them against the
+# code (every @KafkaListener topic and group, every KafkaTemplate topic, every provisioned topic).
+#
+# One line per principal and verb:   <principal> <verb> <name> [<name> ...]
+#
+#   consume    Read, Describe and Create on each topic, and Write, Describe and Create on its
+#              <topic>.DLT (the dead-letter publisher of the consumer writes there). Create, because a
+#              consumer subscribing to a topic that does not exist yet makes the broker create it; the
+#              broker refuses the subscription otherwise and the listener stops. It cannot write there.
+#   produce    Write, Describe and Create on each topic (Create: the broker creates a missing topic on
+#              the first send, as the quickstart does).
+#   provision  Create, Describe, DescribeConfigs and Alter on each topic and on its <topic>.DLT: the
+#              topics the service's KafkaTopicsConfiguration declares (Alter only adds partitions).
+#   group      Read on every consumer group whose id starts with the name (prefixed pattern).
+#   describe   Describe and DescribeConfigs on every topic and Describe on every group (monitoring).
+#
+# Each principal is a SCRAM user of the same name (gen-certs.sh writes the passwords). The broker and
+# kafka-init authenticate with certificates on the mutual-TLS listeners and are super users; nobody
+# else is. A principal with no line here can log in and do nothing.
+#
+# Topic names: DlapConstants.KafkaTopic, application.properties and config/application.yml of each
+# service. The discovery resource and log topics are the defaults of KAFKA_TOPIC_RESOURCE_EVENTS and
+# KAFKA_TOPIC_LOG_EVENTS; change them here when you change those.
+
+# --- da-logingest: the only writer of raw normalized log events ---------------------------------
+da-logingest       produce    dlap.log.event.normalized dlap.log.event.quarantine dlap.logingest.binding.status
+da-logingest       provision  dlap.log.event.normalized dlap.log.event.quarantine dlap.logingest.binding.status
+
+# --- da-discovery --------------------------------------------------------------------------------
+da-discovery       consume    dlap.log.event.normalized crawler-topic discovery-resource-events
+da-discovery       group      da-discovery- DADiscovery discovery-catalog-updater
+# The six typed lifecycle topics, the read-coverage observations it puts on the spine (COV-01), and
+# the legacy crawler and analyzer topics.
+da-discovery       produce    dlap.discovery.asset.discovered dlap.discovery.asset.modified dlap.discovery.asset.deleted dlap.discovery.asset.accessed dlap.discovery.asset.permission-changed dlap.discovery.asset.archived dlap.log.event.normalized discovery-resource-events discovery-log-events discovery-events
+da-discovery       provision  dlap.discovery.asset.discovered dlap.discovery.asset.modified dlap.discovery.asset.deleted dlap.discovery.asset.accessed dlap.discovery.asset.permission-changed dlap.discovery.asset.archived
+# The legacy resource topics that common/config/KafkaConfiguration.java still declares (Q-420).
+da-discovery       provision  resource-discoveries resource-updates Crawler-registrations resource-removals
+
+# --- da-catalog ----------------------------------------------------------------------------------
+da-catalog         consume    dlap.discovery.asset.discovered dlap.discovery.asset.modified dlap.discovery.asset.deleted dlap.discovery.asset.accessed dlap.discovery.asset.permission-changed dlap.discovery.asset.archived dlap.log.event.normalized dlap.logingest.binding.status dlap.policies.actions
+da-catalog         group      da-catalog
+da-catalog         produce    dlap.asset.change.event dlap.catalog.asset.upserted dlap.asset.label.assignment.changed dlap.catalog.asset.retention-due
+# The binding-status topic is declared by both da-logingest and da-catalog, so it is compacted
+# whichever starts first (Q-482).
+da-catalog         provision  dlap.asset.change.event dlap.catalog.asset.upserted dlap.asset.label.assignment.changed dlap.catalog.asset.retention-due dlap.logingest.binding.status
+
+# --- da-policyengine: the writer of policy actions and access decisions --------------------------
+da-policyengine    consume    dlap.discovery.asset.discovered dlap.discovery.asset.modified dlap.discovery.asset.deleted dlap.discovery.asset.accessed dlap.discovery.asset.permission-changed dlap.discovery.asset.archived dlap.policies.actions dlap.asset.change.event dlap.catalog.asset.upserted dlap.asset.label.assignment.changed dlap.compliance.violation.event dlap.archival.request.event dlap.deletion.request.event
+da-policyengine    group      da-policyengine
+da-policyengine    produce    dlap.policies.actions dlap.access.decision dlap.approvals.requested dlap.approvals.decided dlap.approvals.break-glass
+da-policyengine    provision  dlap.policies.actions dlap.access.decision dlap.approvals.requested dlap.approvals.decided dlap.approvals.break-glass
+
+# --- da-autolabel --------------------------------------------------------------------------------
+da-autolabel       consume    dlap.catalog.asset.upserted dlap.labeling.request.event dlap.policies.actions
+da-autolabel       group      da-autolabel
+da-autolabel       produce    dlap.labeling.request.event
+da-autolabel       provision  dlap.labeling.request.event
+
+# --- da-autocompliance: also writes label actions to dlap.policies.actions -----------------------
+# CatalogEventComplianceLabelSink publishes compliance label actions there, so the policy engine is
+# not the only producer of that topic.
+da-autocompliance  consume    dlap.discovery.asset.permission-changed
+da-autocompliance  group      da-autocompliance
+da-autocompliance  produce    dlap.policies.actions
+
+# --- the action consumers ------------------------------------------------------------------------
+da-autodelete      consume    dlap.policies.actions dlap.discovery.asset.deleted
+da-autodelete      group      da-autodelete
+da-autoarchival    consume    dlap.policies.actions dlap.approvals.decided dlap.log.event.normalized
+da-autoarchival    group      da-autoarchival
+
+# --- da-reporting --------------------------------------------------------------------------------
+da-reporting       consume    dlap.access.decision dlap.discovery.asset.accessed dlap.policies.actions
+da-reporting       group      da-reporting
+
+# --- da-admin-service: no Kafka client today; it logs in and is granted nothing ------------------
+
+# --- monitoring profile: the Kafka exporter reads metadata and consumer lag only ----------------
+dlap-kafka-exporter describe  *

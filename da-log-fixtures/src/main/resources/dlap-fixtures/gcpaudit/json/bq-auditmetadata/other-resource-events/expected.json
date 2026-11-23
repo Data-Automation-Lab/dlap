@@ -1,0 +1,72 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:32.123456821Z|bq2-other-resources-1",
+      "eventTime": "2026-09-03T10:00:32.123456821Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "CREATE",
+      "operation": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:33.123456822Z|bq2-other-resources-2",
+      "eventTime": "2026-09-03T10:00:33.123456822Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "CREATE",
+      "operation": "google.cloud.bigquery.v2.RoutineService.InsertRoutine",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:34.123456823Z|bq2-other-resources-3",
+      "eventTime": "2026-09-03T10:00:34.123456823Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "CREATE",
+      "operation": "google.cloud.bigquery.v2.RowAccessPolicyService.CreateRowAccessPolicy",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:35.123456824Z|bq2-other-resources-4",
+      "eventTime": "2026-09-03T10:00:35.123456824Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "DELETE",
+      "operation": "google.cloud.bigquery.v2.DatasetService.UnlinkDataset",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/shared_link"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    }
+  ]
+}

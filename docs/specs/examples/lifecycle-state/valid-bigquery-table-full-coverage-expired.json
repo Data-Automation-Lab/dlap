@@ -1,0 +1,81 @@
+{
+  "specVersion": "0.1",
+  "asset": "bq://example-analytics/sales/orders_2023",
+  "platform": {
+    "provider": "GCP",
+    "kind": "BIGQUERY_TABLE"
+  },
+  "asOf": "2026-10-31T12:00:00Z",
+  "createdAt": "2023-01-09T08:15:02.114Z",
+  "lastReadAt": "2026-08-14T09:12:44.512Z",
+  "lastWrittenAt": "2024-12-31T23:40:10Z",
+  "readCoverage": "FULL",
+  "readCoverageReasons": [
+    "BigQuery data access logs are on for the project",
+    "cross-project job reads verified"
+  ],
+  "readCoverageSince": "2026-03-02T06:41:00Z",
+  "sizeBytes": 52428800000,
+  "sizeObservedAt": "2026-09-29T06:00:00Z",
+  "retention": {
+    "status": "DUE",
+    "basis": "FIXED_DATE",
+    "days": null,
+    "fixedDate": "2026-09-30T00:00:00Z",
+    "expiresAt": "2026-09-30T00:00:00Z",
+    "source": "PROVIDER"
+  },
+  "legalHold": false,
+  "disposition": {
+    "action": "delete",
+    "executedAt": "2026-09-30T00:03:51.208Z",
+    "executedBy": "native-rule",
+    "evidence": [
+      "a819ac1bb7f43a93c9cc6a1661df8f3edeff9afc62a055e11bd726db3cb531fb"
+    ]
+  },
+  "provenance": [
+    {
+      "field": "createdAt",
+      "channel": "AUDIT_LOG:GCP_CLOUD_AUDIT",
+      "bindingIds": ["gcp-audit-example-analytics"],
+      "eventIds": ["9609fd0c0942b0184a2af459da7ef6e72c82104dc61f903b07d7ccac900472c2"]
+    },
+    {
+      "field": "lastReadAt",
+      "channel": "AUDIT_LOG:GCP_CLOUD_AUDIT",
+      "bindingIds": ["gcp-audit-example-analytics"],
+      "eventIds": ["4516d1fdb7a68be1de33a8d740b54c4f568713db67ab9e8a8b82bf37d33194f6"]
+    },
+    {
+      "field": "lastWrittenAt",
+      "channel": "AUDIT_LOG:GCP_CLOUD_AUDIT",
+      "bindingIds": ["gcp-audit-example-analytics"],
+      "eventIds": ["b40b2e6229e4d27d74095f0b59bcd69b4fe558fcf5a7ee259c7c98bd3c1b5305"]
+    },
+    {
+      "field": "readCoverage",
+      "channel": "CRAWLER",
+      "bindingIds": [],
+      "eventIds": ["fd0417ab2ca4f8e54ae837f3814ae828e85cd242570fcc9d81abdff47177003e"]
+    },
+    {
+      "field": "sizeBytes",
+      "channel": "CRAWLER",
+      "bindingIds": [],
+      "eventIds": ["ddaf2b01c4013b635ab0b5279ac31b17cff647d84817d4b9e5f4eaef42cae5d3"]
+    },
+    {
+      "field": "retention",
+      "channel": "CRAWLER",
+      "bindingIds": [],
+      "eventIds": ["ddaf2b01c4013b635ab0b5279ac31b17cff647d84817d4b9e5f4eaef42cae5d3"]
+    },
+    {
+      "field": "disposition",
+      "channel": "AUDIT_LOG:GCP_CLOUD_AUDIT",
+      "bindingIds": ["gcp-audit-example-analytics"],
+      "eventIds": ["a819ac1bb7f43a93c9cc6a1661df8f3edeff9afc62a055e11bd726db3cb531fb"]
+    }
+  ]
+}

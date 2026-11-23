@@ -1,0 +1,108 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Prometheus configuration of the DLAP monitoring stack under the pilot TLS overlay (Q-518, SEC-06).
+#
+# The same file as prometheus.yml except for the job dlap-services: under the TLS overlay
+# (deployment/environments/pilot/docker-compose.pilot.tls.yml) every Spring service serves its
+# management port 9091 over TLS with the service's own certificate, so Prometheus scrapes
+# https://<service>:9091/actuator/prometheus and verifies the certificate against the pilot CA, which the
+# overlay mounts at /tls/ca.crt. The names in the certificates are the compose service names, which are
+# also the scrape targets, so the host name check needs no override.
+#
+# The other jobs stay plain HTTP on the container network on purpose: Prometheus itself, Alertmanager and
+# Grafana are not part of the TLS overlay's scope (Grafana and Alertmanager are internal hops, nothing
+# publishes them beyond loopback), and the two exporters answer plain HTTP to Prometheus while they speak
+# TLS to PostgreSQL and Kafka.
+#
+# test-prometheus-tls.py keeps this file equal to prometheus.yml apart from the two lines it adds, so a
+# change to the base file cannot be forgotten here. Check it with check.sh (promtool, syntax only: the
+# CA file exists only inside the pilot's Prometheus container).
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: dlap
+
+rule_files:
+  - alerts.yml
+  - recording_rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  # Prometheus itself.
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # The 11 DLAP services, over HTTPS (the one difference from prometheus.yml). Every service serves
+  # /actuator/prometheus on its management port, which is set with the environment variable
+  # MANAGEMENT_SERVER_PORT. The port is open without a token there and nowhere else (docs/observability.md,
+  # section 2). 9091 is the port the TLS overlay of the pilot sets, with TLS on it.
+  #
+  # da-mcp-pep is a standalone reference deployable and is not part of the dev compose. Its target is
+  # listed so that a deployment that runs it is scraped without a change here; the alerts treat it as
+  # optional (alerts.yml, McpPepDown).
+  - job_name: dlap-services
+    metrics_path: /actuator/prometheus
+    scheme: https
+    tls_config:
+      ca_file: /tls/ca.crt
+    scrape_timeout: 10s
+    static_configs:
+      - targets:
+          - da-admin-service:9091
+          - da-autoarchival:9091
+          - da-autocompliance:9091
+          - da-autodelete:9091
+          - da-autolabel:9091
+          - da-catalog:9091
+          - da-discovery:9091
+          - da-logingest:9091
+          - da-mcp-pep:9091
+          - da-policyengine:9091
+          - da-reporting:9091
+    relabel_configs:
+      # service = the container name, instance = host:port as scraped.
+      - source_labels: [__address__]
+        regex: '([^:]+):.*'
+        target_label: service
+        replacement: '${1}'
+
+  # PostgreSQL, through postgres_exporter (the postgres-exporter service of the monitoring profile).
+  - job_name: postgres
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Kafka, through kafka_exporter (the kafka-exporter service of the monitoring profile).
+  - job_name: kafka
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+
+  # Alertmanager and Grafana expose their own metrics.
+  - job_name: alertmanager
+    static_configs:
+      - targets: ['alertmanager:9093']
+
+  - job_name: grafana
+    static_configs:
+      - targets: ['grafana:3000']

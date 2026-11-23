@@ -1,0 +1,178 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Seed import manifest (FIX-02). Every case below is regenerated from a public repository at a pinned
+# commit by com.dlap.fixtures.anon.SeedImporter and checked byte for byte by its `check` command
+# (SeedCorpusTest runs the offline half of that check on every build). Do not edit the generated
+# input.*, expected.json or meta.yaml files by hand; change this file and re-run the import.
+#
+#   SeedImporter import --corpus <dlap-fixtures> --source <id>=<checkout at the pinned commit> ...
+#
+# A case marked distinct_event_ids: true gets a name-based UUID eventID per record (case name and record
+# index): the three Panther samples below reuse one eventID for different records, which CloudTrail never
+# does (Q-642). The importer notes the change in each case's meta.yaml.
+#
+# The Invictus trail file names carry the real account number, so cases select files by a glob on the
+# part after it; the number never enters this repository.
+spec: dlap-seed-manifest/1
+family: cloudtrail
+sources:
+  invictus:
+    repo: invictus-ir/aws_dataset
+    commit: "4667aa9c26330bc3317ed8bd526f4b83cff13602"
+    commit_date: "2023-07-12"
+    license: MIT
+    kind: cloudtrail-files
+    root: CloudTrail
+    url: https://github.com/invictus-ir/aws_dataset/tree/4667aa9c26330bc3317ed8bd526f4b83cff13602/CloudTrail
+    retrieved: "2026-10-19"
+    note: "Real management-event trail files recorded 2023-07-10 while Stratus Red Team techniques ran in a lab account. Management events only: no S3 data events."
+  panther:
+    repo: panther-labs/panther-analysis
+    commit: "4d78f77d545e474064f9921924d54e1e368ceffd"
+    commit_date: "2026-10-09"
+    license: Apache-2.0
+    kind: panther-rule
+    root: rules
+    url: https://github.com/panther-labs/panther-analysis/blob/4d78f77d545e474064f9921924d54e1e368ceffd/rules
+    retrieved: "2026-10-19"
+    note: "DERIVED: a detection rule test sample, hand-trimmed by the rule author and possibly adapted from AWS documentation. It shows plausible field shapes; it is not independent proof of what AWS delivers."
+cases:
+  # ---- Invictus, eventVersion 1.08 (real management events) ----
+  - name: s3-create-bucket-iam-user
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1205Z_SjF3IkuNXJkoHyar.json"
+    select: { event_ids: ["68c99c97-c191-4329-b210-82ca8631066d"] }
+  - name: s3-delete-bucket-success-and-not-empty
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1210Z_6CICdbJQM3beT7n3.json"
+    select: { event_ids: ["d6b83ae2-b5f0-40e6-8079-8311b8934faf", "0c3bce40-9649-4435-9328-f244fed293b5"] }
+  - name: s3-put-bucket-policy
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1205Z_UljXNp9xLp8nsAGc.json"
+    select: { event_ids: ["988f1043-3e3d-4d84-803b-1b4d00e0df90"] }
+  - name: s3-get-bucket-policy-and-list-buckets
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1145Z_s7dpHbl38neqZbm2.json"
+    select: { event_ids: ["c20d93d2-87e1-483d-9c6c-9cdfc35671d4", "44a42357-fa38-4c9c-a58c-709254a857f7"] }
+  - name: s3-put-bucket-lifecycle
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1205Z_zs3JGxETHr59VpkX.json"
+    select: { event_ids: ["7823c70d-f7f9-4a04-b4c0-baa8fbe09ea3"] }
+  - name: s3-delete-bucket-lifecycle
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1210Z_6CICdbJQM3beT7n3.json"
+    select: { event_ids: ["8ec435c9-76d1-47d1-8eae-8a8864e3dff5"] }
+  - name: s3-bucket-read-with-vpc-endpoint-and-resources
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1145Z_7xgocspSowgK0Gto.json"
+    select: { event_ids: ["3c856bc0-1a07-4c18-89d9-4d9205856714", "d9a07e9d-28ac-45d9-b8ef-43433808f2f0"] }
+  - name: ec2-assumed-role-unauthorized
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1200Z_iLj9fb7yyUG9X4Bf.json"
+    select: { event_ids: ["fbd91225-39aa-4c00-822c-9f0b96e7758f"] }
+  - name: sts-assume-role-aws-service
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1200Z_iLj9fb7yyUG9X4Bf.json"
+    select: { event_ids: ["a4a7b25e-c2d5-436f-8a7e-ea89f50541ab"] }
+    notes: "The temporary credentials in responseElements (access key id and session token) are replaced by placeholders of the same length that carry the marker EXAMPLE (Q-220); the original session token embedded the lab account number."
+  - name: ec2-service-event-without-identity-type
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1200Z_iLj9fb7yyUG9X4Bf.json"
+    select: { event_ids: ["895dc875-cb08-45a5-b8c2-9158838741c0"] }
+  - name: signin-console-login-iam-user
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1225Z_4iD2boYSOwmb6sWd.json"
+    select: { event_ids: ["70e5932e-9022-4b38-837e-ca10dad94eb7"] }
+  - name: health-console-session-credential
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1145Z_s7dpHbl38neqZbm2.json"
+    select: { event_ids: ["21c87313-5709-46b6-9a83-c7096a761200"] }
+  - name: whole-trail-file-gzip
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1230Z_s2m4APJ8BhmXSIE6.json"
+    gzip: true
+    notes: "A whole delivered trail file, stored gzip compressed the way S3 holds it."
+  # ---- Invictus, eventVersion 1.09 ----
+  - name: cloudtrail-create-trail-and-failed-stop-logging
+    source: invictus
+    file: "*_CloudTrail_us-east-1_20230710T1205Z_SjF3IkuNXJkoHyar.json"
+    select: { event_ids: ["3a1acb39-c13b-4e73-a0e3-dcd8ce5c1a3a", "f6e10706-705c-47f2-94d4-112a9527ab8b"] }
+  # ---- Panther samples (derived): S3 data events and other versions ----
+  - name: s3-delete-object-data-event
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_delete_object.yml
+    select: { indices: [0] }
+  - name: s3-delete-objects-data-event
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_delete_objects.yml
+    select: { indices: [0] }
+  - name: s3-put-object-data-event
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_ransomware_note_upload.yml
+    select: { indices: [0] }
+  - name: s3-copy-object-cross-account
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_copy_object_cross_account_kms.yml
+    select: { indices: [0] }
+  - name: s3-delete-bucket-encryption-denied
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_delete_bucket_encryption.yml
+    select: { indices: [1] }
+  - name: s3-copy-object-external-bucket-v109
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_copy_object_to_external_account_bucket.yml
+    select: { indices: [1] }
+  # No eventVersion 1.10 sample is imported: Panther's 1.10 samples carry its own "yyyy-mm-dd hh:mm:ss"
+  # event time, which means they went through its pipeline and are not provider-shaped.
+  - name: s3-put-bucket-logging-v111
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_disable_bucket_logging.yml
+    select: { indices: [0, 2] }
+    distinct_event_ids: true
+  - name: s3-delete-bucket-assumed-role-v105
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_bucket_deleted.yml
+    select: { indices: [0] }
+  - name: s3-put-bucket-policy-and-denied-v105
+    source: panther
+    file: aws_cloudtrail_rules/aws_resource_made_public.yml
+    select: { indices: [1, 4] }
+    distinct_event_ids: true
+  - name: s3-bucket-acl-and-policy-reads-v105
+    source: panther
+    file: aws_cloudtrail_rules/aws_s3_bucket_policy_modified.yml
+    select: { indices: [0, 1, 2] }
+    distinct_event_ids: true
+  - name: s3-put-bucket-versioning-root-v105
+    source: panther
+    file: aws_cloudtrail_rules/aws_root_activity.yml
+    select: { indices: [1] }
+  - name: signin-console-login-root-v105
+    source: panther
+    file: aws_cloudtrail_rules/aws_root_activity.yml
+    select: { indices: [4] }
+  # ---- Negative: a data event whose sample has no eventID, the native key (log-event.md section 5) ----
+  - name: s3-get-object-without-event-id
+    source: panther
+    file: aws_cloudtrail_rules/aws_vpce_sensitive_api_calls.yml
+    select: { indices: [1] }
+    negative: true
+    cell_version: "1.08"
+    outcome: "QUARANTINED:MISSING_REQUIRED_FIELD"
+    variants: [record.missing-required]
+    notes: "The sample has no eventID, which every record from eventVersion 1.01 carries and which is the native key."

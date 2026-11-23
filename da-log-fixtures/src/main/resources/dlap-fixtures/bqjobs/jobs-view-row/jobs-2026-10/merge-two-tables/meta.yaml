@@ -1,0 +1,14 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:MERGE
+variant_ids:
+  - write.destination-table
+  - write.dml-statistics
+  - read.referenced-tables-fanout
+  - actor.service-account
+expected_outcome: PARSED
+anonymised: false
+notes: "MERGE into daily_orders from new_rows: the target is written (and not read), the source is read."

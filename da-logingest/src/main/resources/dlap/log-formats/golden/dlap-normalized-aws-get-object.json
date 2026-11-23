@@ -1,0 +1,22 @@
+{
+  "id": "dlap-normalized-aws-get-object",
+  "binding": { "id": "dlap-selftest", "sourceKind": "DLAP_NORMALIZED_AWS", "envelope": "ingest-dto" },
+  "record": {
+    "sourceProvider": "AWS",
+    "sourceService": "s3.amazonaws.com",
+    "operation": "GetObject",
+    "changeType": "ACCESS",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T11:00:00Z",
+    "principalId": "AIDAEXAMPLE0002",
+    "targetResourceId": "s3://selftest-bucket/a.csv",
+    "requestId": "selftest-0002"
+  },
+  "expect": {
+    "outcome": "PARSED_WITH_WARNINGS",
+    "events": 1,
+    "operation": "GetObject",
+    "changeType": "ACCESS",
+    "category": "EVENT_CATEGORY_DATA_READ"
+  }
+}

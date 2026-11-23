@@ -1,0 +1,1 @@
+{"logName":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access","protopayload_auditlog":{"serviceName":"bigquery.googleapis.com","methodName":"jobservice.jobcompleted","servicedata_v1_bigquery":{"jobCompletedEvent":{"job":NaN}}},"insertId":"r1-neg-1"}

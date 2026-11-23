@@ -1,0 +1,30 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "GCP_BQ_JOBS_VIEW|proj-5e7a0c11|US|bquxjob_5a1c0019",
+      "eventTime": "2026-09-14T14:10:00Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "LOAD_DATA",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SERVICE_ACCOUNT",
+        "id": "sa-4c1d9e02@proj-5e7a0c11.iam.gserviceaccount.com"
+      },
+      "targetResource": {
+        "kind": "bigquery_table",
+        "name": "landing_orders",
+        "project": "proj-5e7a0c11",
+        "canonicalUri": "bq://proj-5e7a0c11/staging/landing_orders"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "GCP_BQ_JOBS_VIEW/jobs-view-row",
+      "sourceSchemaVersion": "jobs-2026-10",
+      "requestMetadata": {
+        "requestId": "bquxjob_5a1c0019"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "21c87313-5709-46b6-9a83-c7096a761200",
+      "eventTime": "2023-07-10T11:42:38Z",
+      "sourceProvider": "AWS",
+      "sourceService": "health.amazonaws.com",
+      "operation": "DescribeEventAggregates",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::999945223994:user/user-bf68fc"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    }
+  ]
+}

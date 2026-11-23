@@ -1,0 +1,11 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2025-12-22T14:00:00Z",
+      "sourceProvider": "AZURE",
+      "operation": "MICROSOFT.STORAGE/STORAGEACCOUNTS/WRITE",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

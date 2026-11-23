@@ -1,0 +1,18 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "1",
+      "eventTime": "2019-01-01T00:00:00Z",
+      "sourceProvider": "AWS",
+      "sourceService": "signin.amazonaws.com",
+      "operation": "ConsoleLogin",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::123456789012:root"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.05"
+    }
+  ]
+}

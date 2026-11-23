@@ -1,0 +1,14 @@
+{
+  "insertId": "a21-neg-2",
+  "logName": "projects/proj-0d1a0001/logs/appengine.googleapis.com%2Frequest_log",
+  "timestamp": "2026-09-01T11:00:01.5Z",
+  "resource": {"type": "gae_app", "labels": {"project_id": "proj-0d1a0001", "module_id": "default"}},
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.appengine.logging.v1.RequestLog",
+    "appId": "s~proj-0d1a0001",
+    "method": "GET",
+    "resource": "/healthz",
+    "status": 200
+  },
+  "receiveTimestamp": "2026-09-01T11:00:02Z"
+}

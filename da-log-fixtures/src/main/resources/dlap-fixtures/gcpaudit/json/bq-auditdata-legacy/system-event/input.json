@@ -1,0 +1,23 @@
+{
+  "insertId": "bq1-expiry-1",
+  "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fsystem_event",
+  "timestamp": "2026-09-04T10:00:17.123456806Z",
+  "resource": {
+    "type": "bigquery_resource",
+    "labels": {
+      "project_id": "proj-0d1a0001"
+    }
+  },
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "status": { },
+    "serviceName": "bigquery.googleapis.com",
+    "methodName": "tableservice.delete",
+    "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/tmp_orders_20260801",
+    "serviceData": {
+      "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData"
+    }
+  },
+  "receiveTimestamp": "2026-09-04T10:00:18.023456806Z",
+  "severity": "INFO"
+}

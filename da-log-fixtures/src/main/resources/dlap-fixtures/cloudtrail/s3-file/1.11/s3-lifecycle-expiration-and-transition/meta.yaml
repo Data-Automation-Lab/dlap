@@ -1,0 +1,15 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/filtering-data-events.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3lifecycle.amazonaws.com:DeleteObject
+  - s3lifecycle.amazonaws.com:LifecycleTransition
+variant_ids:
+  - s3.lifecycle-source
+  - uid.aws-service
+  - uid.invoked-by
+  - account.recipient-account-id
+expected_outcome: PARSED
+anonymised: false
+notes: "Written by PARSE-02 from the CloudTrail data event filtering page (example 4: S3 lifecycle expirations, delete marker creation, transitions and multipart aborts use the event source s3lifecycle.amazonaws.com) and the record contents and userIdentity pages, plus the AWS log sources research (section 4.2: AWSService invoked by lifecycle.s3.amazonaws.com, which is also the source IP). Every value is invented. The event names DeleteObject (an expiration) and LifecycleTransition are NOT documented: they are the names the delete proof (RET-02) and the archive proof (RET-03) assume, and a live capture must confirm them before a pilot relies on them. The S3 lifecycle page (lifecycle-and-other-bucket-config) still says lifecycle actions are not in CloudTrail object level logging, which contradicts the filtering page; open question of PARSE-02."

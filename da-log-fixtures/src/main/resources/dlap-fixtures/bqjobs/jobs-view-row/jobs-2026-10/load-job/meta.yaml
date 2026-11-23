@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - LOAD:NULL
+variant_ids:
+  - write.destination-table
+expected_outcome: PARSED
+anonymised: false
+notes: "A load job (job_type LOAD, no statement type): the write target is destination_table. The operation is the job type."

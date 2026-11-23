@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SELECT
+variant_ids:
+  - actor.service-account
+expected_outcome: PARSED
+anonymised: false
+notes: "A Google-operated service agent: typed SYSTEM, as in the scan, so its reads can be told from a person's."

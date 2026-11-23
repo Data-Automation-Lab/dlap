@@ -1,0 +1,19 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2026-01-01T00:10:00Z",
+      "operation": "DELETE",
+      "target": "demo://bucket-a/object-3",
+      "actor": "user-1",
+      "result": "SUCCESS"
+    },
+    {
+      "eventTime": "2026-01-01T00:10:01Z",
+      "operation": "DELETE",
+      "target": "demo://bucket-a/object-4",
+      "actor": "user-1",
+      "result": "SUCCESS"
+    }
+  ]
+}

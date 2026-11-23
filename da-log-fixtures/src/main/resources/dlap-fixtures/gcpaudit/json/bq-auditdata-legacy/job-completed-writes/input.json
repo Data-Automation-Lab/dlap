@@ -1,0 +1,323 @@
+[
+  {
+    "insertId": "bq1-job-writes-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-04T10:00:01.123456790Z",
+    "resource": {
+      "type": "bigquery_resource",
+      "labels": {
+        "project_id": "proj-0d1a0001"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "jobservice.jobcompleted",
+      "resourceName": "projects/proj-0d1a0001/jobs/bqjob_load_1",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/jobs/bqjob_load_1",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+        "jobCompletedEvent": {
+          "eventName": "load_job_completed",
+          "job": {
+            "jobName": {
+              "projectId": "proj-0d1a0001",
+              "jobId": "bqjob_load_1",
+              "location": "US"
+            },
+            "jobConfiguration": {
+              "load": {
+                "sourceUris": [
+                  "gs://dlap-fixture-bucket/exports/2026/09/*.csv"
+                ],
+                "destinationTable": {
+                  "projectId": "proj-0d1a0001",
+                  "datasetId": "sales",
+                  "tableId": "orders_staging"
+                },
+                "createDisposition": "CREATE_IF_NEEDED",
+                "writeDisposition": "WRITE_APPEND"
+              }
+            },
+            "jobStatus": {
+              "state": "DONE"
+            },
+            "jobStatistics": {
+              "createTime": "2026-09-04T11:00:00Z",
+              "startTime": "2026-09-04T11:00:00.100Z",
+              "endTime": "2026-09-04T11:00:02.600Z",
+              "totalProcessedBytes": "1048576",
+              "totalBilledBytes": "10485760",
+              "billingTier": 1,
+              "totalSlotMs": "3100",
+              "queryOutputRowCount": "42"
+            }
+          }
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-04T10:00:02.023456790Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq1-job-writes-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-04T10:00:02.123456791Z",
+    "resource": {
+      "type": "bigquery_resource",
+      "labels": {
+        "project_id": "proj-0d1a0001"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "jobservice.jobcompleted",
+      "resourceName": "projects/proj-0d1a0001/jobs/bqjob_copy_1",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/jobs/bqjob_copy_1",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+        "jobCompletedEvent": {
+          "eventName": "table_copy_job_completed",
+          "job": {
+            "jobName": {
+              "projectId": "proj-0d1a0001",
+              "jobId": "bqjob_copy_1",
+              "location": "US"
+            },
+            "jobConfiguration": {
+              "tableCopy": {
+                "sourceTables": [
+                  {
+                    "projectId": "proj-0d1a0001",
+                    "datasetId": "sales",
+                    "tableId": "orders"
+                  }
+                ],
+                "destinationTable": {
+                  "projectId": "proj-0d1a0001",
+                  "datasetId": "sales",
+                  "tableId": "orders_backup"
+                }
+              }
+            },
+            "jobStatus": {
+              "state": "DONE"
+            },
+            "jobStatistics": {
+              "createTime": "2026-09-04T11:00:00Z",
+              "startTime": "2026-09-04T11:00:00.100Z",
+              "endTime": "2026-09-04T11:00:02.600Z",
+              "totalProcessedBytes": "1048576",
+              "totalBilledBytes": "10485760",
+              "billingTier": 1,
+              "totalSlotMs": "3100",
+              "queryOutputRowCount": "42"
+            }
+          }
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-04T10:00:03.023456791Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq1-job-writes-3",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-04T10:00:03.123456792Z",
+    "resource": {
+      "type": "bigquery_resource",
+      "labels": {
+        "project_id": "proj-0d1a0001"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "jobservice.jobcompleted",
+      "resourceName": "projects/proj-0d1a0001/jobs/bqjob_merge_1",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/jobs/bqjob_merge_1",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+        "jobCompletedEvent": {
+          "eventName": "query_job_completed",
+          "job": {
+            "jobName": {
+              "projectId": "proj-0d1a0001",
+              "jobId": "bqjob_merge_1",
+              "location": "US"
+            },
+            "jobConfiguration": {
+              "query": {
+                "query": "SELECT order_id FROM sales.orders",
+                "destinationTable": {
+                  "projectId": "proj-0d1a0001",
+                  "datasetId": "sales",
+                  "tableId": "orders"
+                },
+                "createDisposition": "CREATE_IF_NEEDED",
+                "writeDisposition": "WRITE_APPEND",
+                "queryPriority": "QUERY_INTERACTIVE",
+                "statementType": "MERGE"
+              }
+            },
+            "jobStatus": {
+              "state": "DONE"
+            },
+            "jobStatistics": {
+              "createTime": "2026-09-04T11:00:00Z",
+              "startTime": "2026-09-04T11:00:00.100Z",
+              "endTime": "2026-09-04T11:00:02.600Z",
+              "totalProcessedBytes": "1048576",
+              "totalBilledBytes": "10485760",
+              "billingTier": 1,
+              "totalSlotMs": "3100",
+              "referencedTables": [
+                {
+                  "projectId": "proj-0d1a0001",
+                  "datasetId": "sales",
+                  "tableId": "orders"
+                },
+                {
+                  "projectId": "proj-0d1a0001",
+                  "datasetId": "sales",
+                  "tableId": "orders_staging"
+                }
+              ],
+              "totalTablesProcessed": 2,
+              "queryOutputRowCount": "42"
+            }
+          }
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-04T10:00:04.023456792Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq1-job-writes-4",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-04T10:00:04.123456793Z",
+    "resource": {
+      "type": "bigquery_resource",
+      "labels": {
+        "project_id": "proj-0d1a0001"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "jobservice.jobcompleted",
+      "resourceName": "projects/proj-0d1a0001/jobs/bqjob_extract_1",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/jobs/bqjob_extract_1",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+        "jobCompletedEvent": {
+          "eventName": "extract_job_completed",
+          "job": {
+            "jobName": {
+              "projectId": "proj-0d1a0001",
+              "jobId": "bqjob_extract_1",
+              "location": "US"
+            },
+            "jobConfiguration": {
+              "extract": {
+                "destinationUris": [
+                  "gs://dlap-fixture-bucket/extracts/orders-*.avro"
+                ],
+                "sourceTable": {
+                  "projectId": "proj-0d1a0001",
+                  "datasetId": "sales",
+                  "tableId": "orders"
+                }
+              }
+            },
+            "jobStatus": {
+              "state": "DONE"
+            },
+            "jobStatistics": {
+              "createTime": "2026-09-04T11:00:00Z",
+              "startTime": "2026-09-04T11:00:00.100Z",
+              "endTime": "2026-09-04T11:00:02.600Z",
+              "totalProcessedBytes": "1048576",
+              "totalBilledBytes": "10485760",
+              "billingTier": 1,
+              "totalSlotMs": "3100",
+              "queryOutputRowCount": "42"
+            }
+          }
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-04T10:00:05.023456793Z",
+    "severity": "INFO"
+  }
+]

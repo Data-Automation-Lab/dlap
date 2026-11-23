@@ -1,0 +1,62 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-01T10:00:21.123456810Z|a21-shapes-1",
+      "eventTime": "2026-09-01T10:00:21.123456810Z",
+      "sourceProvider": "GCP",
+      "sourceService": "storage.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "storage.objects.get",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "gs://dlap-fixture-bucket/exports/2026/09/orders.csv"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-01T10:00:22.123456811Z|a21-shapes-dup",
+      "eventTime": "2026-09-01T10:00:22.123456811Z",
+      "sourceProvider": "GCP",
+      "sourceService": "storage.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "storage.objects.get",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "gs://dlap-fixture-bucket/exports/2026/09/orders.csv"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-01T10:00:23.123456811Z|a21-shapes-dup",
+      "eventTime": "2026-09-01T10:00:23.123456811Z",
+      "sourceProvider": "GCP",
+      "sourceService": "storage.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "storage.objects.get",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "gs://dlap-fixture-bucket/exports/2026/09/orders.csv"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ"
+    }
+  ]
+}

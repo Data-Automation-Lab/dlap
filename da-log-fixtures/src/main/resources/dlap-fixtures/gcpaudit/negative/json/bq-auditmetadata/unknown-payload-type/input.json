@@ -1,0 +1,17 @@
+{
+  "insertId": "bq2-neg-2",
+  "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+  "timestamp": "2026-09-03T11:00:01.5Z",
+  "resource": {"type": "bigquery_dataset", "labels": {"project_id": "proj-0d1a0001", "dataset_id": "sales"}},
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.UnknownAuditPayload",
+    "serviceName": "bigquery.googleapis.com",
+    "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+    "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+    "metadata": {
+      "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+      "tableDataRead": {"reason": "JOB", "jobName": "projects/proj-0d1a0001/jobs/bquxjob_neg_2"}
+    }
+  },
+  "receiveTimestamp": "2026-09-03T11:00:02Z"
+}

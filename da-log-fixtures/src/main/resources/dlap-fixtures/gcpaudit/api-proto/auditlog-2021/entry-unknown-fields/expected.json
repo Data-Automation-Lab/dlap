@@ -1,0 +1,20 @@
+{
+  "outcome": "PARSED_WITH_WARNINGS",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-01T12:00:00.250Z|a21-unknown-2",
+      "eventTime": "2026-09-01T12:00:00.250Z",
+      "sourceProvider": "GCP",
+      "sourceService": "storage.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "storage.objects.get",
+      "resultStatus": "SUCCESS",
+      "principal": {"type": "USER", "id": "analyst@example.com"},
+      "targetResource": {"canonicalUri": "gs://dlap-fixture-bucket/exports/2026/09/orders.csv"},
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "parseWarnings": ["PARSE_WARNING_UNKNOWN_FIELDS"]
+    }
+  ]
+}

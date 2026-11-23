@@ -1,0 +1,84 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Documented operations and variants for the cells the seed corpus fills (FIX-02).
+#
+# The lists were taken from the independent coverage spec written by SPEC-01 for this family
+# (hardening plan, 2026-10-19). Where coverage-spec.yaml is present next to this file, it is the
+# denominator of the score and this file only says which cells a parser claims. Nothing is
+# claimed yet: every cell is supported: false until a parser package takes it over.
+
+family: azstoragelog
+description: "Azure Storage blob resource logs from a diagnostic-settings export."
+envelopes:
+  - id: resource-log
+    versions:
+      - id: "2.1"
+        # Microsoft documents only schema 1.0; the open sample says 2.1. The lists are those of 1.0.
+        supported: false
+        operations:
+          - "StorageBlobLogs:GetBlob"
+          - "StorageBlobLogs:QueryBlobContents"
+          - "StorageBlobLogs:ReadFile"
+          - "StorageBlobLogs:ListBlobs"
+          - "StorageBlobLogs:ListFilesystemFile"
+          - "StorageBlobLogs:GetBlobProperties"
+          - "StorageBlobLogs:GetBlobMetadata"
+          - "StorageBlobLogs:GetBlobTags"
+          - "StorageBlobLogs:PutBlob"
+          - "StorageBlobLogs:PutBlock"
+          - "StorageBlobLogs:PutBlockList"
+          - "StorageBlobLogs:AppendBlock"
+          - "StorageBlobLogs:CreatePathFile"
+          - "StorageBlobLogs:AppendFile"
+          - "StorageBlobLogs:FlushFile"
+          - "StorageBlobLogs:CopyBlob"
+          - "StorageBlobLogs:CopyBlobSource"
+          - "StorageBlobLogs:CopyBlobDestination"
+          - "StorageBlobLogs:SetBlobTier"
+          - "StorageBlobLogs:SetBlobMetadata"
+          - "StorageBlobLogs:SnapshotBlob"
+          - "StorageBlobLogs:RenamePathFile"
+          - "StorageBlobLogs:RenamePathDir"
+          - "StorageBlobLogs:DeleteBlob"
+          - "StorageBlobLogs:DeleteFile"
+          - "StorageBlobLogs:DeleteDirectory"
+          - "StorageBlobLogs:DeleteContainer"
+        variants:
+          - "envelope.records-object"
+          - "envelope.array-of-records-objects"
+          - "envelope.bare-array"
+          - "record.invalid-json"
+          - "record.unknown-fields"
+          - "version.schema-version-unknown"
+          - "version.operation-version-values"
+          - "time.lenient-formats"
+          - "dedup.correlation-operation-count"
+          - "status.unknown-string"
+          - "status.non-2xx-failure"
+          - "status.denied-no-policy"
+          - "status.partial-content-read"
+          - "actor.oauth-requester"
+          - "actor.sas-unattributed"
+          - "actor.account-key-unattributed"
+          - "actor.anonymous"
+          - "actor.kerberos"
+          - "object.key-leading-slash"
+          - "object.key-from-uri"
+          - "object.arm-id-lowercased"
+          - "object.putblob-create-or-overwrite"
+          - "field.rehydrate-priority-spelling"

@@ -1,0 +1,501 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Alert rules of the DLAP monitoring stack (OBS-01).
+#
+# Every rule reads a series that exists in the stack: Spring Boot and Micrometer series scraped from the
+# services (job dlap-services), postgres_exporter (job postgres) and kafka_exporter (job kafka), or a DLAP
+# meter listed in docs/observability.md. Rules for series nobody emits (host CPU, containers, Redis,
+# business scores) were removed: they could never fire. alerts.test.yml proves each rule on synthetic
+# series with promtool; docs/observability.md section 4 lists the thresholds and the reason for each.
+#
+# Severity: critical = a component is down or failing for callers, act now; warning = degrading, act in
+# working hours. The default Alertmanager receiver is null (alertmanager.yml): nothing is sent until an
+# operator adds a receiver.
+
+groups:
+  - name: dlap-availability
+    rules:
+      - alert: ServiceDown
+        expr: up{job="dlap-services", service!="da-mcp-pep"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }} is down"
+          description: "Prometheus could not scrape {{ $labels.service }} ({{ $labels.instance }}) for 2 minutes: the process is stopped or unreachable, or its management port is closed."
+          runbook: "docs/observability.md#4-alerts"
+
+      # da-mcp-pep is optional: the dev compose does not run it. It alerts only if it was scraped
+      # successfully at some point in the last day and is not now.
+      - alert: McpPepDown
+        expr: >
+          max_over_time(up{job="dlap-services", service="da-mcp-pep"}[1d]) == 1
+          and up{job="dlap-services", service="da-mcp-pep"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "da-mcp-pep is down"
+          description: "da-mcp-pep ({{ $labels.instance }}) answered a scrape during the last day and has not for 2 minutes. Agents that route tool calls through it are denied or, in observe mode, unchecked."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: ServiceRestartingRepeatedly
+        expr: changes(process_start_time_seconds{job="dlap-services"}[30m]) > 2
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} restarted {{ $value }} times in 30 minutes"
+          description: "{{ $labels.service }} ({{ $labels.instance }}) keeps restarting: out of memory, a failing start-up dependency, or a crash loop."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: PostgresDown
+        expr: pg_up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is not answering"
+          description: "postgres_exporter ({{ $labels.instance }}) cannot connect to PostgreSQL. Every service with a database is affected."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: KafkaBrokerDown
+        expr: kafka_brokers{job="kafka"} < 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kafka reports no broker"
+          description: "kafka_exporter ({{ $labels.instance }}) sees no broker. The log spine and the policy action bus are stopped."
+          runbook: "docs/observability.md#4-alerts"
+
+      # When an exporter itself is unreachable, pg_up and kafka_brokers have no samples and the two rules
+      # above cannot fire. This rule covers that gap.
+      - alert: MonitoringTargetDown
+        expr: up{job=~"postgres|kafka|alertmanager|grafana"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.job }} cannot be scraped"
+          description: "Prometheus has not scraped {{ $labels.job }} ({{ $labels.instance }}) for 5 minutes. Its alerts are blind until it is back."
+          runbook: "docs/observability.md#4-alerts"
+
+  - name: dlap-http
+    rules:
+      # Actuator paths are left out everywhere: the scrape and the probes would otherwise count as traffic.
+      # The traffic floor (0.1 requests per second) keeps one failed request in a quiet period from alerting.
+      - alert: HighServerErrorRatio
+        expr: >
+          sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", status=~"5..", uri!~"/actuator.*"}[5m]))
+            / sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", uri!~"/actuator.*"}[5m])) > 0.05
+          and sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", uri!~"/actuator.*"}[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }}: more than 5% of requests fail with a 5xx"
+          description: "{{ $labels.service }} answered {{ $value | humanizePercentage }} of its requests with a 5xx over the last 5 minutes, for 10 minutes."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: ServerErrorSpike
+        expr: >
+          sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", status=~"5..", uri!~"/actuator.*"}[5m]))
+            / sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", uri!~"/actuator.*"}[5m])) > 0.25
+          and sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", uri!~"/actuator.*"}[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }}: a quarter of the requests fail with a 5xx"
+          description: "{{ $labels.service }} answered {{ $value | humanizePercentage }} of its requests with a 5xx over the last 5 minutes, for 5 minutes."
+          runbook: "docs/observability.md#4-alerts"
+
+      # Mean latency, not a percentile: the services do not publish histogram buckets by default.
+      - alert: HighMeanRequestLatency
+        expr: >
+          sum by (service) (rate(http_server_requests_seconds_sum{job="dlap-services", uri!~"/actuator.*"}[5m]))
+            / sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", uri!~"/actuator.*"}[5m])) > 2
+          and sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", uri!~"/actuator.*"}[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }}: mean request time above 2 seconds"
+          description: "{{ $labels.service }} needed {{ $value | humanizeDuration }} per request on average over the last 5 minutes, for 10 minutes."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: HighAuthRejectRate
+        expr: >
+          sum by (service) (rate(http_server_requests_seconds_count{job="dlap-services", status=~"401|403", uri!~"/actuator.*"}[5m])) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} rejects more than one request per second as 401 or 403"
+          description: "{{ $labels.service }} answered {{ $value | humanize }} requests per second with 401 or 403 for 10 minutes: a caller with a bad or expired token, a role mapping that changed, or probing."
+          runbook: "docs/observability.md#4-alerts"
+
+  - name: dlap-jvm
+    rules:
+      # jvm_memory_max_bytes is -1 for pools without a limit, so only pools with a maximum are counted in the divisor.
+      - alert: HighJvmHeapUsage
+        expr: >
+          sum by (service, instance) (jvm_memory_used_bytes{job="dlap-services", area="heap"})
+            / sum by (service, instance) (jvm_memory_max_bytes{job="dlap-services", area="heap"} > 0) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }}: JVM heap above 90%"
+          description: "{{ $labels.service }} ({{ $labels.instance }}) uses {{ $value | humanizePercentage }} of its maximum heap, for 10 minutes. Raise the container memory limit or look for a leak before the next out-of-memory restart."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: HighGcPauseTime
+        expr: sum by (service, instance) (rate(jvm_gc_pause_seconds_sum{job="dlap-services"}[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }}: more than 10% of the time in GC pauses"
+          description: "{{ $labels.service }} ({{ $labels.instance }}) spent {{ $value | humanizePercentage }} of the last 5 minutes paused for garbage collection, for 10 minutes."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: DbConnectionPoolNearlyExhausted
+        expr: >
+          sum by (service, instance, pool) (hikaricp_connections_active{job="dlap-services"})
+            / sum by (service, instance, pool) (hikaricp_connections_max{job="dlap-services"}) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }}: database pool above 90%"
+          description: "{{ $labels.service }} ({{ $labels.instance }}) has {{ $value | humanizePercentage }} of pool {{ $labels.pool }} in use, for 5 minutes."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: DbConnectionPoolWaiting
+        expr: sum by (service, instance, pool) (hikaricp_connections_pending{job="dlap-services"}) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }}: threads wait for a database connection"
+          description: "{{ $labels.service }} ({{ $labels.instance }}) has {{ $value }} threads waiting for a connection of pool {{ $labels.pool }}, for 5 minutes."
+          runbook: "docs/observability.md#4-alerts"
+
+  - name: dlap-data-plane
+    rules:
+      - alert: KafkaConsumerLagHigh
+        expr: sum by (consumergroup, topic) (kafka_consumergroup_lag{job="kafka"}) > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Consumer group {{ $labels.consumergroup }} is {{ $value }} messages behind on {{ $labels.topic }}"
+          description: "The lag of {{ $labels.consumergroup }} on {{ $labels.topic }} stayed above 1000 messages for 10 minutes. The consumers are down, stuck, or slower than the producers."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: PostgresConnectionsNearLimit
+        expr: >
+          sum by (instance, server) (pg_stat_activity_count{job="postgres"})
+            / max by (instance, server) (pg_settings_max_connections{job="postgres"}) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL uses more than 80% of max_connections"
+          description: "{{ $labels.server }} has {{ $value | humanizePercentage }} of max_connections in use, for 5 minutes. Eleven services each hold a pool."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: PostgresDeadlocks
+        expr: sum by (instance, datname) (increase(pg_stat_database_deadlocks{job="postgres"}[10m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL detected a deadlock in {{ $labels.datname }}"
+          description: "{{ $labels.datname }} on {{ $labels.instance }} recorded {{ $value }} new deadlocks in the last 10 minutes."
+          runbook: "docs/observability.md#4-alerts"
+
+  - name: dlap-lifecycle
+    rules:
+      # The shipped enforce mode denies when the PDP cannot be reached. observe mode allows. Both set failClosed.
+      - alert: McpPepFailClosed
+        expr: sum by (service) (increase(dlap_mcppep_decisions_total{failClosed="true"}[10m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "da-mcp-pep decided without the PDP"
+          description: "da-mcp-pep took {{ $value }} decisions in the last 10 minutes while the policy decision point was unreachable (denied in enforce mode, allowed and flagged in observe mode). Check da-policyengine."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: PolicyDecisionEventsNotPublished
+        expr: sum by (service) (increase(policyengine_access_decision_publish_failures_total[15m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "da-policyengine could not publish access-decision events"
+          description: "{{ $value }} access-decision events failed to reach Kafka in the last 15 minutes. Verdicts were still returned; the audit trail and drift detection miss these events."
+          runbook: "docs/observability.md#4-alerts"
+
+      - alert: PolicyActionEventsNotPublished
+        expr: sum by (service) (increase(policyengine_send_failures_total[15m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "da-policyengine could not publish policy action events"
+          description: "{{ $value }} policy action events failed to reach Kafka in the last 15 minutes, so the label, archive and delete agents did not receive them."
+          runbook: "docs/observability.md#4-alerts"
+
+      # POL-05 (Q-861, ADR-0133, ADR-0136). A stored ENABLED policy document the PDP cannot read, or a policy row of
+      # kind DSL with no document, is kept as an invalid deny whose scope cannot be read: it denies EVERY request
+      # (reason policy-store-invalid) until it is fixed or disabled. The gauge dlap_pdp_policies_invalid_deny{scope}
+      # is set at each policy refresh and is registered at start-up, so a healthy store reads 0 (no absent() clause).
+      # scope="readable" is a deny with a readable scope: narrower, and left to the start-up check and the WARN line.
+      - alert: PolicyStoreUnreadableDeny
+        expr: max by (service) (dlap_pdp_policies_invalid_deny{job="dlap-services", scope="unreadable"}) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "da-policyengine denies every access request because of an unreadable stored policy"
+          description: "{{ $value }} ENABLED policies in the store cannot be read and have no readable scope, so the PDP denies every request (policy-store-invalid) until they are fixed or disabled. The WARN line of the latest policy refresh names them."
+          runbook: "docs/observability.md#4-alerts"
+
+      # OBS-02 (Q-568). Approvals (docs/specs/approvals.md): a break-glass release lets one administrator
+      # release a destructive action without dual control, so every one is reviewed afterwards. The counter
+      # is created by the first release, and increase() cannot see a series that starts at 1, so the second
+      # operand of "or" also catches a series that did not exist ten minutes ago.
+      - alert: ApprovalBreakGlassUsed
+        expr: >
+          sum by (service, actionClass) (
+            (increase(policyengine_approvals_break_glass_total[10m]) > 0)
+            or (policyengine_approvals_break_glass_total unless policyengine_approvals_break_glass_total offset 10m)
+          ) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Break-glass release of a {{ $labels.actionClass }} action"
+          description: "Approval requests of class {{ $labels.actionClass }} were released by break-glass in the last 10 minutes, without the usual second approver. Read the BREAK-GLASS log line and the audit entry of each release, and confirm the emergency was real."
+          runbook: "docs/observability.md#approvals-and-backfill-runbook"
+
+      # The outbox relay retries on every tick, so a failing send keeps this alert firing until Kafka is back.
+      # An approved action waits in the outbox until its message is acknowledged, so it is not carried out
+      # while this fires. Same new-series clause as above: the failed counter starts at the first failure.
+      - alert: ApprovalOutboxSendFailing
+        expr: >
+          sum by (service, kind) (
+            (increase(policyengine_approvals_outbox_total{result="failed"}[15m]) > 0)
+            or (policyengine_approvals_outbox_total{result="failed"} unless policyengine_approvals_outbox_total{result="failed"} offset 15m)
+          ) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "da-policyengine could not send {{ $labels.kind }} approval messages"
+          description: "About {{ $value | printf \"%.0f\" }} sends of {{ $labels.kind }} approval outbox messages failed in the last 15 minutes. Approved actions and approval notices wait in the outbox and are retried on the next tick; check Kafka."
+          runbook: "docs/observability.md#approvals-and-backfill-runbook"
+
+  # OBS-02 (Q-826): backfill jobs and the drift state of da-logingest. A group of its own, ahead of the
+  # parser health group: HealthSnapshotServiceTest requires every series of dlap-log-ingest and the groups
+  # after it to be exported by a bare da-logingest, and these series need a job table or a failed flush.
+  - name: dlap-backfill-drift
+    rules:
+      # LOG-08 (Q-846). Backfill jobs (docs/observability.md, "Backfill and drift state"). A job stays RUNNING
+      # while a replica works on it and also after that replica died, so the status gauge alone cannot tell a
+      # stuck job from a busy one. A running job writes progress.heartbeat at the start of every slice and
+      # after every batch, and BackfillMetrics exposes the age of the oldest heartbeat of the RUNNING jobs
+      # of each binding as dlap_logingest_backfill_heartbeat_age_seconds (0 while the binding has none, NaN
+      # while the job table cannot be read, neither of which fires). 900 s is the longest retry backoff
+      # (BackfillProperties.MAX_BACKOFF_MINUTES), after which a healthy job writes a heartbeat again at
+      # once. "for" rides out a restart of the service, which resumes the job within a poll interval. The
+      # max drops the instance label: every replica reads the same job table.
+      - alert: BackfillJobStuck
+        expr: max by (service, binding) (dlap_logingest_backfill_heartbeat_age_seconds) > 900
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }}: the backfill job of binding {{ $labels.binding }} has not moved for {{ $value | humanizeDuration }}"
+          description: "The oldest RUNNING backfill job of binding {{ $labels.binding }} last wrote its progress heartbeat {{ $value | humanizeDuration }} ago (limit 15 minutes). The job is stuck behind a failing or throttled source, or its replica died and nobody resumed it. List jobs with GET /api/v1/logingest/backfills?status=RUNNING and read the progress heartbeat."
+          runbook: "docs/observability.md#approvals-and-backfill-runbook"
+
+      # The FAILED gauge counts every failed job in the table and never falls, so the alert watches for a rise:
+      # a job failed in the last hour.
+      - alert: BackfillJobFailed
+        expr: >
+          max by (service) (
+            max_over_time(dlap_logingest_backfill_jobs{status="FAILED"}[1h])
+            - min_over_time(dlap_logingest_backfill_jobs{status="FAILED"}[1h])
+          ) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }}: a backfill job failed"
+          description: "{{ $value }} backfill job(s) became FAILED in the last hour: a configuration problem, or too many failed attempts (max-attempts). The job stopped for good; read its errorDetail with GET /api/v1/logingest/backfills?status=FAILED and start a new job once the cause is fixed."
+          runbook: "docs/observability.md#approvals-and-backfill-runbook"
+
+      # The persister retries at the next interval (five minutes by default) and puts the unknown-path counts
+      # back, so one failure is harmless; 15 minutes covers three intervals and still alerts while it fails.
+      - alert: DriftStateFlushFailing
+        expr: sum by (service) (increase(dlap_logingest_drift_state_flush_failures_total[15m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} could not persist the drift state"
+          description: "About {{ $value | printf \"%.0f\" }} drift state flushes failed in the last 15 minutes. The unknown JSON paths and fill baselines of the drift report are held in memory only and are lost at the next restart. Check the dlap_logingest database and the log of da-logingest."
+          runbook: "docs/observability.md#approvals-and-backfill-runbook"
+
+  # LOG-03: parser health of the log layer (test strategy L8, design B3). The series are the meters of
+  # da-logingest (docs/observability.md, section 1) and, for the spine, the catalog counters. The labels
+  # source, format, version, binding and stream are bounded (docs/observability.md, "Log parser health").
+  # Every rule that divides guards a traffic floor, so a quiet source cannot alert on one record.
+  - name: dlap-log-ingest
+    rules:
+      # More than 1% of the records of a (source, version) quarantined in 15 minutes. The warning stops at
+      # 10% so the two severities never fire together. Floor: 20 records in the window.
+      - alert: LogQuarantineRatioHigh
+        expr: >
+          (
+            sum by (source, version) (increase(dlap_logingest_quarantine_total[15m]))
+              / sum by (source, version) (increase(dlap_logingest_records_total[15m]))
+          ) > 0.01
+          and (
+            sum by (source, version) (increase(dlap_logingest_quarantine_total[15m]))
+              / sum by (source, version) (increase(dlap_logingest_records_total[15m]))
+          ) <= 0.10
+          and sum by (source, version) (increase(dlap_logingest_records_total[15m])) >= 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.source }} {{ $labels.version }}: more than 1% of the records are quarantined"
+          description: "{{ $value | humanizePercentage }} of the {{ $labels.source }} records of version {{ $labels.version }} were quarantined over the last 15 minutes. A provider may have changed its format; list the reasons with GET /api/v1/logingest/health."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      - alert: LogQuarantineRatioHigh
+        expr: >
+          (
+            sum by (source, version) (increase(dlap_logingest_quarantine_total[15m]))
+              / sum by (source, version) (increase(dlap_logingest_records_total[15m]))
+          ) > 0.10
+          and sum by (source, version) (increase(dlap_logingest_records_total[15m])) >= 20
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.source }} {{ $labels.version }}: more than 10% of the records are quarantined"
+          description: "{{ $value | humanizePercentage }} of the {{ $labels.source }} records of version {{ $labels.version }} were quarantined over the last 15 minutes. The log layer is losing most of what this source sends; usage and last-read dates go stale."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      # A version no parser reads is always quarantined (frozen rule 4), so any increase is a format the
+      # service cannot read at all. It pages.
+      - alert: LogUnknownMajorVersion
+        expr: >
+          sum by (source, format, version) (increase(dlap_logingest_quarantine_total{reason="UNKNOWN_MAJOR_VERSION"}[10m])) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.source }}/{{ $labels.format }}: records of unknown major version {{ $labels.version }}"
+          description: "{{ $value }} {{ $labels.source }} records of version {{ $labels.version }} were quarantined as UNKNOWN_MAJOR_VERSION in the last 10 minutes. No parser reads that version: add one, then replay with POST /api/v1/logingest/quarantine/replay."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      # Informational: a (source, format, version) was first seen in the last hour. The first-seen time is
+      # read from format_observation, so a restart does not make old versions look new.
+      - alert: LogNewFormatVersionObserved
+        expr: >
+          (time() - max by (source, format, version) (dlap_logingest_version_first_seen_timestamp_seconds)) < 3600
+        labels:
+          severity: info
+        annotations:
+          summary: "{{ $labels.source }}/{{ $labels.format }}: new version {{ $labels.version }} observed"
+          description: "Version {{ $labels.version }} of {{ $labels.format }} ({{ $labels.source }}) was first seen less than an hour ago. Open a ticket: capture a redacted sample as a fixture and check the drift report (GET /api/v1/logingest/drift)."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      # A field that records still parse without: the fill ratio of the last hour fell more than 20 points
+      # below its median of the previous 7 days (the baseline ends an hour ago, so the drop is not in it).
+      - alert: LogFieldFillDrop
+        expr: >
+          max by (source, version, field) (quantile_over_time(0.5, dlap_logingest_field_fill_ratio[7d] offset 1h))
+            - max by (source, version, field) (dlap_logingest_field_fill_ratio) > 0.2
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.source }} {{ $labels.version }}: field {{ $labels.field }} is filled {{ $value | humanizePercentage }} less often"
+          description: "The share of {{ $labels.source }} events that carry {{ $labels.field }} fell by {{ $value | humanizePercentage }} against the 7-day median. Records still parse, so nothing is quarantined: the provider stopped sending the field, or a mapping stopped finding it."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      # Log targets that match no catalog asset. The catalog counts them (ADR-0046); a share above 5% is the
+      # best production sign that asset ids drifted between the logs and the crawlers.
+      - alert: SpineUnmatchedTargetsHigh
+        expr: >
+          sum(increase(dlap_catalog_unmatched_target_total[1h]))
+            / (sum(increase(dlap_catalog_unmatched_target_total[1h])) + sum(increase(dlap_catalog_asset_match_total[1h]))) > 0.05
+          and sum(increase(dlap_catalog_unmatched_target_total[1h])) + sum(increase(dlap_catalog_asset_match_total[1h])) >= 50
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 5% of the log targets match no catalog asset"
+          description: "{{ $value | humanizePercentage }} of the log targets of the last hour found no catalog row. Usage and last-read dates are not reaching the assets they belong to. Split the counter by provider and kind (dlap_catalog_unmatched_target_total) to find the source."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      # Writes arrive on a binding and no data read has for 24 hours (the gauge is 0 only then). Read logging
+      # is probably off at the provider, so "not read" must not be reported for its assets.
+      - alert: ReadSignalMissing
+        expr: max by (binding) (dlap_logingest_read_signal_present) == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.binding }}: writes are logged, reads are not"
+          description: "Binding {{ $labels.binding }} delivered data writes but no data read for 24 hours. Data-access logging may be off at the provider (CloudTrail data events, GCP data-access audit logs). Reports must show read logging as not enabled, never as not read."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      # A binding that delivered records in the 22 hours before the last two and none since. The built-in REST
+      # and replay bindings (ids start with dlap-) are quiet by design and left out. A binding that restarted
+      # with the service has no series until its next record, so this rule sees silence only inside a run.
+      - alert: LogSourceSilent
+        expr: >
+          sum by (binding) (increase(dlap_logingest_records_total{binding!~"dlap-.*"}[2h])) == 0
+          and sum by (binding) (increase(dlap_logingest_records_total{binding!~"dlap-.*"}[24h] offset 2h)) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.binding }} delivered no records for 2 hours"
+          description: "Binding {{ $labels.binding }} delivered records earlier today and none in the last 2 hours. Check its cursor lag, its credentials and the provider sink."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      # CloudTrail delivers in about five minutes on average and GCS sinks hourly, so 30 minutes of lag on a
+      # stream is a stuck or throttled poll, not normal latency.
+      - alert: LogCursorLagHigh
+        expr: max by (source, stream, binding) (dlap_logingest_cursor_lag_seconds) > 1800
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.binding }}/{{ $labels.stream }}: cursor is {{ $value | humanizeDuration }} behind"
+          description: "The oldest unacknowledged event of {{ $labels.source }} stream {{ $labels.stream }} (binding {{ $labels.binding }}) is {{ $value | humanizeDuration }} old, for 10 minutes. The poll is failing, throttled or stuck behind a bad object."
+          runbook: "docs/observability.md#log-parser-health-runbook"
+
+      - alert: LogPublishFailures
+        expr: sum by (topic) (increase(dlap_logingest_publish_failures_total[10m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "da-logingest could not publish to {{ $labels.topic }}"
+          description: "{{ $value }} sends to {{ $labels.topic }} failed in the last 10 minutes. For dlap.log.event.normalized the events are in the replay store but not on the spine; for the quarantine and binding-status topics the notice is lost while the table row stays."
+          runbook: "docs/observability.md#log-parser-health-runbook"

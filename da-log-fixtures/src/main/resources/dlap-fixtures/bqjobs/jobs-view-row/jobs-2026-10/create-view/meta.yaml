@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:CREATE_VIEW
+variant_ids:
+  - write.destination-table
+expected_outcome: PARSED
+anonymised: false
+notes: "CREATE VIEW: MANAGEMENT for the view. The tables in its definition are not read (CREATE_VIEW is on the scan's no-read list)."

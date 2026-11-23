@@ -1,0 +1,208 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# DLAP Reader role for AWS (IAM-03). Read-only: discovery, CloudTrail ingest and read coverage.
+# The Action lists must equal permissions.yaml; da-discovery ReaderRoleTraceabilityTest fails
+# when they do not. ReaderPolicy holds the account scope (Resource "*"); ReaderLogBucketPolicy,
+# created only when CloudTrailLogBucket or S3AccessLogBucket is set, holds the log_bucket and
+# log_bucket_objects scopes on the named log buckets only. Intrinsic functions use the long form
+# (Fn::If) so the file is plain YAML.
+# See docs/guides/cloud-permissions.md.
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  DLAP Reader role. Read-only metadata, CloudTrail event history, read coverage and the named
+  log buckets.
+
+Parameters:
+  RoleName:
+    Type: String
+    Default: dlap-reader
+    AllowedPattern: "[A-Za-z0-9+=,.@_-]{1,64}"
+    Description: Name of the IAM role.
+  TrustedPrincipalArn:
+    Type: String
+    Default: ""
+    Description: >-
+      ARN of the principal that assumes the role from outside this account. Leave empty when the
+      pilot VM runs in this account; the role then trusts EC2 and gets an instance profile.
+  ExternalId:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: >-
+      External id that the trusted principal must send. Required when TrustedPrincipalArn is set.
+  CloudTrailLogBucket:
+    Type: String
+    Default: ""
+    AllowedPattern: "^$|^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+    Description: >-
+      Name of the bucket a CloudTrail trail delivers its trail files to. The Reader may list it
+      and read its objects; no other bucket's objects are readable. Empty when DLAP reads no
+      trail files.
+  S3AccessLogBucket:
+    Type: String
+    Default: ""
+    AllowedPattern: "^$|^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+    Description: >-
+      Name of the bucket S3 server access logging delivers to. The Reader may list it and read
+      its objects; no other bucket's objects are readable. Empty when DLAP reads no access logs.
+
+Rules:
+  ExternalIdWithPrincipal:
+    RuleCondition:
+      Fn::Not:
+        - Fn::Equals:
+            - Ref: TrustedPrincipalArn
+            - ""
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Equals:
+                - Ref: ExternalId
+                - ""
+        AssertDescription: ExternalId is required when TrustedPrincipalArn is set.
+
+Conditions:
+  TrustPrincipal:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: TrustedPrincipalArn
+          - ""
+  TrustEc2:
+    Fn::Equals:
+      - Ref: TrustedPrincipalArn
+      - ""
+  HasCloudTrailLogBucket:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: CloudTrailLogBucket
+          - ""
+  HasS3AccessLogBucket:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: S3AccessLogBucket
+          - ""
+  HasLogBucket:
+    Fn::Or:
+      - Condition: HasCloudTrailLogBucket
+      - Condition: HasS3AccessLogBucket
+
+Resources:
+  ReaderPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: DLAP Reader. Source of truth deployment/iam/aws/reader/permissions.yaml.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DlapReaderMetadataAndLogs
+            Effect: Allow
+            Action:
+              - athena:GetQueryExecution
+              - athena:ListQueryExecutions
+              - cloudtrail:DescribeTrails
+              - cloudtrail:GetEventSelectors
+              - cloudtrail:GetTrailStatus
+              - cloudtrail:LookupEvents
+              - ec2:DescribeInstances
+              - elasticmapreduce:ListClusters
+              - elasticmapreduce:ListSteps
+              - glue:GetDatabases
+              - glue:GetJobs
+              - glue:GetTables
+              - rds:DescribeDBInstances
+              - s3:GetBucketLocation
+              - s3:GetBucketVersioning
+              - s3:GetEncryptionConfiguration
+              - s3:ListAllMyBuckets
+            Resource: "*"
+
+  ReaderLogBucketPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Condition: HasLogBucket
+    Properties:
+      Description: >-
+        DLAP Reader: list and read the named log buckets only. Source of truth
+        deployment/iam/aws/reader/permissions.yaml.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DlapReaderLogBuckets
+            Effect: Allow
+            Action:
+              - s3:ListBucket
+            Resource:
+              - Fn::If:
+                  - HasCloudTrailLogBucket
+                  - Fn::Sub: "arn:${AWS::Partition}:s3:::${CloudTrailLogBucket}"
+                  - Ref: AWS::NoValue
+              - Fn::If:
+                  - HasS3AccessLogBucket
+                  - Fn::Sub: "arn:${AWS::Partition}:s3:::${S3AccessLogBucket}"
+                  - Ref: AWS::NoValue
+          - Sid: DlapReaderLogObjects
+            Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource:
+              - Fn::If:
+                  - HasCloudTrailLogBucket
+                  - Fn::Sub: "arn:${AWS::Partition}:s3:::${CloudTrailLogBucket}/*"
+                  - Ref: AWS::NoValue
+              - Fn::If:
+                  - HasS3AccessLogBucket
+                  - Fn::Sub: "arn:${AWS::Partition}:s3:::${S3AccessLogBucket}/*"
+                  - Ref: AWS::NoValue
+
+  ReaderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Ref: RoleName
+      Description: DLAP Reader. Read-only; holds no write action.
+      MaxSessionDuration: 3600
+      ManagedPolicyArns:
+        - Ref: ReaderPolicy
+        - Fn::If:
+            - HasLogBucket
+            - Ref: ReaderLogBucketPolicy
+            - Ref: AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Fn::If:
+              - TrustPrincipal
+              - Effect: Allow
+                Principal:
+                  AWS:
+                    Ref: TrustedPrincipalArn
+                Action: sts:AssumeRole
+                Condition:
+                  StringEquals:
+                    sts:ExternalId:
+                      Ref: ExternalId
+              - Effect: Allow
+                Principal:
+                  Service: ec2.amazonaws.com
+                Action: sts:AssumeRole
+
+  ReaderInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Condition: TrustEc2
+    Properties:
+      Roles:
+        - Ref: ReaderRole
+
+Outputs:
+  ReaderRoleArn:
+    Description: The Reader role. Set AWS_ROLE_ARN or a profile role_arn to it on the DLAP host.
+    Value:
+      Fn::GetAtt:
+        - ReaderRole
+        - Arn
+  ReaderInstanceProfileName:
+    Condition: TrustEc2
+    Description: Attach this instance profile to the pilot VM.
+    Value:
+      Ref: ReaderInstanceProfile

@@ -1,0 +1,17 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - storage.googleapis.com:storage.buckets.create
+  - storage.googleapis.com:storage.buckets.update
+  - storage.googleapis.com:storage.setIamPermissions
+variant_ids:
+  - log.admin-activity
+  - gcs.admin-activity-servicedata
+  - gcs.setiam-servicedata-policy-delta
+  - gcs.resource-labels
+  - envelope.bq-json-string-columns
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Admin Activity rows: a bucket create with requestJson and the IAM policy delta in the servicedata_v1_iam column, a versioning update, and an IAM change whose policy delta sits in servicedata_v1_iam."

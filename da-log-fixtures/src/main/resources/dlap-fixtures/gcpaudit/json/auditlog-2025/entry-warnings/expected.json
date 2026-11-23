@@ -1,0 +1,108 @@
+{
+  "outcome": "PARSED_WITH_WARNINGS",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-02T10:00:25.823456814Z|a25-warnings-2",
+      "eventTime": "2026-09-02T10:00:25.823456814Z",
+      "sourceProvider": "GCP",
+      "sourceService": "storage.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "storage.objects.get",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "gs://dlap-fixture-bucket/exports/2026/09/orders.csv"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "parseWarnings": [
+        "PARSE_WARNING_EVENT_TIME_FALLBACK"
+      ]
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-02T10:00:26.123456815Z|a25-warnings-3",
+      "eventTime": "2026-09-02T10:00:26.123456815Z",
+      "sourceProvider": "GCP",
+      "sourceService": "storage.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "storage.objects.get",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "gs://dlap-fixture-bucket/exports/2026/09/orders.csv"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "parseWarnings": [
+        "PARSE_WARNING_PROVIDER_TRUNCATED"
+      ]
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fsystem_event|2026-09-02T10:00:27.123456816Z|a25-other-services-1",
+      "eventTime": "2026-09-02T10:00:27.123456816Z",
+      "sourceProvider": "GCP",
+      "sourceService": "compute.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "compute.instances.preempted",
+      "resultStatus": "SUCCESS",
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "parseWarnings": [
+        "PARSE_WARNING_HEURISTIC_CLASSIFICATION"
+      ]
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-02T10:00:28.123456817Z|a25-lro-1",
+      "eventTime": "2026-09-02T10:00:28.123456817Z",
+      "sourceProvider": "GCP",
+      "sourceService": "compute.googleapis.com",
+      "changeType": "CREATE",
+      "operation": "v1.compute.instances.insert",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "requestId": "operation-1725184800-lro"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "parseWarnings": [
+        "PARSE_WARNING_HEURISTIC_CLASSIFICATION"
+      ]
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-02T10:00:29.123456818Z|a25-lro-2",
+      "eventTime": "2026-09-02T10:00:29.123456818Z",
+      "sourceProvider": "GCP",
+      "sourceService": "compute.googleapis.com",
+      "changeType": "CREATE",
+      "operation": "v1.compute.instances.insert",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "requestId": "operation-1725184800-lro"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "parseWarnings": [
+        "PARSE_WARNING_HEURISTIC_CLASSIFICATION"
+      ]
+    }
+  ]
+}

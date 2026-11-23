@@ -1,0 +1,10 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+doc_date: 2026-09-04
+license: synthetic
+covers: []
+variant_ids:
+  - entry.unknown-payload-type
+expected_outcome: QUARANTINED:UNKNOWN_ENVELOPE
+anonymised: false
+notes: "Hand-written for GCP-01. A protoPayload whose @type, or in the api-proto form the Any type URL the transport could not unpack, is not google.cloud.audit.AuditLog is quarantined."

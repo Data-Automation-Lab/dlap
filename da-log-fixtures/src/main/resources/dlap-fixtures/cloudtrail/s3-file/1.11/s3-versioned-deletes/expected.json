@@ -1,0 +1,130 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "0a5e0c11-1fe0-4e00-8000-000000000301",
+      "eventTime": "2026-11-03T09:40:00Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "DeleteObject",
+      "changeType": "UPDATE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::123456789012:user/user-5a1020",
+        "type": "USER",
+        "displayName": "user-5a1020",
+        "accountId": "123456789012"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e-versioned/curated/2026/sales.parquet",
+        "project": "123456789012",
+        "region": "us-east-1",
+        "technicalMetadata": {
+          "versionAction.kind": "DELETE_VERSION",
+          "versionAction.versionId": "PARSE03vUserDelete000000000000301"
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.31",
+        "userAgent": "aws-cli/2.17.0",
+        "requestId": "PARSE03CTV000001"
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    },
+    {
+      "nativeEventId": "0a5e0c11-1fe0-4e00-8000-000000000302",
+      "eventTime": "2026-11-03T09:40:05Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "DeleteObject",
+      "changeType": "UPDATE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::123456789012:user/user-5a1020",
+        "type": "USER",
+        "displayName": "user-5a1020",
+        "accountId": "123456789012"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e-versioned/curated/2026/orders.parquet",
+        "project": "123456789012",
+        "region": "us-east-1",
+        "technicalMetadata": {
+          "versionAction.kind": "CREATE_DELETE_MARKER",
+          "versionAction.versionId": "PARSE03vDeleteMarker00000000000302"
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.31",
+        "userAgent": "aws-cli/2.17.0",
+        "requestId": "PARSE03CTV000002"
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    },
+    {
+      "nativeEventId": "0a5e0c11-1fe0-4e00-8000-000000000303",
+      "eventTime": "2026-11-03T02:20:00Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3lifecycle.amazonaws.com",
+      "operation": "DeleteObject",
+      "changeType": "UPDATE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "lifecycle.s3.amazonaws.com",
+        "type": "SYSTEM"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e-versioned/raw/2026/08/customers.parquet",
+        "project": "123456789012",
+        "region": "us-east-1",
+        "technicalMetadata": {
+          "versionAction.kind": "DELETE_VERSION",
+          "versionAction.versionId": "PARSE03vNoncurrent0000000000000303"
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "lifecycle.s3.amazonaws.com",
+        "requestId": "PARSE03CTV000003"
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    },
+    {
+      "nativeEventId": "0a5e0c11-1fe0-4e00-8000-000000000304",
+      "eventTime": "2026-11-03T09:41:00Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "DeleteObject",
+      "changeType": "DELETE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::123456789012:user/user-5a1020",
+        "type": "USER",
+        "displayName": "user-5a1020",
+        "accountId": "123456789012"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e/curated/2026/old.parquet",
+        "project": "123456789012",
+        "region": "us-east-1"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.31",
+        "userAgent": "aws-cli/2.17.0",
+        "requestId": "PARSE03CTV000004"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    }
+  ]
+}

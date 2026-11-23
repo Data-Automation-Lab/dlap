@@ -1,0 +1,6 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:01:00.141414Z|r2-calls-1","changeType":"CREATE","eventCategory":"EVENT_CATEGORY_MANAGEMENT","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:01:01.252525Z|r2-calls-2","changeType":"UPDATE","resultStatus":"SUCCESS","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:01:02.363636Z|r2-calls-3","changeType":"DELETE","targetResource":{"canonicalUri":"bqjob://proj-0d1a0001/bquxjob_row_d"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:01:03.474747Z|r2-calls-4","changeType":"ACCESS","eventCategory":"EVENT_CATEGORY_MANAGEMENT","targetResource":{"canonicalUri":"bq://proj-0d1a0001/_7d1e33aa/anon5"},"sharedEventId":"projects/proj-0d1a0001/jobs/bquxjob_row_life","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"}
+]}

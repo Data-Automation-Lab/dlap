@@ -1,0 +1,30 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "GCP_BQ_JOBS_VIEW|proj-5e7a0c11|US|bquxjob_5a1c0031",
+      "eventTime": "2026-09-14T16:20:00Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "SELECT",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "kind": "bigquery_table",
+        "name": "customers",
+        "project": "proj-5e7a0c11",
+        "canonicalUri": "bq://proj-5e7a0c11/sales/customers"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sourceFormat": "GCP_BQ_JOBS_VIEW/jobs-view-row",
+      "sourceSchemaVersion": "jobs-2026-10",
+      "requestMetadata": {
+        "requestId": "bquxjob_5a1c0031"
+      }
+    }
+  ]
+}

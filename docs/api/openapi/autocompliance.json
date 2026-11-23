@@ -1,0 +1,1408 @@
+{
+  "components": {
+    "schemas": {
+      "AssetComplianceStatusDTO": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "assetType": {
+            "type": "string"
+          },
+          "compliantChecks": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lastEvaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "nonCompliantChecks": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "overallComplianceStatus": {
+            "type": "string"
+          },
+          "recentNonCompliantFindings": {
+            "items": {
+              "$ref": "#/components/schemas/ComplianceFindingSummaryDTO"
+            },
+            "type": "array"
+          },
+          "relevantReportIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "totalChecksApplied": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceControlDTO": {
+        "description": "Compliance control data",
+        "properties": {
+          "applicableFrameworks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "controlId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detailsLink": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "evaluationParametersDefinition": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "name": {
+            "type": "string"
+          },
+          "remediationSteps": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "targetAssetTypes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceFindingSummaryDTO": {
+        "properties": {
+          "checkId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "findingTimestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reportId": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceHeatmapDTO": {
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "regulation": {
+            "type": "string"
+          },
+          "riskLevel": {
+            "type": "string"
+          },
+          "score": {
+            "format": "double",
+            "type": "number"
+          },
+          "violations": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceKpisDTO": {
+        "properties": {
+          "activeChecks": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "averageResolutionTime": {
+            "format": "double",
+            "type": "number"
+          },
+          "criticalViolations": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "highRiskAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lastScanTime": {
+            "type": "string"
+          },
+          "overallComplianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "regulationsMonitored": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resolutionMetricsAvailable": {
+            "type": "boolean"
+          },
+          "resolvedViolations": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "violationsLast24h": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "violationsLast7Days": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceReportDTO": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/FindingDTO"
+            },
+            "type": "array"
+          },
+          "generationParameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "generationTimestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "overallStatus": {
+            "type": "string"
+          },
+          "reportId": {
+            "type": "string"
+          },
+          "reportType": {
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/SummaryDTO"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceReportDefinitionDTO": {
+        "description": "Compliance report definition data",
+        "properties": {
+          "applicableComplianceFrameworks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detailsLink": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "generationParameters": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "reportType": {
+            "type": "string"
+          },
+          "targetAssetTypes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceTrendDTO": {
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "gdprScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "hipaaScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "overallScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "socScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "violations": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceViolationDTO": {
+        "properties": {
+          "affectedAssets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assignedTo": {
+            "type": "string"
+          },
+          "controlId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detectedAt": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "regulation": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ControlEvaluationRequestDTO": {
+        "description": "Parameters for the control evaluation",
+        "properties": {
+          "evaluationParameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "forceReevaluation": {
+            "type": "boolean"
+          },
+          "notificationEmail": {
+            "type": "string"
+          },
+          "targetAssetIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ControlEvaluationResponseDTO": {
+        "properties": {
+          "controlId": {
+            "type": "string"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "targetedAssetCount": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "FindingDTO": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "assetType": {
+            "type": "string"
+          },
+          "checkId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "evidenceLink": {
+            "type": "string"
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "JobStatusForAdminAggregationDTO": {
+        "properties": {
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "errorDetails": {
+            "type": "string"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "jobType": {
+            "type": "string"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MonitoredRegulationDTO": {
+        "properties": {
+          "complianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastUpdated": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rulesCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReportGenerationRequestDTO": {
+        "description": "Parameters required for the report generation",
+        "properties": {
+          "notificationEmail": {
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "minProperties": 1,
+            "type": "object"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "ReportGenerationResponseDTO": {
+        "properties": {
+          "jobId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "reportType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReportJobStatusDTO": {
+        "properties": {
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "downloadLink": {
+            "type": "string"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "reportId": {
+            "type": "string"
+          },
+          "reportType": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SummaryDTO": {
+        "properties": {
+          "complianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "compliantChecks": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "errorChecks": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "nonCompliantChecks": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalChecks": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "API for managing compliance reports, checks, and asset compliance status.",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "termsOfService": "http://swagger.io/terms/",
+    "title": "DLAP AutoCompliance Service API",
+    "version": "v1"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/api/v1/compliance/assets/{assetId}/status": {
+      "get": {
+        "description": "Retrieves the overall compliance status and recent findings for a specific asset.",
+        "operationId": "getAssetComplianceStatus",
+        "parameters": [
+          {
+            "description": "ID of the asset (e.g., cloud resource ID)",
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetComplianceStatusDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved asset compliance status."
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetComplianceStatusDTO"
+                }
+              }
+            },
+            "description": "Asset ID not found or no compliance data available."
+          }
+        },
+        "summary": "Get compliance status for an asset",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/controls": {
+      "get": {
+        "description": "Provides a list of all configured and typically enabled compliance controls that can be evaluated.",
+        "operationId": "listAvailableControls",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComplianceControlDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved compliance controls"
+          }
+        },
+        "summary": "List available compliance controls",
+        "tags": [
+          "Compliance API"
+        ]
+      },
+      "post": {
+        "description": "Creates a new compliance control that can be evaluated. Controls should be added through this API instead of being hardcoded.",
+        "operationId": "createComplianceControl",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComplianceControlDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceControlDTO"
+                }
+              }
+            },
+            "description": "Compliance control created successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceControlDTO"
+                }
+              }
+            },
+            "description": "Invalid request data"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceControlDTO"
+                }
+              }
+            },
+            "description": "Control ID already exists"
+          }
+        },
+        "summary": "Create a new compliance control",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/controls/evaluations/{jobId}": {
+      "get": {
+        "description": "Returns status for a job created by POST /controls/{controlId}/evaluate.",
+        "operationId": "getControlEvaluationJobStatus",
+        "parameters": [
+          {
+            "description": "Evaluation job ID",
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlEvaluationResponseDTO"
+                }
+              }
+            },
+            "description": "Job found"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlEvaluationResponseDTO"
+                }
+              }
+            },
+            "description": "Job not found"
+          }
+        },
+        "summary": "Get control evaluation job status",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/controls/{controlId}": {
+      "delete": {
+        "description": "Deletes a compliance control. This will disable the control from being evaluated.",
+        "operationId": "deleteComplianceControl",
+        "parameters": [
+          {
+            "description": "Control ID to delete",
+            "in": "path",
+            "name": "controlId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Compliance control deleted successfully"
+          },
+          "404": {
+            "description": "Control not found"
+          }
+        },
+        "summary": "Delete a compliance control",
+        "tags": [
+          "Compliance API"
+        ]
+      },
+      "put": {
+        "description": "Updates an existing compliance control. Only enabled controls can be updated.",
+        "operationId": "updateComplianceControl",
+        "parameters": [
+          {
+            "description": "Control ID to update",
+            "in": "path",
+            "name": "controlId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComplianceControlDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceControlDTO"
+                }
+              }
+            },
+            "description": "Compliance control updated successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceControlDTO"
+                }
+              }
+            },
+            "description": "Invalid request data"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceControlDTO"
+                }
+              }
+            },
+            "description": "Control not found"
+          }
+        },
+        "summary": "Update an existing compliance control",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/controls/{controlId}/evaluate": {
+      "post": {
+        "description": "Triggers the asynchronous evaluation of a specific compliance control.",
+        "operationId": "evaluateControl",
+        "parameters": [
+          {
+            "description": "Unique identifier of the control to evaluate",
+            "in": "path",
+            "name": "controlId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ControlEvaluationRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlEvaluationResponseDTO"
+                }
+              }
+            },
+            "description": "Control evaluation request accepted."
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlEvaluationResponseDTO"
+                }
+              }
+            },
+            "description": "Invalid request (e.g., missing parameters, control not enabled)"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlEvaluationResponseDTO"
+                }
+              }
+            },
+            "description": "Control ID not found"
+          }
+        },
+        "summary": "Evaluate a compliance control",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/heatmap": {
+      "get": {
+        "description": "Retrieves compliance heatmap data by regulation and category.",
+        "operationId": "getComplianceHeatmap",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComplianceHeatmapDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved compliance heatmap data"
+          }
+        },
+        "summary": "Get compliance heatmap data",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/kpis": {
+      "get": {
+        "description": "Retrieves key performance indicators for compliance monitoring dashboard.",
+        "operationId": "getComplianceKpis",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceKpisDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved compliance KPIs"
+          }
+        },
+        "summary": "Get compliance KPIs for dashboard",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/regulations": {
+      "get": {
+        "description": "Retrieves list of monitored regulations with their compliance status.",
+        "operationId": "getMonitoredRegulations",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MonitoredRegulationDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved monitored regulations"
+          }
+        },
+        "summary": "Get monitored regulations",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/reports": {
+      "get": {
+        "description": "Provides a list of all configured compliance report types that can be generated.",
+        "operationId": "listAvailableReportDefinitions",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved report definitions"
+          }
+        },
+        "summary": "List available compliance report definitions",
+        "tags": [
+          "Compliance API"
+        ]
+      },
+      "post": {
+        "description": "Creates a new compliance report definition that can be used for report generation. Report definitions should be added through this API instead of being hardcoded.",
+        "operationId": "createComplianceReportDefinition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "Compliance report definition created successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "Invalid request data"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "Report type already exists"
+          }
+        },
+        "summary": "Create a new compliance report definition",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/reports/jobs": {
+      "get": {
+        "description": "Returns jobs in the same JSON shape as da-admin-service JobStatusDTO for aggregated dashboards.",
+        "operationId": "listReportJobsForAdminAggregation",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/JobStatusForAdminAggregationDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "List compliance report jobs for admin aggregation",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/reports/jobs/{jobId}": {
+      "get": {
+        "description": "Retrieves the current status of an asynchronous report generation job.",
+        "operationId": "getReportGenerationJobStatus",
+        "parameters": [
+          {
+            "description": "ID of the report generation job",
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportJobStatusDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved job status."
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportJobStatusDTO"
+                }
+              }
+            },
+            "description": "Job ID not found."
+          }
+        },
+        "summary": "Get compliance report generation job status",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/reports/results/{reportId}": {
+      "get": {
+        "description": "Fetches the detailed contents of a previously generated compliance report.",
+        "operationId": "getGeneratedReport",
+        "parameters": [
+          {
+            "description": "ID of the generated compliance report",
+            "in": "path",
+            "name": "reportId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceReportDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved the report."
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceReportDTO"
+                }
+              }
+            },
+            "description": "Report ID not found."
+          }
+        },
+        "summary": "Retrieve a generated compliance report",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/reports/{reportType}": {
+      "delete": {
+        "description": "Deletes a compliance report definition. This will prevent new reports of this type from being generated.",
+        "operationId": "deleteComplianceReportDefinition",
+        "parameters": [
+          {
+            "description": "Report type to delete",
+            "in": "path",
+            "name": "reportType",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Compliance report definition deleted successfully"
+          },
+          "404": {
+            "description": "Report definition not found"
+          }
+        },
+        "summary": "Delete a compliance report definition",
+        "tags": [
+          "Compliance API"
+        ]
+      },
+      "put": {
+        "description": "Updates an existing compliance report definition.",
+        "operationId": "updateComplianceReportDefinition",
+        "parameters": [
+          {
+            "description": "Report type to update",
+            "in": "path",
+            "name": "reportType",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "Compliance report definition updated successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "Invalid request data"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceReportDefinitionDTO"
+                }
+              }
+            },
+            "description": "Report definition not found"
+          }
+        },
+        "summary": "Update an existing compliance report definition",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/reports/{reportType}/generate": {
+      "post": {
+        "description": "Triggers the asynchronous generation of a specific compliance report based on its type and provided parameters.",
+        "operationId": "generateComplianceReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the report type to generate",
+            "in": "path",
+            "name": "reportType",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportGenerationRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportGenerationResponseDTO"
+                }
+              }
+            },
+            "description": "Report generation request accepted."
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportGenerationResponseDTO"
+                }
+              }
+            },
+            "description": "Invalid request (e.g., missing parameters, report type not found)"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportGenerationResponseDTO"
+                }
+              }
+            },
+            "description": "Report type not found"
+          }
+        },
+        "summary": "Generate a compliance report",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/scan": {
+      "post": {
+        "description": "Triggers a manual compliance scan across all monitored assets.",
+        "operationId": "triggerComplianceScan",
+        "responses": {
+          "202": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Compliance scan triggered successfully"
+          }
+        },
+        "summary": "Trigger manual compliance scan",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/trends": {
+      "get": {
+        "description": "Retrieves compliance score trends over time for different regulations.",
+        "operationId": "getComplianceTrends",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComplianceTrendDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved compliance trends"
+          }
+        },
+        "summary": "Get compliance trends",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    },
+    "/api/v1/compliance/violations": {
+      "get": {
+        "description": "Retrieves list of compliance violations with details.",
+        "operationId": "getComplianceViolations",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComplianceViolationDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved compliance violations"
+          }
+        },
+        "summary": "Get compliance violations",
+        "tags": [
+          "Compliance API"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "APIs for managing compliance checks, reports, and evaluations",
+      "name": "Compliance API"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - storage.googleapis.com:storage.objects.get
+  - storage.googleapis.com:storage.objects.list
+  - storage.googleapis.com:storage.objects.create
+  - storage.googleapis.com:storage.objects.delete
+variant_ids:
+  - envelope.bq-protopayload-column
+  - envelope.bq-json-string-columns
+  - envelope.bq-sharded-and-partitioned
+  - entry.protopayload-without-type
+  - log.data-access
+  - actor.principal-email
+  - gcs.object-resource-name
+  - gcs.list-bucket-resource-name
+  - gcs.resource-labels
+  - gcs.create-request-response
+  - entry.num-response-items
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Object read, listing (numResponseItems, resourceLocation), create (requestJson and responseJson with size and timeCreated, create and delete permissions checked) and delete, each authorizationInfo with its permissionType. The rows stand for the partitioned table cloudaudit_googleapis_com_data_access; date-sharded tables have the same columns (BqSinkTransportTest reads both)."

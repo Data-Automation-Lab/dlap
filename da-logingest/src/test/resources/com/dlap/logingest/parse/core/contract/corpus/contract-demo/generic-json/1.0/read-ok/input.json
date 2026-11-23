@@ -1,0 +1,1 @@
+{"v":"1.0","id":"evt-0001","at":"2026-02-01T10:00:00Z","receivedAt":"2026-02-01T10:00:04Z","svc":"store","op":"GetObject","who":{"type":"AssumedRole","arn":"arn:aws:iam::111122223333:role/reader","account":"111122223333"},"object":"arn:aws:s3:::bucket-a/reports/q1.csv","ip":"192.0.2.10"}

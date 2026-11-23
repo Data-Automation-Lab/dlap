@@ -1,0 +1,150 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Amazon S3 server access logs in the structured JSON form of CloudWatch Logs delivery (PARSE-02).
+#
+# Why. S3 lifecycle actions are recorded in server access logs as S3.<action>.<resource> operations
+# (S3.EXPIRE.OBJECT permanently deletes, S3.CREATE.DELETEMARKER logically deletes, S3.TRANSITION*
+# moves the object to another class, S3.DELETE.UPLOAD aborts an upload). The delete proof of
+# da-autodelete accepts S3.EXPIRE.OBJECT (Q-612); this family turns it into a DELETE event with a
+# canonical s3:// target and a SYSTEM principal (Q-596).
+#
+# Versions (D36, Q-651). Only a delete of the current object stays DELETE. A delete marker
+# (S3.CREATE.DELETEMARKER) keeps every version, so it is an UPDATE of the object. A delete whose record
+# names a version_id (S3.EXPIRE.OBJECT of a noncurrent version, a REST.DELETE.OBJECT or
+# BATCH.DELETE.OBJECT of one version) removes that version only: S3AccessLogParser turns it into an
+# UPDATE that carries the version id in the target's technical_metadata. The lifecycle logging table
+# lists no separate operation for a noncurrent expiration (S3.EXPIRE.OBJECT is the only permanent
+# deletion), so version_id is the only mark.
+#
+# Sources (opened 2026-11-01): https://docs.aws.amazon.com/AmazonS3/latest/userguide/sal-cw-log-format.html
+# (field names, schema_version_id V_1_0, ISO 8601 request_time, JSON nulls) and
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-and-other-bucket-config.html (the
+# lifecycle operation table). AWS log sources report section 8: delivery is best effort, so a server
+# access log is a fallback signal, never a complete account.
+#
+# Not here: the space-delimited text format that S3 delivers to a bucket. The parser registry reads
+# JSON records only; a transport that splits a text line into these field names can reuse this
+# mapping (open question of PARSE-02). No transport delivers CloudWatch Logs records yet.
+#
+# Code: com.dlap.logingest.parse.s3accesslog (S3AccessLogParser builds the target, the principal
+# and the native key suffix).
+spec-version: 1
+family: s3accesslog
+source-kind: AWS_S3_SERVER_ACCESS_LOG
+source-provider: AWS
+description: Amazon S3 server access log records as structured JSON (CloudWatch Logs delivery, schema V_1_0).
+settings:
+  on-mismatch: PARSE_WITH_DETECTED
+  # One record is a few hundred bytes; 64 KiB leaves room for long keys and request URIs.
+  max-record-bytes: 65536
+  # Server access logs are delivered within a few hours, best effort (ServerLogs page).
+  overlap: PT6H
+  poll-interval: PT15M
+envelopes:
+  - id: cwl-json
+    description: One server access log record as a JSON object, as CloudWatch Logs stores it; a fixture may hold JSON lines.
+    framing: [record, json-lines]
+    version-detection:
+      scheme: named
+      rules:
+        - version: V_1_0
+          when:
+            - pointer: /schema_version_id
+              equals: V_1_0
+    native-key:
+      # AWS_S3_SERVER_ACCESS_LOG|bucket|request time|operation, then the request id and the key when
+      # the record has them (the parser appends them: both are null on some records, and a copy writes
+      # two records with one request id).
+      namespaced: true
+      parts:
+        - pointer: /bucket_name
+        - pointer: /request_time
+          as: instant
+        - pointer: /operation
+    fields:
+      event-time: /request_time
+      service:
+        const: s3.amazonaws.com
+      operation: /operation
+      principal.id: /requester
+      request.caller-ip: /remote_ip
+      request.user-agent: /user_agent
+      request.request-id: /request_id
+    known-paths:
+      - /schema_version_id
+      - /bucket_arn
+      - /bucket_name
+      - /bucket_owner_id
+      - /key_name
+      - /request_uri
+      - /http_status
+      - /error_code
+      - /bytes_sent_size
+      - /object_size
+      - /total_duration
+      - /turn_around_duration
+      - /referer
+      - /version_id
+      - /host_id
+      - /signature_version
+      - /cipher_suite
+      - /authentication_type
+      - /host_header
+      - /tls_version
+      - /access_point_arn
+      - /acl_required
+      - /source_region
+    result:
+      failure-when:
+        - pointer: /error_code
+          present: true
+    classification:
+      rules:
+        # ---- S3 lifecycle (lifecycle-and-other-bucket-config, "S3 Lifecycle and logging").
+        - { service: s3.amazonaws.com, operation: S3.EXPIRE.OBJECT, change-type: DELETE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        # A delete marker hides the current version and deletes nothing (D36): an update of the object.
+        - { service: s3.amazonaws.com, operation: S3.CREATE.DELETEMARKER, change-type: UPDATE, category: MANAGEMENT, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation-prefix: S3.TRANSITION, change-type: ARCHIVE, category: MANAGEMENT, asset-kind: S3_OBJECT }
+        # An aborted incomplete multipart upload removes parts, never an object.
+        - { service: s3.amazonaws.com, operation: S3.DELETE.UPLOAD, change-type: UPDATE, category: MANAGEMENT }
+        # A Batch Operations checksum job reads the object for S3, not for a person.
+        - { service: s3.amazonaws.com, operation: S3.COMPUTE.OBJECT.CHECKSUM, change-type: ACCESS, category: MANAGEMENT }
+        # ---- Requests (LogFormat page: REST.<method>.<resource>, BATCH.DELETE.OBJECT).
+        - { service: s3.amazonaws.com, operation: REST.GET.OBJECT, change-type: ACCESS, category: DATA_READ, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: WEBSITE.GET.OBJECT, change-type: ACCESS, category: DATA_READ, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: REST.COPY.OBJECT_GET, change-type: ACCESS, category: DATA_READ, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: REST.HEAD.OBJECT, change-type: ACCESS, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: REST.PUT.OBJECT, change-type: UPDATE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: REST.COPY.OBJECT, change-type: UPDATE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: REST.DELETE.OBJECT, change-type: DELETE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: BATCH.DELETE.OBJECT, change-type: DELETE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: REST.POST.MULTI_OBJECT_DELETE, change-type: UPDATE, category: DATA_WRITE }
+        - { service: s3.amazonaws.com, operation: REST.PUT.BUCKET, change-type: CREATE, category: MANAGEMENT, asset-kind: S3_BUCKET }
+        - { service: s3.amazonaws.com, operation: REST.DELETE.BUCKET, change-type: DELETE, category: MANAGEMENT, asset-kind: S3_BUCKET }
+        - { service: s3.amazonaws.com, operation: REST.PUT.ACL, change-type: PERMISSION, category: PERMISSION }
+        - { service: s3.amazonaws.com, operation: REST.PUT.BUCKETPOLICY, change-type: PERMISSION, category: PERMISSION }
+        - { service: s3.amazonaws.com, operation: REST.DELETE.BUCKETPOLICY, change-type: PERMISSION, category: PERMISSION }
+        # Everything else a request reads or changes is bucket or object configuration.
+        - { service: s3.amazonaws.com, operation-prefix: REST.GET., change-type: ACCESS, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation-prefix: REST.HEAD., change-type: ACCESS, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation-prefix: REST.PUT., change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation-prefix: REST.POST., change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation-prefix: REST.DELETE., change-type: UPDATE, category: MANAGEMENT }
+    versions:
+      - id: V_1_0
+        description: The CloudWatch Logs record schema documented in 2026 (29 fields).

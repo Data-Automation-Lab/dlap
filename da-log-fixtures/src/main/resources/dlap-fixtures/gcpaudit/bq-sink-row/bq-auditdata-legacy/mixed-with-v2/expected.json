@@ -1,0 +1,5 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:05:00.454678Z|r1-mix-1","eventCategory":"EVENT_CATEGORY_DATA_READ","targetResource":{"canonicalUri":"bq://proj-0d1a0001/sales/orders"},"sharedEventId":"projects/proj-0d1a0001/jobs/bqjob_row_mix","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:05:00.565789Z|r1-mix-2","changeType":"UPDATE","eventCategory":"EVENT_CATEGORY_MANAGEMENT","targetResource":{"canonicalUri":"bqjob://proj-0d1a0001/bqjob_row_mix"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:05:00.565789Z|r1-mix-2#bq://proj-0d1a0001/sales/orders","eventCategory":"EVENT_CATEGORY_DATA_READ","targetResource":{"canonicalUri":"bq://proj-0d1a0001/sales/orders"},"sharedEventId":"projects/proj-0d1a0001/jobs/bqjob_row_mix","sourceSchemaVersion":"bq-auditmetadata"}
+]}

@@ -1,0 +1,16 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.InsertJob
+variant_ids:
+  - actor.principal-subject
+  - actor.delegation-chain
+  - actor.service-account
+  - actor.masked-email
+  - actor.google-internal
+  - actor.caller-ip-redacted
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Actor classes on tableDataRead rows, most without requestMetadata."

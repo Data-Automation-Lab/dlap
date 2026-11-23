@@ -1,0 +1,21 @@
+{
+  "outcome": "PARSED_WITH_WARNINGS",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T12:00:00.250Z|bq2-unknown-2",
+      "eventTime": "2026-09-03T12:00:00.250Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resultStatus": "SUCCESS",
+      "principal": {"type": "USER", "id": "analyst@example.com"},
+      "targetResource": {"canonicalUri": "bq://proj-0d1a0001/sales/orders"},
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sharedEventId": "projects/proj-0d1a0001/jobs/bquxjob_unknown_1",
+      "parseWarnings": ["PARSE_WARNING_UNKNOWN_FIELDS"]
+    }
+  ]
+}

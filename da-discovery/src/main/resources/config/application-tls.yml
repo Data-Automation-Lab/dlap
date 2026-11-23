@@ -1,0 +1,24 @@
+# ===================================================================
+# Opt-in TLS profile for da-discovery: serves HTTPS with HTTP/2.
+#
+# The repository ships NO keystore. The operator supplies one, and both
+# variables below are required. Neither has a default, so the service does
+# not start with TLS unless they are set:
+#
+#   DLAP_TLS_KEYSTORE_PATH      path to a PKCS12 keystore holding one key entry
+#   DLAP_TLS_KEYSTORE_PASSWORD  password of that keystore
+#
+# If a variable is unset, Spring Boot keeps the literal "${...}" text as the
+# property value and the embedded server aborts startup while loading the
+# keystore. No traffic is served. Generate a keystore and see the failure
+# modes in SECURITY.md (section "TLS profile").
+# ===================================================================
+server:
+  ssl:
+    key-store: ${DLAP_TLS_KEYSTORE_PATH}
+    key-store-password: ${DLAP_TLS_KEYSTORE_PASSWORD}
+    key-store-type: PKCS12
+    ciphers: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+    enabled-protocols: TLSv1.2
+  http2:
+    enabled: true

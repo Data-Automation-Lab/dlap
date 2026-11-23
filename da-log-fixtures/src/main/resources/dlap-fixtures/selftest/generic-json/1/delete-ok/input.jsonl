@@ -1,0 +1,2 @@
+{"format":"selftest","formatVersion":"1.0","time":"2026-01-01T00:10:00Z","op":"delete","target":"demo://bucket-a/object-3","actor":"user-1","status":"OK"}
+{"format":"selftest","formatVersion":"1.0","time":"2026-01-01T00:10:01Z","op":"delete","target":"demo://bucket-a/object-4","actor":"user-1","status":"OK"}

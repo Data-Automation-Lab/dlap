@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.InsertJob
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.PatchTable
+variant_ids:
+  - dedup.same-insert-id
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Same timestamp and insertId in two logs: two events, because logName is part of the native key (GcpAuditDedupTest: the same triple twice is one event)."

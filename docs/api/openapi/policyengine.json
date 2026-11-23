@@ -1,0 +1,5410 @@
+{
+  "components": {
+    "schemas": {
+      "Action": {
+        "properties": {
+          "dryRun": {
+            "type": "boolean"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "requireApproval": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AlertStatistics": {
+        "properties": {
+          "alertsByChannel": {
+            "additionalProperties": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "totalActionsExecuted": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalAlertsTriggered": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalNotificationsSent": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "AnalysisMetadataDTO": {
+        "properties": {
+          "analysisVersion": {
+            "type": "string"
+          },
+          "dataFreshnessTimestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "executionTimeMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "usesCachedData": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "AnyOf": {
+        "properties": {
+          "anyOf": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalBreakGlassBody": {
+        "properties": {
+          "justification": {
+            "maxLength": 10000,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "justification"
+        ],
+        "type": "object"
+      },
+      "ApprovalCreateBody": {
+        "properties": {
+          "actionClass": {
+            "maxLength": 16,
+            "minLength": 0,
+            "type": "string"
+          },
+          "actionParameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "actionType": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetUri": {
+            "maxLength": 2048,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idempotencyKey": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "onBehalfOf": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "provider": {
+            "maxLength": 32,
+            "minLength": 0,
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 10000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "requiredApprovals": {
+            "format": "int32",
+            "maximum": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "serviceType": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "actionClass",
+          "actionType",
+          "assetId",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "ApprovalDecisionBody": {
+        "properties": {
+          "comment": {
+            "maxLength": 10000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "decision": {
+            "maxLength": 16,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "comment",
+          "decision"
+        ],
+        "type": "object"
+      },
+      "ApprovalDecisionView": {
+        "properties": {
+          "approverName": {
+            "type": "string"
+          },
+          "approverSub": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "decidedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalPageView": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ApprovalView"
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalView": {
+        "properties": {
+          "actionClass": {
+            "type": "string"
+          },
+          "actionParameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "actionType": {
+            "type": "string"
+          },
+          "approvals": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetUri": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ApprovalDecisionView"
+            },
+            "type": "array"
+          },
+          "dispatchStatus": {
+            "type": "string"
+          },
+          "dispatchedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "excludedSubjects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "executable": {
+            "type": "boolean"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fireId": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "onBehalfOf": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "policyDbId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "policyId": {
+            "type": "string"
+          },
+          "policyName": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "requestedBy": {
+            "type": "string"
+          },
+          "requesterKind": {
+            "type": "string"
+          },
+          "requiredApprovals": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resolvedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedBy": {
+            "type": "string"
+          },
+          "withdrawReason": {
+            "type": "string"
+          },
+          "withdrawnAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "withdrawnBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ApprovalWithdrawBody": {
+        "properties": {
+          "onBehalfOf": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 10000,
+            "minLength": 10,
+            "type": "string"
+          }
+        },
+        "required": [
+          "onBehalfOf",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "AssetImpactDTO": {
+        "properties": {
+          "affectedAttributes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "appliedActions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "assetType": {
+            "type": "string"
+          },
+          "impactDetails": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "impactLevel": {
+            "type": "string"
+          },
+          "riskAssessment": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AuthZenBatchRequest": {
+        "properties": {
+          "evaluations": {
+            "items": {
+              "$ref": "#/components/schemas/AuthZenEvaluationRequest"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AuthZenEvaluationRequest": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "context": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/Resource"
+          },
+          "subject": {
+            "$ref": "#/components/schemas/Subject"
+          }
+        },
+        "required": [
+          "action",
+          "subject"
+        ],
+        "type": "object"
+      },
+      "AuthZenEvaluationResponse": {
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "decision": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceImpactDTO": {
+        "properties": {
+          "complianceFrameworksAffected": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "complianceRiskLevel": {
+            "type": "string"
+          },
+          "conflictingPolicies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "potentialViolations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Condition": {
+        "properties": {
+          "consent": {
+            "type": "boolean"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/AnyOf"
+          },
+          "region": {
+            "$ref": "#/components/schemas/AnyOf"
+          }
+        },
+        "type": "object"
+      },
+      "Context": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "obligations": {
+            "items": {
+              "$ref": "#/components/schemas/Obligation"
+            },
+            "type": "array"
+          },
+          "reason_admin": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "CostImpactDTO": {
+        "properties": {
+          "costBreakdown": {
+            "additionalProperties": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "object"
+          },
+          "costRiskLevel": {
+            "type": "string"
+          },
+          "estimatedImplementationCost": {
+            "format": "double",
+            "type": "number"
+          },
+          "estimatedMonthlyCost": {
+            "format": "double",
+            "type": "number"
+          },
+          "potentialSavings": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "EventAnalyticsDTO": {
+        "properties": {
+          "alertStats": {
+            "$ref": "#/components/schemas/AlertStatistics"
+          },
+          "eventsBySeverity": {
+            "items": {
+              "$ref": "#/components/schemas/EventSeverityCount"
+            },
+            "type": "array"
+          },
+          "eventsBySourceService": {
+            "items": {
+              "$ref": "#/components/schemas/SourceServiceCount"
+            },
+            "type": "array"
+          },
+          "eventsByType": {
+            "items": {
+              "$ref": "#/components/schemas/EventTypeCount"
+            },
+            "type": "array"
+          },
+          "fromTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recentTrends": {
+            "items": {
+              "$ref": "#/components/schemas/EventTrendPoint"
+            },
+            "type": "array"
+          },
+          "responseMetrics": {
+            "$ref": "#/components/schemas/ResponseTimeMetrics"
+          },
+          "toTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "topActiveSubscriptions": {
+            "items": {
+              "$ref": "#/components/schemas/TopSubscription"
+            },
+            "type": "array"
+          },
+          "totalActiveSubscriptions": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalEventsThisMonth": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalEventsThisWeek": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalEventsToday": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalUsersWithSubscriptions": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "EventRuleInputDTO": {
+        "properties": {
+          "condition": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "priority": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "condition",
+          "name"
+        ],
+        "type": "object"
+      },
+      "EventRuleOutputDTO": {
+        "properties": {
+          "condition": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "priority": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EventSeverityCount": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "percentage": {
+            "format": "double",
+            "type": "number"
+          },
+          "severity": {
+            "enum": [
+              "CRITICAL",
+              "HIGH",
+              "MEDIUM",
+              "LOW",
+              "INFO"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EventStreamDTO": {
+        "properties": {
+          "actionTriggered": {
+            "type": "boolean"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eventData": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "eventId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "eventType": {
+            "enum": [
+              "POLICY_VIOLATION",
+              "POLICY_EVALUATION_COMPLETED",
+              "POLICY_APPLIED",
+              "POLICY_RULE_TRIGGERED",
+              "ASSET_DISCOVERED",
+              "ASSET_METADATA_CHANGED",
+              "ASSET_CLASSIFICATION_CHANGED",
+              "ASSET_ACCESS_DETECTED",
+              "COMPLIANCE_VIOLATION",
+              "COMPLIANCE_SCAN_COMPLETED",
+              "REGULATORY_CHANGE",
+              "ASSET_ARCHIVAL_SCHEDULED",
+              "ASSET_ARCHIVAL_COMPLETED",
+              "ASSET_DELETION_SCHEDULED",
+              "ASSET_DELETION_COMPLETED",
+              "SYSTEM_ALERT",
+              "SERVICE_HEALTH_ISSUE",
+              "DATA_QUALITY_ISSUE",
+              "SECURITY_INCIDENT",
+              "USER_ACCESS_ANOMALY",
+              "UNAUTHORIZED_ACCESS_ATTEMPT",
+              "CUSTOM_EVENT"
+            ],
+            "type": "string"
+          },
+          "isProcessed": {
+            "type": "boolean"
+          },
+          "matchingSubscriptionsCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "notificationSent": {
+            "type": "boolean"
+          },
+          "policyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "policyName": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "CRITICAL",
+              "HIGH",
+              "MEDIUM",
+              "LOW",
+              "INFO"
+            ],
+            "type": "string"
+          },
+          "sourceService": {
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "userAction": {
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EventSubscriptionInputDTO": {
+        "description": "Event subscription configuration",
+        "properties": {
+          "actionConfig": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "assetPrefixes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "eventTypes": {
+            "items": {
+              "enum": [
+                "POLICY_VIOLATION",
+                "POLICY_EVALUATION_COMPLETED",
+                "POLICY_APPLIED",
+                "POLICY_RULE_TRIGGERED",
+                "ASSET_DISCOVERED",
+                "ASSET_METADATA_CHANGED",
+                "ASSET_CLASSIFICATION_CHANGED",
+                "ASSET_ACCESS_DETECTED",
+                "COMPLIANCE_VIOLATION",
+                "COMPLIANCE_SCAN_COMPLETED",
+                "REGULATORY_CHANGE",
+                "ASSET_ARCHIVAL_SCHEDULED",
+                "ASSET_ARCHIVAL_COMPLETED",
+                "ASSET_DELETION_SCHEDULED",
+                "ASSET_DELETION_COMPLETED",
+                "SYSTEM_ALERT",
+                "SERVICE_HEALTH_ISSUE",
+                "DATA_QUALITY_ISSUE",
+                "SECURITY_INCIDENT",
+                "USER_ACCESS_ANOMALY",
+                "UNAUTHORIZED_ACCESS_ATTEMPT",
+                "CUSTOM_EVENT"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "notificationConfig": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/EventRuleInputDTO"
+            },
+            "maxItems": 0,
+            "minItems": 0,
+            "type": "array"
+          },
+          "severities": {
+            "items": {
+              "enum": [
+                "CRITICAL",
+                "HIGH",
+                "MEDIUM",
+                "LOW",
+                "INFO"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sourceServices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionOutputDTO": {
+        "properties": {
+          "actionConfig": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "assetPrefixes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enabledRulesCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eventTypes": {
+            "items": {
+              "enum": [
+                "POLICY_VIOLATION",
+                "POLICY_EVALUATION_COMPLETED",
+                "POLICY_APPLIED",
+                "POLICY_RULE_TRIGGERED",
+                "ASSET_DISCOVERED",
+                "ASSET_METADATA_CHANGED",
+                "ASSET_CLASSIFICATION_CHANGED",
+                "ASSET_ACCESS_DETECTED",
+                "COMPLIANCE_VIOLATION",
+                "COMPLIANCE_SCAN_COMPLETED",
+                "REGULATORY_CHANGE",
+                "ASSET_ARCHIVAL_SCHEDULED",
+                "ASSET_ARCHIVAL_COMPLETED",
+                "ASSET_DELETION_SCHEDULED",
+                "ASSET_DELETION_COMPLETED",
+                "SYSTEM_ALERT",
+                "SERVICE_HEALTH_ISSUE",
+                "DATA_QUALITY_ISSUE",
+                "SECURITY_INCIDENT",
+                "USER_ACCESS_ANOMALY",
+                "UNAUTHORIZED_ACCESS_ATTEMPT",
+                "CUSTOM_EVENT"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "eventsMatchedCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastEventMatchedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "notificationConfig": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/EventRuleOutputDTO"
+            },
+            "type": "array"
+          },
+          "severities": {
+            "items": {
+              "enum": [
+                "CRITICAL",
+                "HIGH",
+                "MEDIUM",
+                "LOW",
+                "INFO"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sourceServices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "PAUSED",
+              "DISABLED",
+              "ARCHIVED"
+            ],
+            "type": "string"
+          },
+          "totalRulesCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EventTrendPoint": {
+        "properties": {
+          "criticalCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eventCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "highCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "lowCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "mediumCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EventTypeCount": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eventType": {
+            "enum": [
+              "POLICY_VIOLATION",
+              "POLICY_EVALUATION_COMPLETED",
+              "POLICY_APPLIED",
+              "POLICY_RULE_TRIGGERED",
+              "ASSET_DISCOVERED",
+              "ASSET_METADATA_CHANGED",
+              "ASSET_CLASSIFICATION_CHANGED",
+              "ASSET_ACCESS_DETECTED",
+              "COMPLIANCE_VIOLATION",
+              "COMPLIANCE_SCAN_COMPLETED",
+              "REGULATORY_CHANGE",
+              "ASSET_ARCHIVAL_SCHEDULED",
+              "ASSET_ARCHIVAL_COMPLETED",
+              "ASSET_DELETION_SCHEDULED",
+              "ASSET_DELETION_COMPLETED",
+              "SYSTEM_ALERT",
+              "SERVICE_HEALTH_ISSUE",
+              "DATA_QUALITY_ISSUE",
+              "SECURITY_INCIDENT",
+              "USER_ACCESS_ANOMALY",
+              "UNAUTHORIZED_ACCESS_ATTEMPT",
+              "CUSTOM_EVENT"
+            ],
+            "type": "string"
+          },
+          "percentage": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ImpactSummaryDTO": {
+        "properties": {
+          "highImpactAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "impactPercentage": {
+            "format": "double",
+            "type": "number"
+          },
+          "lowImpactAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "mediumImpactAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "overallRiskLevel": {
+            "type": "string"
+          },
+          "totalAssetsAffected": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalAssetsAnalyzed": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Metadata": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Obligation": {
+        "properties": {
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PageEventStreamDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/EventStreamDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageEventSubscriptionOutputDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/EventSubscriptionOutputDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PagePolicyDraftOutputDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PagePolicyEvaluationSummaryDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyEvaluationSummaryDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PagePolicySummaryDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/PolicySummaryDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Pageable": {
+        "properties": {
+          "page": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sort": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PageableObject": {
+        "properties": {
+          "offset": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "unpaged": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "PerformanceImpactDTO": {
+        "properties": {
+          "cpuUtilizationIncrease": {
+            "format": "double",
+            "type": "number"
+          },
+          "estimatedApiCalls": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "estimatedProcessingTimeMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "memoryUtilizationIncrease": {
+            "format": "double",
+            "type": "number"
+          },
+          "performanceRiskLevel": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyDraftActionDTO": {
+        "description": "Approval action with optional comment",
+        "properties": {
+          "actionType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "comment": {
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "metadata": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "targetImplementationDate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actionType"
+        ],
+        "type": "object"
+      },
+      "PolicyDraftInputDTO": {
+        "description": "Policy draft creation data",
+        "properties": {
+          "accessActions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "accessCondition": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "accessEffect": {
+            "type": "string"
+          },
+          "accessObligations": {
+            "items": {
+              "additionalProperties": {
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "accessSubjects": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "actions": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "basePolicyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "category": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "changeSummary": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "conditionLogic": {
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expectedImpact": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "justification": {
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "rulesDefinition": {
+            "items": {
+              "additionalProperties": {
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "stakeholders": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "targetImplementationDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "workflowMetadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "PolicyDraftOutputDTO": {
+        "properties": {
+          "accessActions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "accessCondition": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "accessEffect": {
+            "type": "string"
+          },
+          "accessObligations": {
+            "items": {
+              "additionalProperties": {
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "accessSubjects": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "actions": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "approvalMetadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "approvedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "approvedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "availableActions": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowActionDTO"
+            },
+            "type": "array"
+          },
+          "basePolicyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "changeSummary": {
+            "type": "string"
+          },
+          "conditionLogic": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "expectedImpact": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "justification": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "publishedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rejectedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "rejectedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "reviewComments": {
+            "items": {
+              "additionalProperties": {
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "rulesDefinition": {
+            "items": {
+              "additionalProperties": {
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "stakeholders": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "submittedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "targetImplementationDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "version": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "workflowStatus": {
+            "$ref": "#/components/schemas/WorkflowStatusDTO"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyDsl": {
+        "properties": {
+          "apiVersion": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          },
+          "spec": {
+            "$ref": "#/components/schemas/Spec"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyEvaluationOutputDTO": {
+        "properties": {
+          "evaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "evaluationDetails": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "evaluationTriggeredByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "policyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "policyName": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "ERROR",
+              "PENDING",
+              "NOT_APPLICABLE"
+            ],
+            "type": "string"
+          },
+          "targetAssetId": {
+            "type": "string"
+          },
+          "triggeredActions": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyEvaluationRequestDTO": {
+        "properties": {
+          "assetSnapshotFromEvent": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "evaluationContext": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "targetAssetId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetAssetId"
+        ],
+        "type": "object"
+      },
+      "PolicyEvaluationSummaryDTO": {
+        "properties": {
+          "evaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "policyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "policyName": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "ERROR",
+              "PENDING",
+              "NOT_APPLICABLE"
+            ],
+            "type": "string"
+          },
+          "targetAssetId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyImpactRequestDTO": {
+        "description": "Policy impact analysis request with rules content and analysis parameters",
+        "properties": {
+          "analysisType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "contextParameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "includeComplianceImpact": {
+            "type": "boolean"
+          },
+          "includeCostImpact": {
+            "type": "boolean"
+          },
+          "includePerformanceEstimate": {
+            "type": "boolean"
+          },
+          "rulesContent": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/PolicyImpactScopeDTO"
+          }
+        },
+        "required": [
+          "analysisType",
+          "rulesContent"
+        ],
+        "type": "object"
+      },
+      "PolicyImpactResponseDTO": {
+        "properties": {
+          "affectedAssets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetImpactDTO"
+            },
+            "type": "array"
+          },
+          "analysisId": {
+            "type": "string"
+          },
+          "analysisType": {
+            "type": "string"
+          },
+          "analyzedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "complianceImpact": {
+            "$ref": "#/components/schemas/ComplianceImpactDTO"
+          },
+          "costImpact": {
+            "$ref": "#/components/schemas/CostImpactDTO"
+          },
+          "dataAvailable": {
+            "type": "boolean"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/AnalysisMetadataDTO"
+          },
+          "performanceImpact": {
+            "$ref": "#/components/schemas/PerformanceImpactDTO"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "riskAssessment": {
+            "$ref": "#/components/schemas/RiskAssessmentDTO"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ImpactSummaryDTO"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyImpactScopeDTO": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assetTypes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dataSources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "excludedLabels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "maxAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "requiredLabels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyInputDTO": {
+        "properties": {
+          "actions": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "conditionLogic": {
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "policyDocument": {
+            "type": "string"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyRuleDTO"
+            },
+            "maxItems": 0,
+            "minItems": 0,
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "ENABLED",
+              "DISABLED"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "PolicyOutputDTO": {
+        "properties": {
+          "actions": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "conditionLogic": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "policyDocument": {
+            "type": "string"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyRuleDTO"
+            },
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "ENABLED",
+              "DISABLED"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyRuleDTO": {
+        "properties": {
+          "actions": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "condition": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "priority": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "condition",
+          "name"
+        ],
+        "type": "object"
+      },
+      "PolicySummaryDTO": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ruleCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "ENABLED",
+              "DISABLED"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyTextDraftRequestDTO": {
+        "description": "Plain-English policy description and optional owner",
+        "properties": {
+          "owner": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 4000,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "PolicyTextDraftResponseDTO": {
+        "properties": {
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "confidence": {
+            "format": "double",
+            "type": "number"
+          },
+          "dslYaml": {
+            "type": "string"
+          },
+          "structured": {
+            "$ref": "#/components/schemas/PolicyDsl"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyVersionView": {
+        "description": "One immutable version of a policy (AUD-02a)",
+        "properties": {
+          "actions": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "auditEntryHash": {
+            "type": "string"
+          },
+          "auditSeq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "auditStream": {
+            "type": "string"
+          },
+          "changeType": {
+            "enum": [
+              "BASELINE",
+              "CREATED",
+              "UPDATED",
+              "STATUS_CHANGED",
+              "DELETED"
+            ],
+            "type": "string"
+          },
+          "changedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "changedBy": {
+            "type": "string"
+          },
+          "changedByKind": {
+            "type": "string"
+          },
+          "conditionLogic": {
+            "type": "string"
+          },
+          "contentSha256": {
+            "type": "string"
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "policyDocument": {
+            "type": "string"
+          },
+          "policyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ENABLED",
+              "DISABLED"
+            ],
+            "type": "string"
+          },
+          "version": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Resource": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "properties": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ResponseTimeMetrics": {
+        "properties": {
+          "averageNotificationTimeMs": {
+            "format": "double",
+            "type": "number"
+          },
+          "averageProcessingTimeMs": {
+            "format": "double",
+            "type": "number"
+          },
+          "failedNotifications": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "successRate": {
+            "format": "double",
+            "type": "number"
+          },
+          "totalProcessedEvents": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RiskAssessmentDTO": {
+        "properties": {
+          "identifiedRisks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "mitigationStrategies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "overallRiskLevel": {
+            "type": "string"
+          },
+          "riskScore": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "SortObject": {
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SourceServiceCount": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "percentage": {
+            "format": "double",
+            "type": "number"
+          },
+          "sourceService": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Spec": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/Condition"
+          },
+          "effect": {
+            "type": "string"
+          },
+          "match": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "obligations": {
+            "items": {
+              "$ref": "#/components/schemas/Obligation"
+            },
+            "type": "array"
+          },
+          "subjects": {
+            "$ref": "#/components/schemas/Subjects"
+          },
+          "triggers": {
+            "items": {
+              "$ref": "#/components/schemas/Trigger"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Subject": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "properties": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Subjects": {
+        "properties": {
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tiers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TopSubscription": {
+        "properties": {
+          "eventsMatched": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "lastActivity": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "notificationsSent": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ownerName": {
+            "type": "string"
+          },
+          "subscriptionName": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Trigger": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "lifecycle": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WorkflowActionDTO": {
+        "properties": {
+          "actionDescription": {
+            "type": "string"
+          },
+          "actionLabel": {
+            "type": "string"
+          },
+          "actionType": {
+            "type": "string"
+          },
+          "buttonStyle": {
+            "type": "string"
+          },
+          "confirmationMessage": {
+            "type": "string"
+          },
+          "requiresComment": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "WorkflowStatusDTO": {
+        "properties": {
+          "canApprove": {
+            "type": "boolean"
+          },
+          "canEdit": {
+            "type": "boolean"
+          },
+          "canPublish": {
+            "type": "boolean"
+          },
+          "canReject": {
+            "type": "boolean"
+          },
+          "canSubmit": {
+            "type": "boolean"
+          },
+          "currentStage": {
+            "type": "string"
+          },
+          "daysInCurrentStatus": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "nextPossibleStates": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "stageColor": {
+            "type": "string"
+          },
+          "statusDescription": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "DLAP Policy Engine Microservice",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "termsOfService": "http://swagger.io/terms/",
+    "title": "da-policyengine",
+    "version": "v0.0.1"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/access/v1/evaluation": {
+      "post": {
+        "description": "Returns a deterministic allow/deny verdict for one subject-action-resource request and emits a decision-log event. Verdict context carries the decision id, reason, and any obligations.",
+        "operationId": "evaluate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthZenEvaluationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthZenEvaluationResponse"
+                }
+              }
+            },
+            "description": "Verdict returned (decision field is true/false)"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthZenEvaluationResponse"
+                }
+              }
+            },
+            "description": "Malformed or invalid evaluation request"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthZenEvaluationResponse"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthZenEvaluationResponse"
+                }
+              }
+            },
+            "description": "Caller lacks ROLE_SERVICE_ACCOUNT / ROLE_ADMIN"
+          }
+        },
+        "summary": "Evaluate a single access request (AuthZEN 1.0)",
+        "tags": [
+          "Access Decision (AuthZEN PDP)"
+        ]
+      }
+    },
+    "/access/v1/evaluations": {
+      "post": {
+        "description": "Evaluates and audits each request independently and returns the verdicts in request order under the 'evaluations' key.",
+        "operationId": "evaluateBatch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthZenBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Per-request verdicts returned in request order"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Malformed or invalid batch request"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Caller lacks ROLE_SERVICE_ACCOUNT / ROLE_ADMIN"
+          }
+        },
+        "summary": "Evaluate a batch of access requests (AuthZEN 1.0 boxcarring)",
+        "tags": [
+          "Access Decision (AuthZEN PDP)"
+        ]
+      }
+    },
+    "/api/v1/policyengine/approvals": {
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actionClass",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "assetId",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalPageView"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "List approval requests",
+        "tags": [
+          "Approvals"
+        ]
+      },
+      "post": {
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalCreateBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalView"
+                }
+              }
+            },
+            "description": "The earlier request with the same idempotencyKey"
+          },
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalView"
+                }
+              }
+            },
+            "description": "A new request"
+          },
+          "400": {
+            "description": "Invalid body"
+          },
+          "403": {
+            "description": "onBehalfOf from a caller that is not a service account"
+          }
+        },
+        "summary": "Ask for approval of a destructive action",
+        "tags": [
+          "Approvals"
+        ]
+      }
+    },
+    "/api/v1/policyengine/approvals/inbox": {
+      "get": {
+        "operationId": "inbox",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalPageView"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Approval requests waiting for the caller",
+        "tags": [
+          "Approvals"
+        ]
+      }
+    },
+    "/api/v1/policyengine/approvals/{id}": {
+      "get": {
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalView"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Read one approval request",
+        "tags": [
+          "Approvals"
+        ]
+      }
+    },
+    "/api/v1/policyengine/approvals/{id}/break-glass": {
+      "post": {
+        "operationId": "breakGlass",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalBreakGlassBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalView"
+                }
+              }
+            },
+            "description": "The request after the decision"
+          },
+          "400": {
+            "description": "Invalid body, or a comment or justification too short"
+          },
+          "403": {
+            "description": "Not an approver, no MFA marker, or the requester (reason field)"
+          },
+          "404": {
+            "description": "No such request"
+          },
+          "409": {
+            "description": "Not pending, expired, or already decided by the caller"
+          }
+        },
+        "summary": "Break glass: release an approval request without the quorum",
+        "tags": [
+          "Approvals"
+        ]
+      }
+    },
+    "/api/v1/policyengine/approvals/{id}/decisions": {
+      "post": {
+        "operationId": "decide",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalDecisionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalView"
+                }
+              }
+            },
+            "description": "The request after the decision"
+          },
+          "400": {
+            "description": "Invalid body, or a comment or justification too short"
+          },
+          "403": {
+            "description": "Not an approver, no MFA marker, or the requester (reason field)"
+          },
+          "404": {
+            "description": "No such request"
+          },
+          "409": {
+            "description": "Not pending, expired, or already decided by the caller"
+          }
+        },
+        "summary": "Approve or reject an approval request",
+        "tags": [
+          "Approvals"
+        ]
+      }
+    },
+    "/api/v1/policyengine/approvals/{id}/withdraw": {
+      "post": {
+        "operationId": "withdraw",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalWithdrawBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalView"
+                }
+              }
+            },
+            "description": "The request, now WITHDRAWN"
+          },
+          "400": {
+            "description": "Invalid body: a reason shorter than 10 characters, or no onBehalfOf"
+          },
+          "403": {
+            "description": "The caller is not a service account"
+          },
+          "404": {
+            "description": "No such request"
+          },
+          "409": {
+            "description": "Not pending: the body carries the current status as status"
+          },
+          "503": {
+            "description": "The audit log could not record the withdrawal; nothing changed"
+          }
+        },
+        "summary": "Withdraw a pending approval request on behalf of a person (service accounts only)",
+        "tags": [
+          "Approvals"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts": {
+      "get": {
+        "description": "Retrieves paginated list of policy drafts with optional filtering by status, category, priority, creator, and name search.",
+        "operationId": "getAllDrafts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "description": "Filter by draft status",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "CREATED",
+                "SUBMITTED",
+                "UNDER_REVIEW",
+                "REQUIRES_CHANGES",
+                "APPROVED",
+                "REJECTED",
+                "PUBLISHED",
+                "ARCHIVED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by category",
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by priority level",
+            "in": "query",
+            "name": "priority",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by creator user ID",
+            "in": "query",
+            "name": "createdBy",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Search in draft names",
+            "in": "query",
+            "name": "nameContains",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagePolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get all policy drafts with filtering",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      },
+      "post": {
+        "description": "Creates a new policy draft that can be edited, submitted for review, and eventually published as an active policy.",
+        "operationId": "createDraft",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDraftInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft created successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Invalid draft data provided"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to create drafts"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Draft with this name already exists"
+          }
+        },
+        "summary": "Create a new policy draft",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/categories": {
+      "get": {
+        "description": "Retrieves list of all categories used in policy drafts for filtering and organization.",
+        "operationId": "getDraftCategories",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get available draft categories",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/my-drafts": {
+      "get": {
+        "description": "Retrieves drafts that require attention from the current user (created by them or they are a stakeholder).",
+        "operationId": "getMyDrafts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagePolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get drafts requiring my attention",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/overdue": {
+      "get": {
+        "description": "Retrieves drafts that have passed their target implementation date but haven't been published yet.",
+        "operationId": "getOverdueDrafts",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get overdue drafts",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/pending-review": {
+      "get": {
+        "description": "Retrieves all drafts that are currently pending review (SUBMITTED or UNDER_REVIEW status).",
+        "operationId": "getDraftsPendingReview",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagePolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get drafts pending review",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/statistics": {
+      "get": {
+        "description": "Retrieves statistical information about policy drafts grouped by status for dashboard displays.",
+        "operationId": "getDraftStatistics",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "items": {
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get draft statistics",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/tags": {
+      "get": {
+        "description": "Retrieves list of all tags used in policy drafts for filtering and organization.",
+        "operationId": "getDraftTags",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get available draft tags",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/{draftId}": {
+      "delete": {
+        "description": "Deletes a policy draft. Only allowed for drafts in CREATED status.",
+        "operationId": "deleteDraft",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Policy draft deleted successfully"
+          },
+          "403": {
+            "description": "Insufficient permissions to delete draft"
+          },
+          "404": {
+            "description": "Policy draft not found"
+          },
+          "409": {
+            "description": "Draft cannot be deleted in current status"
+          }
+        },
+        "summary": "Delete policy draft",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      },
+      "get": {
+        "description": "Retrieves a specific policy draft with complete workflow information and available actions.",
+        "operationId": "getDraftById",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to view draft"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft not found"
+          }
+        },
+        "summary": "Get policy draft by ID",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      },
+      "put": {
+        "description": "Updates an existing policy draft. Only allowed for drafts in CREATED or REQUIRES_CHANGES status.",
+        "operationId": "updateDraft",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDraftInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft updated successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Invalid draft data provided"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to update draft"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft not found"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Draft cannot be updated in current status or name conflict"
+          }
+        },
+        "summary": "Update policy draft",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/{draftId}/approve": {
+      "post": {
+        "description": "Approves a policy draft, transitioning it to APPROVED status and making it ready for publication.",
+        "operationId": "approveDraft",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDraftActionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Draft approved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to approve draft"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft not found"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Draft cannot be approved in current status"
+          }
+        },
+        "summary": "Approve policy draft",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/{draftId}/comments": {
+      "post": {
+        "description": "Adds a review comment to a policy draft for collaboration and feedback purposes.",
+        "operationId": "addComment",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Review comment",
+            "in": "query",
+            "name": "comment",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Comment added successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Invalid comment data"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to comment on draft"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft not found"
+          }
+        },
+        "summary": "Add review comment to draft",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/{draftId}/publish": {
+      "post": {
+        "description": "Publishes an approved policy draft as an active policy. Only APPROVED drafts can be published.",
+        "operationId": "publishDraft",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDraftActionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "Draft published successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to publish draft"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft not found"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "Only approved drafts can be published"
+          },
+          "503": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "The audit log could not record the new policy; nothing was published (reason audit-unavailable)"
+          }
+        },
+        "summary": "Publish approved draft as policy",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/{draftId}/reject": {
+      "post": {
+        "description": "Rejects a policy draft, transitioning it to REJECTED status. A comment explaining the rejection is required.",
+        "operationId": "rejectDraft",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDraftActionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Draft rejected successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Comment is required for rejection"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to reject draft"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft not found"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Draft cannot be rejected in current status"
+          }
+        },
+        "summary": "Reject policy draft",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/{draftId}/request-changes": {
+      "post": {
+        "description": "Requests changes to a policy draft, transitioning it to REQUIRES_CHANGES status. A comment explaining required changes is mandatory.",
+        "operationId": "requestChanges",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDraftActionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Changes requested successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Comment is required for change request"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to request changes"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft not found"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Changes cannot be requested for draft in current status"
+          }
+        },
+        "summary": "Request changes to draft",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/drafts/{draftId}/submit": {
+      "post": {
+        "description": "Submits a policy draft for review, transitioning it from CREATED or REQUIRES_CHANGES to SUBMITTED status.",
+        "operationId": "submitDraft",
+        "parameters": [
+          {
+            "description": "Draft ID",
+            "in": "path",
+            "name": "draftId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDraftActionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Draft submitted successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to submit draft"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Policy draft not found"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDraftOutputDTO"
+                }
+              }
+            },
+            "description": "Draft cannot be submitted in current status"
+          }
+        },
+        "summary": "Submit draft for review",
+        "tags": [
+          "Policy Draft Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/evaluations": {
+      "get": {
+        "operationId": "getPolicyEvaluations",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "in": "query",
+            "name": "policyId",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "targetAssetId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagePolicyEvaluationSummaryDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "policy-evaluation-controller"
+        ]
+      }
+    },
+    "/api/v1/policyengine/evaluations/{evaluationId}": {
+      "get": {
+        "operationId": "getPolicyEvaluationById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "evaluationId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyEvaluationOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "policy-evaluation-controller"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/analytics": {
+      "get": {
+        "description": "Retrieve comprehensive analytics for user's event subscriptions including trends, metrics, and insights",
+        "operationId": "getEventAnalytics",
+        "parameters": [
+          {
+            "description": "Start time for analytics (defaults to 24 hours ago)",
+            "in": "query",
+            "name": "fromTime",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "End time for analytics (defaults to now)",
+            "in": "query",
+            "name": "toTime",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAnalyticsDTO"
+                }
+              }
+            },
+            "description": "Event analytics retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAnalyticsDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to access analytics"
+          }
+        },
+        "summary": "Get event analytics dashboard",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/analytics/system": {
+      "get": {
+        "description": "Retrieve comprehensive analytics across all subscriptions and users in the platform",
+        "operationId": "getSystemEventAnalytics",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAnalyticsDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get system-wide event analytics (Admin only)",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/config/event-types": {
+      "get": {
+        "description": "Retrieve list of all available event types for subscription configuration",
+        "operationId": "getAvailableEventTypes",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "enum": [
+                      "POLICY_VIOLATION",
+                      "POLICY_EVALUATION_COMPLETED",
+                      "POLICY_APPLIED",
+                      "POLICY_RULE_TRIGGERED",
+                      "ASSET_DISCOVERED",
+                      "ASSET_METADATA_CHANGED",
+                      "ASSET_CLASSIFICATION_CHANGED",
+                      "ASSET_ACCESS_DETECTED",
+                      "COMPLIANCE_VIOLATION",
+                      "COMPLIANCE_SCAN_COMPLETED",
+                      "REGULATORY_CHANGE",
+                      "ASSET_ARCHIVAL_SCHEDULED",
+                      "ASSET_ARCHIVAL_COMPLETED",
+                      "ASSET_DELETION_SCHEDULED",
+                      "ASSET_DELETION_COMPLETED",
+                      "SYSTEM_ALERT",
+                      "SERVICE_HEALTH_ISSUE",
+                      "DATA_QUALITY_ISSUE",
+                      "SECURITY_INCIDENT",
+                      "USER_ACCESS_ANOMALY",
+                      "UNAUTHORIZED_ACCESS_ATTEMPT",
+                      "CUSTOM_EVENT"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get available event types",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/config/source-services": {
+      "get": {
+        "description": "Retrieve list of all available source services for subscription configuration",
+        "operationId": "getAvailableSourceServices",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get available source services",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/config/validate": {
+      "post": {
+        "description": "Validate the structure of an event subscription configuration before creation to catch errors early. Checks shape only: rule conditions are never compiled or evaluated here, and rules are accepted only from ROLE_ADMIN.",
+        "operationId": "validateSubscriptionConfiguration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventSubscriptionInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Validate subscription configuration",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/stream": {
+      "get": {
+        "description": "Retrieve real-time events matching user's subscriptions for the Event Center dashboard",
+        "operationId": "getEventStream",
+        "parameters": [
+          {
+            "description": "Maximum number of events to return (default: 50)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventStreamDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Event stream retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventStreamDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Insufficient permissions to access event stream"
+          }
+        },
+        "summary": "Get real-time event stream",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/stream/all": {
+      "get": {
+        "description": "Retrieve real-time events from all subscriptions across the platform",
+        "operationId": "getAllEventStream",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventStreamDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get all event stream (Admin only)",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/subscriptions": {
+      "get": {
+        "description": "Retrieve event subscriptions for the authenticated user with optional filtering",
+        "operationId": "getUserSubscriptions",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "nameContains",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageEventSubscriptionOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get user's event subscriptions",
+        "tags": [
+          "Event Center"
+        ]
+      },
+      "post": {
+        "description": "Create a new event subscription to receive notifications for specific event types and conditions. Rule conditions are MVEL expressions and are accepted only from ROLE_ADMIN.",
+        "operationId": "createSubscription",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventSubscriptionInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionOutputDTO"
+                }
+              }
+            },
+            "description": "Event subscription created successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionOutputDTO"
+                }
+              }
+            },
+            "description": "Invalid subscription configuration"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionOutputDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to create subscription, or rules supplied by a non-admin"
+          }
+        },
+        "summary": "Create event subscription",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/subscriptions/{subscriptionId}": {
+      "delete": {
+        "description": "Delete an event subscription and stop receiving notifications",
+        "operationId": "deleteSubscription",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Delete event subscription",
+        "tags": [
+          "Event Center"
+        ]
+      },
+      "get": {
+        "description": "Retrieve detailed information about a specific event subscription",
+        "operationId": "getSubscriptionById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get event subscription by ID",
+        "tags": [
+          "Event Center"
+        ]
+      },
+      "put": {
+        "description": "Update configuration of an existing event subscription. Rule conditions are MVEL expressions and are accepted only from ROLE_ADMIN.",
+        "operationId": "updateSubscription",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventSubscriptionInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Update event subscription",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/subscriptions/{subscriptionId}/history": {
+      "get": {
+        "description": "Retrieve paginated historical events that matched a specific subscription",
+        "operationId": "getHistoricalEvents",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageEventStreamDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get historical events for subscription",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/events/subscriptions/{subscriptionId}/status": {
+      "put": {
+        "description": "Enable, disable, pause, or archive an event subscription",
+        "operationId": "updateSubscriptionStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscriptionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ACTIVE",
+                "PAUSED",
+                "DISABLED",
+                "ARCHIVED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Update subscription status",
+        "tags": [
+          "Event Center"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies": {
+      "get": {
+        "operationId": "getAllPolicies",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "nameContains",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagePolicySummaryDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      },
+      "post": {
+        "operationId": "createPolicy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/action-items": {
+      "get": {
+        "operationId": "policyActionItems",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": {
+                      "type": "object"
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/analyze-impact": {
+      "post": {
+        "description": "Provides comprehensive analysis of potential policy impacts including affected assets, performance estimates, cost implications, and compliance analysis. Supports FULL, QUICK, and TARGETED analysis types.",
+        "operationId": "analyzePolicyImpact",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyImpactRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyImpactResponseDTO"
+                }
+              }
+            },
+            "description": "Policy impact analysis completed successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyImpactResponseDTO"
+                }
+              }
+            },
+            "description": "Invalid analysis request parameters"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyImpactResponseDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to perform policy analysis"
+          }
+        },
+        "summary": "Analyze policy impact before implementation",
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/compliance-breakdown": {
+      "get": {
+        "operationId": "complianceBreakdown",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/compliance-history": {
+      "get": {
+        "operationId": "complianceHistory",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": {
+                      "type": "object"
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/compliance-rate": {
+      "get": {
+        "operationId": "complianceRate",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "double",
+                  "type": "number"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/count/active": {
+      "get": {
+        "operationId": "countActivePolicies",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/draft-from-text": {
+      "post": {
+        "description": "Translates a natural-language description into a canonical dlap/v1 policy DSL draft. Persists nothing: the draft must be confirmed by a human in the visual builder before the create-policy endpoint is called. Destructive actions are always drafted with dryRun and requireApproval enabled.",
+        "operationId": "draftPolicyFromText",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyTextDraftRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyTextDraftResponseDTO"
+                }
+              }
+            },
+            "description": "Draft produced (not saved)"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyTextDraftResponseDTO"
+                }
+              }
+            },
+            "description": "Invalid request body"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyTextDraftResponseDTO"
+                }
+              }
+            },
+            "description": "Insufficient permissions to draft policies"
+          },
+          "422": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyTextDraftResponseDTO"
+                }
+              }
+            },
+            "description": "The request could not be expressed in the policy DSL"
+          },
+          "503": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyTextDraftResponseDTO"
+                }
+              }
+            },
+            "description": "No LLM provider is configured"
+          }
+        },
+        "summary": "Draft a policy from plain English",
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/violations/count": {
+      "get": {
+        "operationId": "countViolations",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/{policyId}": {
+      "delete": {
+        "description": "Disables the policy, stamps it deleted and freezes it. It disappears from the policy list and the evaluators; its versions stay readable. The change is a new DELETED version, chained in the audit stream govern.policy.",
+        "operationId": "deletePolicy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "No live policy with this id"
+          },
+          "503": {
+            "description": "The audit log could not record the change; nothing changed"
+          }
+        },
+        "summary": "Delete a policy (soft delete)",
+        "tags": [
+          "Policy Management"
+        ]
+      },
+      "get": {
+        "operationId": "getPolicyById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      },
+      "put": {
+        "operationId": "updatePolicy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/{policyId}/status": {
+      "patch": {
+        "operationId": "setPolicyStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ENABLED",
+                "DISABLED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/{policyId}/versions": {
+      "get": {
+        "description": "Every change of a policy (create, update, status change, delete) is an immutable version, chained in the audit stream govern.policy at auditSeq. Oldest first, without content; a deleted policy keeps its versions.",
+        "operationId": "getPolicyVersions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PolicyVersionView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "The versions"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PolicyVersionView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "No policy and no version with this id"
+          }
+        },
+        "summary": "List the versions of a policy",
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/policies/{policyId}/versions/{version}": {
+      "get": {
+        "description": "The version with its content: description, conditionLogic, actions and policyDocument as they were. contentSha256 is the SHA-256 of the stored snapshot and is also in the audit entry.",
+        "operationId": "getPolicyVersion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyVersionView"
+                }
+              }
+            },
+            "description": "The version"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyVersionView"
+                }
+              }
+            },
+            "description": "The policy has no such version"
+          }
+        },
+        "summary": "Read one version of a policy",
+        "tags": [
+          "Policy Management"
+        ]
+      }
+    },
+    "/api/v1/policyengine/{policyId}/evaluations": {
+      "post": {
+        "operationId": "triggerPolicyEvaluation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "policyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyEvaluationRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyEvaluationOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "policy-evaluation-controller"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Consumed-stage per-request access verdicts (ADR-0040)",
+      "name": "Access Decision (AuthZEN PDP)"
+    },
+    {
+      "description": "Dual control for destructive lifecycle actions",
+      "name": "Approvals"
+    },
+    {
+      "description": "Endpoints for Event Center management, streaming, and analytics",
+      "name": "Event Center"
+    },
+    {
+      "description": "Endpoints for managing policy drafts and approval workflows",
+      "name": "Policy Draft Management"
+    },
+    {
+      "description": "Endpoints for managing data governance policies",
+      "name": "Policy Management"
+    }
+  ]
+}

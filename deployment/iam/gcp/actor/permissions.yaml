@@ -1,0 +1,165 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# GCP Actor roles: the single source of truth (IAM-04). One Actor per retire executor: executor
+# "delete" is da-autodelete, executor "archive" is da-autoarchival. main.tf reads this file with
+# yamldecode and creates the custom roles of the executor it is given. The da-admin-service
+# ActorRoleTraceabilityTest checks every call site, that permissions and their call modules
+# agree, that object permissions sit on the bucket_objects scope only, that no permission holds a
+# wildcard or a never_grant entry, and that every file of da-autodelete and da-autoarchival that
+# imports a Google client is cited or listed below. The da-admin-service permission self-check
+# (GET /api/v1/permission-check/gcp) tests every permission and every never_grant entry with
+# testIamPermissions on the named buckets and tables and reports the missing and the extra ones.
+#
+# Scopes (main.tf builds one custom role per scope, all granted on named resources only):
+#   bucket          dlap<Executor>ActorBucket, granted on each named bucket
+#                   (google_storage_bucket_iam_member). Bucket configuration and object listing.
+#   bucket_objects  dlap<Executor>ActorObjects, granted on the same named buckets, and only when
+#                   object_actions is true. Needed only for a single-object delete or archive.
+#   dataset         dlap<Executor>ActorDataset, granted on each named BigQuery dataset
+#                   (google_bigquery_dataset_iam_member).
+# A project custom role can be granted only on resources of its own project, so the named buckets
+# and datasets must live in project_id; apply the module once per project.
+cloud: gcp
+permissions:
+  - permission: storage.buckets.get
+    scopes: [bucket]
+    executors: [delete, archive]
+    purpose: Read the bucket's lifecycle rules and metageneration, and its versioning (Q-656).
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/gcp/GcsLifecycleRuleApplier.java
+        line: 378
+        call: storage.get(bucketName)
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/gcp/GcsLifecycleRuleApplier.java
+        line: 393
+        call: storage.get().get(bucketName)
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/gcp/GcsLifecycleRuleProvider.java
+        line: 263
+        call: gcs().get(name)
+  - permission: storage.buckets.update
+    scopes: [bucket]
+    executors: [delete, archive]
+    purpose: Write the merged lifecycle rules with a metageneration precondition.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/gcp/GcsLifecycleRuleApplier.java
+        line: 388
+        call: storage.update(updated.build()
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/gcp/GcsLifecycleRuleProvider.java
+        line: 204
+        call: .update(Storage.BucketTargetOption.metagenerationMatch())
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/gcp/GcsLifecycleRuleProvider.java
+        line: 246
+        call: b.build().update(Storage.BucketTargetOption.metagenerationMatch())
+  - permission: storage.objects.list
+    scopes: [bucket]
+    executors: [archive]
+    purpose: List the first objects of the archive scope for the plan preview. Names and sizes only, no content.
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/gcp/GcsLifecycleRuleProvider.java
+        line: 147
+        call: gcs().list(
+  - permission: storage.objects.delete
+    scopes: [bucket_objects]
+    executors: [delete, archive]
+    purpose: Delete one approved object (the direct engine delete); the archive rewrite of an object onto itself overwrites it, which needs the same permission.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/GcpCloudDeletionService.java
+        line: 199
+        call: storage.delete(blobId)
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/GcsCloudStorageService.java
+        line: 158
+        call: storage().copy(copyRequest)
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/GcsCloudStorageService.java
+        line: 227
+        call: storage().copy(copyRequest)
+  - permission: storage.objects.get
+    scopes: [bucket_objects]
+    executors: [archive]
+    purpose: Read one object's metadata and rewrite it onto itself with the archive storage class (the rewrite reads the source).
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/GcsCloudStorageService.java
+        line: 146
+        call: storage().get(blobId)
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/GcsCloudStorageService.java
+        line: 158
+        call: storage().copy(copyRequest)
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/GcsCloudStorageService.java
+        line: 210
+        call: storage().get(blobId)
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/GcsCloudStorageService.java
+        line: 227
+        call: storage().copy(copyRequest)
+  - permission: storage.objects.create
+    scopes: [bucket_objects]
+    executors: [archive]
+    purpose: Write the rewritten object with the archive or restored storage class.
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/GcsCloudStorageService.java
+        line: 158
+        call: storage().copy(copyRequest)
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/GcsCloudStorageService.java
+        line: 227
+        call: storage().copy(copyRequest)
+  - permission: bigquery.tables.get
+    scopes: [dataset]
+    executors: [delete]
+    purpose: Read the table's current expiration before DLAP sets its own.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/gcp/BigQueryTableExpirationApplier.java
+        line: 122
+        call: client(id).getTable(id)
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/gcp/BigQueryTableExpirationApplier.java
+        line: 131
+        call: client(id).getTable(id)
+  - permission: bigquery.tables.update
+    scopes: [dataset]
+    executors: [delete]
+    purpose: Set the table expiration (BigQuery tables.patch), the native delete rule for a table.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/gcp/BigQueryTableExpirationApplier.java
+        line: 135
+        call: .build().update()
+never_grant:
+  - permission: storage.buckets.delete
+    scopes: [bucket]
+    reason: DLAP deletes objects through lifecycle rules, never a bucket.
+  - permission: storage.buckets.setIamPolicy
+    scopes: [bucket]
+    reason: An IAM write could grant anyone access.
+  - permission: storage.objects.setIamPolicy
+    scopes: [bucket_objects]
+    reason: An object ACL or IAM write could make data public.
+  - permission: storage.objects.update
+    scopes: [bucket_objects]
+    reason: No executor rewrites object metadata in place.
+  - permission: bigquery.tables.delete
+    scopes: [dataset]
+    reason: A table is retired by its expiration, never deleted by DLAP.
+  - permission: bigquery.tables.getData
+    scopes: [dataset]
+    reason: No executor reads table content.
+  - permission: bigquery.tables.updateData
+    scopes: [dataset]
+    reason: No executor writes table content.
+  - permission: bigquery.tables.setIamPolicy
+    scopes: [dataset]
+    reason: An IAM write could grant anyone access.
+tolerated_denials:
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/GcpCloudDeletionService.java
+    line: 190
+    call: storage.get(blobId)
+    permission: storage.objects.get
+    reason: A size probe before the delete. A denied probe is logged and the delete goes on without the size, so the delete Actor never needs to read objects.
+unreachable_calls:
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/GcpCloudDeletionService.java
+    line: 231
+    call: bq.delete(tableId)
+    reason: DispositionPlanner sends a BigQuery table to the table expiration rule, never to the engine delete (DIRECT_KINDS holds objects only).
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/GcpCloudDeletionService.java
+    line: 222
+    call: bq.getTable(tableId)
+    reason: The size probe of the same unreachable BigQuery branch.
+unreachable_sources:
+  - source: da-autoarchival/src/main/java/com/dlap/autoarchival/provider/GcsArchiveStorageProvider.java
+    reason: An ICloudArchivalProvider bean that no class injects; the archive executor uses GcsLifecycleRuleProvider and GcsCloudStorageService.

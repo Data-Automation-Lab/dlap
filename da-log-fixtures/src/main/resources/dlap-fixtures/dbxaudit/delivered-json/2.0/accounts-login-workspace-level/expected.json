@@ -1,0 +1,15 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "DATABRICKS_AUDIT|req-123|1234567890000|login",
+      "eventTime": "2009-02-13T23:31:30Z",
+      "sourceProvider": "DATABRICKS",
+      "sourceService": "accounts",
+      "operation": "login",
+      "resultStatus": "SUCCESS",
+      "sourceFormat": "DATABRICKS_AUDIT/delivered-json",
+      "sourceSchemaVersion": "2.0"
+    }
+  ]
+}

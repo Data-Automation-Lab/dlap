@@ -1,0 +1,13 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:tabledataservice.list
+variant_ids:
+  - entry.unknown-fields
+  - time.receive-timestamp-fallback
+  - entry.split
+expected_outcome: PARSED_WITH_WARNINGS
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. An unknown column and payload field, a row without timestamp, and the first part of a split entry."

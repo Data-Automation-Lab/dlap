@@ -1,0 +1,27 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "eventCategory": "NetworkActivity",
+      "eventType": "AwsVpceEvent",
+      "eventTime": "2023-03-01T00:00:00Z",
+      "awsRegion": "us-east-1",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "GetObject",
+      "sourceIPAddress": "10.0.0.1",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AROAEXAMPLE:session-name",
+        "accountId": "111111111111"
+      },
+      "requestParameters": {
+        "bucketName": "example-bucket",
+        "key": "example-file.txt"
+      },
+      "responseElements": null,
+      "vpcEndpointId": "vpce-1234abcd",
+      "vpcEndpointAccountId": "111111111111",
+      "recipientAccountId": "111111111111"
+    }
+  ]
+}

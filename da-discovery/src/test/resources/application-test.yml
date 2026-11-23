@@ -1,0 +1,206 @@
+# Test configuration for da-discovery integration tests
+spring:
+  application:
+    name: da-discovery-test
+
+  config:
+    import: classpath:config/log-analyzers.yml
+
+  # Database configuration (using H2 for tests)
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: password
+    hikari:
+      auto-commit: false
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+  h2:
+    console:
+      enabled: false
+
+  # Flyway disabled for H2-based unit slices (Testcontainers tests enable it)
+  flyway:
+    enabled: false
+
+  # Disable Docker for tests
+  docker:
+    compose:
+      enabled: false
+
+  # Task execution configuration for tests
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 4
+        queue-capacity: 100
+      thread-name-prefix: test-task-
+
+  # Disable Spring Boot auto-configuration for some features in tests
+  cache:
+    type: jcache
+
+# Disable Docker for tests
+testcontainers:
+  enabled: false
+
+# Cloud provider configuration for tests
+aws:
+  enabled: false
+  access-key: test-access-key
+  secret-key: test-secret-key
+  region: us-west-2
+  ssm:
+    enabled: false
+    prefix: /test-prefix/
+  s3:
+    bucket-name: test-bucket
+  dynamodb:
+    table-name: test-table
+
+oci:
+  enabled: false
+  tenancy-id: test-tenancy-id
+  region: us-phoenix-1
+  default-compartment: test-compartment
+  compartment-id: test-compartment-id
+
+azure:
+  enabled: false
+  client-id: test-dummy-client-id
+  client-secret: test-dummy-client-secret
+  tenant-id: test-dummy-tenant-id
+  subscription-id: 'test-dummy-subscription-id'
+  resource-group-name: 'test-dummy-rg'
+  region: 'test-dummy-region'
+  cosmos:
+    database-name: 'test-dummy-cosmos-db'
+    container-name: 'test-dummy-cosmos-container'
+  storage:
+    account-name: 'test-dummy-storage-account'
+    container-name: 'test-dummy-storage-container'
+  keyvault:
+    enabled: false
+    uri: 'https://test-dummy-kv.vault.azure.net/'
+
+cloud:
+  provider:
+    gcp:
+      enabled: true
+      secretmanager:
+        enabled: false
+    aws:
+      enabled: false
+    azure:
+      enabled: false
+    oci:
+      enabled: false
+
+gcp:
+  project:
+    id: test-project
+
+google:
+  cloud:
+    projectId: test-project-id
+
+oracle:
+  enabled: false
+  config-file-path: classpath:config/test-oci-config
+  profile-name: DEFAULT
+  tenancy-id: test-tenancy-id
+  region: us-phoenix-1
+  default-compartment: test-compartment
+  compartment-id: test-compartment-id
+
+# Application settings
+application:
+  kafka:
+    enabled: true
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: da-discovery-test
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+  scheduler:
+    enabled: false
+  metrics:
+    enabled: false
+
+# Cloud hierarchy configuration - REAL configuration for testing CloudHierarchyProperties
+cloud-hierarchy:
+  providers:
+    - provider: AWS
+      services:
+        - id: ec2
+          displayName: 'EC2 Service'
+          resourceTypes:
+            - id: EC2_INSTANCE
+              displayName: 'EC2 Instance'
+    - provider: GCP
+      services:
+        - id: compute
+          displayName: 'Compute Engine'
+          resourceTypes:
+            - id: GCE_INSTANCE
+              displayName: 'GCE Instance'
+            - id: GCE_DISK
+              displayName: 'GCE Disk'
+
+# Discovery logging settings
+discovery:
+  logging:
+    enabled: true
+    retention-days: 7
+  notifications:
+    enabled: true
+    sender: test@discovery.com
+
+# JHipster configuration
+jhipster:
+  clientApp:
+    name: 'daDiscovery'
+  security:
+    authentication:
+      jwt:
+        secret: test-jwt-secret
+        base64-secret: test-secret-which-needs-to-be-at-least-512-bits-long-need-to-be-at-least-512-bits-long-really-long-ok
+        token-validity-in-seconds: 86400
+  audit-events:
+    retention-period: 30
+  logging:
+    use-json-format: false
+  cors:
+    allowed-origins: 'http://localhost:3000,http://localhost:3001'
+    allowed-methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+    allowed-headers: 'Authorization,Content-Type,Accept,X-Requested-With'
+    exposed-headers: 'Authorization,Link,X-Total-Count'
+    allow-credentials: true
+    max-age: 1800
+
+# Logging configuration for tests (SINGLE SECTION)
+logging:
+  level:
+    com.dlap.discovery: DEBUG
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG

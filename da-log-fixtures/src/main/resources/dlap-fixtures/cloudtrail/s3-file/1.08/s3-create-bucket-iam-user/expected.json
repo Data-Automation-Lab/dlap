@@ -1,0 +1,19 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "68c99c97-c191-4329-b210-82ca8631066d",
+      "eventTime": "2023-07-10T12:00:23Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "CreateBucket",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::999945223994:user/user-c39c05"
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    }
+  ]
+}

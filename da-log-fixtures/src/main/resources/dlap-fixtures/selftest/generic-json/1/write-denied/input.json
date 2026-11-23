@@ -1,0 +1,1 @@
+{"format":"selftest","formatVersion":"1.0","time":"2026-01-01T00:05:00Z","op":"write","target":"demo://bucket-a/object-2","actor":"user-2","status":"DENIED"}

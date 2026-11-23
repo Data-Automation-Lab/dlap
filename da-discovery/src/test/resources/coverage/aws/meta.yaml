@@ -1,0 +1,15 @@
+origin: hand-written
+source_url:
+  - https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DescribeTrails.html
+  - https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_GetTrailStatus.html
+  - https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_GetEventSelectors.html
+  - https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DataResource.html
+  - https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_AdvancedFieldSelector.html
+doc_date: 2026-10-20
+license: Apache-2.0
+anonymised: true
+covers:
+  - cloudtrail:DescribeTrails
+  - cloudtrail:GetTrailStatus
+  - cloudtrail:GetEventSelectors
+notes: "COV-01 test inputs. Written by hand from the field lists of the CloudTrail API reference pages above (DataResource and AdvancedFieldSelector read on 2026-10-20); no vendor sample is copied. Account 111122223333 and all bucket, trail and role names are invented. Responses are shaped as the JSON 1.1 protocol returns them; values not read by the evaluator are illustrative."

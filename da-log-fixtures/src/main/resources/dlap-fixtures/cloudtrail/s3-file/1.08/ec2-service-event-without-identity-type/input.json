@@ -1,0 +1,29 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "accountId": "999945223994",
+        "invokedBy": "ec2.amazonaws.com"
+      },
+      "eventTime": "2023-07-10T11:55:23Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "SharedSnapshotVolumeCreated",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "ec2.amazonaws.com",
+      "userAgent": "ec2.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "895dc875-cb08-45a5-b8c2-9158838741c0",
+      "readOnly": false,
+      "eventType": "AwsServiceEvent",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "sharedEventID": "b81f7fe5-36b5-49ea-bbc9-6a9007e733c0",
+      "serviceEventDetails": {
+        "snapshotId": "snap-0e83092ae538da583"
+      },
+      "eventCategory": "Management"
+    }
+  ]
+}

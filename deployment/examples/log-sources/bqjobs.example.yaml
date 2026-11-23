@@ -1,0 +1,69 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Example bindings: BigQuery INFORMATION_SCHEMA.JOBS as read history (GCP-02).
+#
+# One binding reads the finished query, load and copy jobs of one project in one BigQuery location
+# and turns them into a DATA_READ per table a query read and a write event for the table it wrote.
+# This is the read history of BigQuery tables: it sees queries, not reads through the Storage Read
+# API, tabledata.list or a table copy source, so treat it as "job reads only" next to the Cloud Audit
+# Logs binding (kind GCP_CLOUD_AUDIT), which sees those.
+#
+# Use it:
+#   1. Save as log-sources.yml, set DLAP_LOGINGEST_SOURCES_FILE to its path, and select the registry
+#      pipeline (DLAP_LOGINGEST_PIPELINE=registry); see deployment/examples/log-sources/README.md.
+#   2. Give the service an identity through Application Default Credentials (workload identity, or a
+#      service-account key file named by GOOGLE_APPLICATION_CREDENTIALS). Nothing secret goes in this file.
+#   3. Grant that identity bigquery.jobs.listAll on the project whose jobs are read (roles/bigquery.resourceViewer)
+#      and bigquery.jobs.create on the billing project (roles/bigquery.user). The JOBS view lists every
+#      user's query text, which DLAP never selects or stores, but the role can read it: treat it as sensitive.
+#
+# Cost: every poll runs two queries, a free dry run for the column set and one billed query with
+# a 10 MB on-demand minimum. The query selects only the columns DLAP keeps, never the query text.
+dlap:
+  logingest:
+    config-mode: FILE
+    sources:
+      - id: gcp-jobs
+        kind: GCP_BQ_JOBS_VIEW
+        # overlap (30 minutes), poll-interval (5 minutes) and the other defaults come from the family
+        # mapping, dlap/log-formats/bqjobs/mapping.yaml. Set them here only to change them.
+        bindings:
+          - id: acme-gcp-jobs-p1
+            scope:
+              # The project whose jobs are read: JOBS_BY_PROJECT of this project.
+              project-id: acme-prod-p1
+            stream:
+              transport: BQ_JOBS_VIEW
+              location:
+                # Required. The BigQuery location of the datasets and jobs: US, EU, or a region such as
+                # europe-west3. It must be the region of the `region-xx` qualifier; BigQuery refuses a
+                # query whose location does not match, and the binding then reports a REGION_MISMATCH
+                # marker in the quarantine channel. A project with jobs in two locations needs a binding
+                # per location.
+                location: US
+                # Optional. The project that runs (and pays for) the query, when it is not the scope
+                # project. The identity needs bigquery.jobs.create there.
+                billing-project: acme-billing
+            format:
+              envelope: jobs-view-row
+              version: auto
+            # A stream that may not backfill starts 24 hours back. With backfill the first poll reads the
+            # whole 180 days the view retains (it never asks for more), so the read history is there on
+            # day one. Event ids make a re-read free of duplicates.
+            backfill:
+              allowed: true

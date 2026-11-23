@@ -1,0 +1,9 @@
+# Pins of the public flaws.cloud CloudTrail log archive (E2E-02). The archive is downloaded at run time by
+# the nightly workflow only; it is never stored in this repository (no licence is stated for it, decision D8).
+# size is the Content-Length the host reported in a HEAD request on 2026-11-02 (251688960 bytes); nothing was
+# downloaded to read it. sha256 stays UNPINNED until the first nightly run has fetched the file: that run
+# prints the computed value, the founder checks it and replaces UNPINNED below. Until then run.sh refuses the
+# download unless DLAP_FLAWS_ALLOW_UNPINNED=1 (the workflow sets it only while this value is UNPINNED).
+url=https://summitroute.com/downloads/flaws_cloudtrail_logs.tar
+size=251688960
+sha256=UNPINNED

@@ -1,0 +1,5 @@
+# Fixture bytes must be identical on every platform (same rule as da-log-fixtures): no end-of-line
+# conversion for inputs and expected results. Metadata keeps the repository-wide LF rule.
+*       -text
+*.yaml  text eol=lf
+*.md    text eol=lf

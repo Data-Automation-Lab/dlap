@@ -1,0 +1,33 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Keycloak import override of the full-stack restore drill (DR-02). A restored stack starts Keycloak with the
+# realm export of the lost one instead of the baseline realm file in git: the export carries what was created
+# at run time (users, password changes, client changes), which the git file does not. The volume is filled by
+# keycloak-realm.sh restore and emptied by keycloak-realm.sh wipe once Keycloak has imported the realm.
+# The mount replaces the baseline mount of the same container path in deployment/environments/dev.
+# Variable: DR_STACK_KC_IMPORT (the name of the import volume).
+
+services:
+  keycloak:
+    volumes:
+      - kc-import:/opt/keycloak/data/import:ro
+
+volumes:
+  kc-import:
+    external: true
+    name: ${DR_STACK_KC_IMPORT}

@@ -1,0 +1,16 @@
+{
+  "id": "dlap-normalized-aws-missing-result",
+  "binding": { "id": "dlap-selftest", "sourceKind": "DLAP_NORMALIZED_AWS", "envelope": "ingest-dto" },
+  "record": {
+    "sourceProvider": "AWS",
+    "operation": "GetObject",
+    "changeType": "ACCESS",
+    "eventTime": "2026-07-05T12:00:00Z",
+    "targetResourceId": "s3://selftest-bucket/c.csv",
+    "requestId": "selftest-0003"
+  },
+  "expect": {
+    "outcome": "QUARANTINED:MISSING_REQUIRED_FIELD",
+    "events": 1
+  }
+}

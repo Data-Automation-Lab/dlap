@@ -1,0 +1,15 @@
+origin: public-dataset
+repo: panther-labs/panther-analysis
+commit: "4d78f77d545e474064f9921924d54e1e368ceffd"
+source_url: https://github.com/panther-labs/panther-analysis/blob/4d78f77d545e474064f9921924d54e1e368ceffd/rules/databricks_rules/databricks_employee_logon.yml
+doc_date: 2026-10-09
+license: Apache-2.0
+covers:
+  - accounts:login
+variant_ids:
+  - time.epoch-milliseconds
+  - actor.email
+  - scope.workspace-level
+expected_outcome: PARSED
+anonymised: true
+notes: "Anonymised excerpt of panther-labs/panther-analysis at 4d78f77d545e: databricks_rules/databricks_employee_logon.yml, entry index [0]. Changed from the source: identifiers anonymised by com.dlap.fixtures.anon.Anonymiser, records wrapped in the provider's delivery envelope, JSON re-indented. DERIVED: a detection rule test sample written by hand with placeholder identifiers. It shows the delivered field names; it is not independent proof of what Databricks delivers."

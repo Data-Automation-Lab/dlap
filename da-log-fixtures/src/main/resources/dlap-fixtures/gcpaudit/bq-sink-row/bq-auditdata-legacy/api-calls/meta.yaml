@@ -1,0 +1,22 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:jobservice.insert
+  - bigquery.googleapis.com:jobservice.query
+  - bigquery.googleapis.com:jobservice.getqueryresults
+  - bigquery.googleapis.com:jobservice.cancel
+  - bigquery.googleapis.com:tabledataservice.list
+  - bigquery.googleapis.com:tableservice.insert
+  - bigquery.googleapis.com:tableservice.update
+  - bigquery.googleapis.com:tableservice.delete
+variant_ids:
+  - bq1.resource-type
+  - bq1.deprecated-fields
+  - log.admin-activity
+  - log.data-access
+  - entry.num-response-items
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. The v1 API invocations as sink rows: job calls are management events, tabledata.list (numResponseItems set) a read, table calls Admin Activity management events; jobs.query carries the deprecated jobQueryDoneResponse. The cancel and delete rows carry an AuditData without set fields as an empty servicedata_v1_bigquery struct."

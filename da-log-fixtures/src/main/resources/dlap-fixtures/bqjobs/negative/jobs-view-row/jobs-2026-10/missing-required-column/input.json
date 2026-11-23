@@ -1,0 +1,22 @@
+{
+  "location": "US",
+  "project_id": "proj-5e7a0c11",
+  "job_id": "bquxjob_5a1c0041",
+  "creation_time": "2026-09-14T16:59:56.000000Z",
+  "start_time": "2026-09-14T16:59:57.000000Z",
+  "end_time": "2026-09-14T17:00:00.000000Z",
+  "user_email": "analyst@example.com",
+  "principal_subject": null,
+  "job_type": "QUERY",
+  "statement_type": "SELECT",
+  "priority": "INTERACTIVE",
+  "state": "DONE",
+  "error_result": null,
+  "cache_hit": false,
+  "parent_job_id": null,
+  "destination_table": null,
+  "referenced_logical_views": [],
+  "total_bytes_billed": 10485760,
+  "total_bytes_processed": 1048576,
+  "labels": []
+}

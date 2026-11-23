@@ -1,0 +1,13 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:INSERT
+variant_ids:
+  - write.destination-table
+  - write.dml-statistics
+  - read.referenced-tables-fanout
+expected_outcome: PARSED
+anonymised: false
+notes: "INSERT INTO landing_orders SELECT FROM orders. The target also appears in referenced_tables; it counts as written, not read, as in the scan."

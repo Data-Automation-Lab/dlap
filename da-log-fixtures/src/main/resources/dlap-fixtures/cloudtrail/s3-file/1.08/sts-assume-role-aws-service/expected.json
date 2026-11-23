@@ -1,0 +1,16 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "a4a7b25e-c2d5-436f-8a7e-ea89f50541ab",
+      "eventTime": "2023-07-10T11:55:24Z",
+      "sourceProvider": "AWS",
+      "sourceService": "sts.amazonaws.com",
+      "operation": "AssumeRole",
+      "resultStatus": "SUCCESS",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08",
+      "sharedEventId": "71797d26-1286-4204-81d4-cbcce8819672"
+    }
+  ]
+}

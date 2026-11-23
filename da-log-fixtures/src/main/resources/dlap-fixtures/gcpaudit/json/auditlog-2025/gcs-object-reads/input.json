@@ -1,0 +1,88 @@
+[
+  {
+    "insertId": "a25-gcs-reads-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-02T10:00:00.123456789Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.get",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "DATA_READ"
+        }
+      ]
+    },
+    "receiveTimestamp": "2026-09-02T10:00:00.823456789Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a25-gcs-reads-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-02T10:00:01.123456790Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.list",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket",
+          "permission": "storage.objects.list",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "DATA_READ"
+        }
+      ],
+      "numResponseItems": "3",
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      }
+    },
+    "receiveTimestamp": "2026-09-02T10:00:01.823456790Z",
+    "severity": "INFO"
+  }
+]

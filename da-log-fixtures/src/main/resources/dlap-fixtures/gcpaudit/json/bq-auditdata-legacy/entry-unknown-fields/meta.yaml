@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+doc_date: 2026-09-04
+license: synthetic
+covers:
+  - bigquery.googleapis.com:tabledataservice.list
+variant_ids:
+  - entry.unknown-fields
+expected_outcome: PARSED_WITH_WARNINGS
+anonymised: false
+notes: "Hand-written for GCP-01. Fields the LogEntry and AuditLog schemas do not define, at the top level and inside protoPayload, are reported as unknown fields and never reject the entry. Not proto-confirmed: an unknown field cannot pass a strict round trip."

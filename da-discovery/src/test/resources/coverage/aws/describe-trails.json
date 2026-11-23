@@ -1,0 +1,28 @@
+{
+  "trailList": [
+    {
+      "Name": "org-trail",
+      "S3BucketName": "example-cloudtrail-logs",
+      "IncludeGlobalServiceEvents": true,
+      "IsMultiRegionTrail": true,
+      "HomeRegion": "us-east-1",
+      "TrailARN": "arn:aws:cloudtrail:us-east-1:111122223333:trail/org-trail",
+      "LogFileValidationEnabled": true,
+      "HasCustomEventSelectors": true,
+      "HasInsightSelectors": false,
+      "IsOrganizationTrail": true
+    },
+    {
+      "Name": "eu-trail",
+      "S3BucketName": "example-cloudtrail-logs-eu",
+      "IncludeGlobalServiceEvents": false,
+      "IsMultiRegionTrail": false,
+      "HomeRegion": "eu-west-1",
+      "TrailARN": "arn:aws:cloudtrail:eu-west-1:111122223333:trail/eu-trail",
+      "LogFileValidationEnabled": false,
+      "HasCustomEventSelectors": true,
+      "HasInsightSelectors": false,
+      "IsOrganizationTrail": false
+    }
+  ]
+}

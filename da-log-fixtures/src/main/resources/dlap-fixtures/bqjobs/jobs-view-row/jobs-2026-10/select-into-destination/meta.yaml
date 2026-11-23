@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SELECT
+variant_ids:
+  - write.destination-table
+  - read.referenced-tables-fanout
+expected_outcome: PARSED
+anonymised: false
+notes: "A SELECT whose job configuration names an explicit destination table (not an anonymous one): DATA_WRITE for the destination, DATA_READ for the source. The write is the primary event."

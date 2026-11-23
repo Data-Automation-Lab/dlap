@@ -1,0 +1,158 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:23.123456812Z|bq2-table-dataset-1",
+      "eventTime": "2026-09-03T10:00:23.123456812Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "CREATE",
+      "operation": "google.cloud.bigquery.v2.TableService.InsertTable",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/returns",
+        "createdTime": "2026-09-03T12:00:00.250Z"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:24.123456813Z|bq2-table-dataset-2",
+      "eventTime": "2026-09-03T10:00:24.123456813Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "google.cloud.bigquery.v2.TableService.PatchTable",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:25.123456814Z|bq2-table-dataset-3",
+      "eventTime": "2026-09-03T10:00:25.123456814Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "google.cloud.bigquery.v2.TableService.UpdateTable",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:26.123456815Z|bq2-table-dataset-4",
+      "eventTime": "2026-09-03T10:00:26.123456815Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "DELETE",
+      "operation": "google.cloud.bigquery.v2.TableService.DeleteTable",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders_backup"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:27.123456816Z|bq2-table-dataset-5",
+      "eventTime": "2026-09-03T10:00:27.123456816Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "CREATE",
+      "operation": "google.cloud.bigquery.v2.DatasetService.InsertDataset",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/marketing"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:28.123456817Z|bq2-table-dataset-6",
+      "eventTime": "2026-09-03T10:00:28.123456817Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "google.cloud.bigquery.v2.DatasetService.PatchDataset",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/marketing"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:29.123456818Z|bq2-table-dataset-7",
+      "eventTime": "2026-09-03T10:00:29.123456818Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "DELETE",
+      "operation": "google.cloud.bigquery.v2.DatasetService.DeleteDataset",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/marketing"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity|2026-09-03T10:00:30.123456819Z|bq2-table-dataset-8",
+      "eventTime": "2026-09-03T10:00:30.123456819Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "PERMISSION",
+      "operation": "google.iam.v1.IAMPolicy.SetIamPolicy",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_PERMISSION"
+    }
+  ]
+}

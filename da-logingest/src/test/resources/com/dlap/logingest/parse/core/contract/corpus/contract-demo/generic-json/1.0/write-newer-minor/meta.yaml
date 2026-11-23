@@ -1,0 +1,9 @@
+origin: synthetic-from-doc
+source_url: https://www.rfc-editor.org/rfc/rfc8259
+doc_date: 2017-12-01
+license: synthetic
+covers: [store:PutObject]
+variant_ids: [demo-newer-minor, demo-time-fallback, demo-failure]
+expected_outcome: PARSED_WITH_WARNINGS
+anonymised: false
+notes: "Minor 1.7 above the highest known 1.2 parses as 1.2 with a warning; the second line has only the fallback clock and a denied check."

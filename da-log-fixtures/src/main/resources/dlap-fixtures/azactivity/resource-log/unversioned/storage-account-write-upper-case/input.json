@@ -1,0 +1,15 @@
+{
+  "records": [
+    {
+      "time": "2025-12-22T14:00:00.0000000Z",
+      "resourceId": "/subscriptions/55555555-5555-5555-5555-555555555555/resourceGroups/admin-rg/providers/Microsoft.Storage/storageAccounts/adminstorage",
+      "operationName": "MICROSOFT.STORAGE/STORAGEACCOUNTS/WRITE",
+      "category": "Administrative",
+      "resultType": "Success",
+      "callerIpAddress": "198.19.145.94",
+      "correlationId": "e5f6a7b8-c9d0-1234-ef01-111111111111",
+      "level": "Information",
+      "tenantId": "55555555-5555-5555-5555-555555555555"
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# GCP Reader role: the single source of truth (IAM-03). main.tf reads this file with
+# yamldecode, docs/guides/cloud-permissions.md explains it, and
+# da-discovery ReaderRoleTraceabilityTest checks it:
+#   - every call site exists and its line contains the quoted call;
+#   - every verb is a read verb, except a named write_exception with a reason;
+#   - content reads (storage.objects.get, bigquery.tables.getData) are granted on the log sink only,
+#     and each sink role holds only the permissions of its own resource type;
+#   - every file of da-discovery and da-logingest that imports a Google client is cited here or
+#     listed under no_permission_sources with a reason;
+#   - every permission named by a COV-01 coverage client is listed here.
+#
+# Scopes (main.tf builds one custom role per scope):
+#   project           dlapReader, granted on each monitored project (and the billing project).
+#   organization      dlapReaderOrg, an organization custom role granted on the organization or
+#                     on chosen folders. Needed only for folder crawling and inherited audit configs.
+#   log_sink_bucket   dlapLogSinkBucketReader, storage permissions, granted only on the log sink bucket.
+#   log_sink_dataset  dlapLogSinkDatasetReader, BigQuery permissions, granted only on the log sink
+#                     dataset. Two roles, so no role is granted on a resource type it has no
+#                     permission for.
+cloud: gcp
+permissions:
+  - permission: storage.buckets.list
+    scopes: [project]
+    purpose: List the buckets of a project for discovery and for read coverage.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/GCSResourceCrawler.java
+        line: 167
+        call: storage.list()
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/gcp/coverage/GcpCoverageRestClient.java
+        line: 100
+        call: '"storage.buckets.list"'
+  - permission: storage.buckets.getIamPolicy
+    scopes: [project]
+    purpose: Read bucket IAM to flag public buckets, whose reads are never logged (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/gcp/coverage/GcpCoverageRestClient.java
+        line: 112
+        call: '"storage.buckets.getIamPolicy"'
+  - permission: storage.objects.list
+    scopes: [project, log_sink_bucket]
+    purpose: List object names and metadata for discovery, and list log export shards in the sink bucket.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/GCSResourceCrawler.java
+        line: 199
+        call: bucket.list()
+      - source: da-discovery/src/main/java/com/dlap/discovery/log/service/gcp/logfetch/impl/GcsLogFetcherStrategy.java
+        line: 123
+        call: storageClient.list(bucketName
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/StorageShardStore.java
+        line: 78
+        call: .list(bucket, Storage.BlobListOption.prefix(prefix))
+  - permission: storage.objects.get
+    scopes: [log_sink_bucket]
+    purpose: Read log export shards. Granted on the sink bucket only, never on data buckets.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/log/service/gcp/logfetch/impl/GcsLogFetcherStrategy.java
+        line: 139
+        call: blob.getContent()
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/StorageShardStore.java
+        line: 89
+        call: readAllBytes(id)
+  - permission: bigquery.datasets.get
+    scopes: [project]
+    purpose: List datasets (BigQuery has no datasets.list permission; datasets.get covers the list).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/BigQueryCrawler.java
+        line: 143
+        call: bigquery.listDatasets(
+  - permission: bigquery.tables.list
+    scopes: [project, log_sink_dataset]
+    purpose: List the tables of each dataset, and the date-sharded tables of the log sink dataset.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/BigQueryCrawler.java
+        line: 178
+        call: bigquery.listTables(
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/BigQuerySinkTables.java
+        line: 65
+        call: .listTables(com.google.cloud.bigquery.DatasetId.of(project, dataset))
+  - permission: bigquery.tables.getData
+    scopes: [log_sink_dataset]
+    purpose: Query the exported audit log tables. Granted on the sink dataset only, never on data datasets.
+    calls:
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/BigQuerySinkTables.java
+        line: 83
+        call: .query(config)
+      - source: da-discovery/src/main/java/com/dlap/discovery/log/service/gcp/logfetch/impl/BigQueryLogFetcherStrategy.java
+        line: 130
+        call: bigqueryClient.query(queryConfig)
+  - permission: bigquery.jobs.create
+    scopes: [project]
+    purpose: Run the read-only queries over INFORMATION_SCHEMA.JOBS_BY_PROJECT and the log sink tables.
+    write_exception: >-
+      BigQuery runs every query, including a dry run, as a job, so reading needs jobs.create. The
+      job writes only its own temporary result. It cannot change customer data: the role holds no
+      bigquery.tables.create, updateData, update or delete, and no datasets.create, so a DML, DDL or
+      destination-table query is refused.
+    calls:
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/bigquery/BigQueryJobsViewGateway.java
+        line: 92
+        call: .create(JobInfo.newBuilder(config)
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/bigquery/BigQueryJobsViewGateway.java
+        line: 102
+        call: .query(QueryJobConfiguration.newBuilder(query.sql() + " LIMIT 0")
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/bigquery/BigQueryJobsViewGateway.java
+        line: 126
+        call: .query(config.build(), jobId(query))
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/BigQuerySinkTables.java
+        line: 83
+        call: .query(config)
+      - source: da-discovery/src/main/java/com/dlap/discovery/log/service/gcp/logfetch/impl/BigQueryLogFetcherStrategy.java
+        line: 130
+        call: bigqueryClient.query(queryConfig)
+  - permission: bigquery.jobs.listAll
+    scopes: [project]
+    purpose: Read the job history of all users, through the jobs list and the JOBS_BY_PROJECT view.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/GcpBigQueryJobResourceCrawler.java
+        line: 130
+        call: bigQuery.listJobs(BigQuery.JobListOption.allUsers())
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/bigquery/BqJobsQueries.java
+        line: 85
+        call: INFORMATION_SCHEMA.JOBS_BY_PROJECT
+  - permission: cloudsql.instances.list
+    scopes: [project]
+    purpose: List Cloud SQL instances.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/CloudSQLInstanceCrawler.java
+        line: 112
+        call: sqlAdmin.instances().list(projectId)
+  - permission: logging.logEntries.list
+    scopes: [project]
+    purpose: Read Admin Activity audit log entries through the Logging API.
+    calls:
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/GapicEntriesPager.java
+        line: 67
+        call: listLogEntriesCallable().call(request)
+      - source: da-logingest/src/main/java/com/dlap/logingest/source/gcp/GcpLogSource.java
+        line: 597
+        call: logging.listLogEntries(
+      - source: da-discovery/src/main/java/com/dlap/discovery/log/service/gcp/adapter/GCPLoggingAdapter.java
+        line: 77
+        call: logging.listLogEntries(
+  - permission: logging.privateLogEntries.list
+    scopes: [project]
+    purpose: Read Data Access audit log entries (the read signal) through the same Logging API calls.
+    calls:
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/GapicEntriesPager.java
+        line: 67
+        call: listLogEntriesCallable().call(request)
+      - source: da-logingest/src/main/java/com/dlap/logingest/source/gcp/GcpLogSource.java
+        line: 597
+        call: logging.listLogEntries(
+      - source: da-discovery/src/main/java/com/dlap/discovery/log/service/gcp/adapter/GCPLoggingAdapter.java
+        line: 77
+        call: logging.listLogEntries(
+  - permission: resourcemanager.projects.get
+    scopes: [project]
+    purpose: Read the project parent, to walk inherited audit configs (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/gcp/coverage/GcpCoverageRestClient.java
+        line: 71
+        call: '"resourcemanager.projects.get"'
+  - permission: resourcemanager.projects.getIamPolicy
+    scopes: [project]
+    purpose: Read the project auditConfigs (which services log reads, exempted members) (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/gcp/coverage/GcpCoverageRestClient.java
+        line: 84
+        call: '"resourcemanager.projects.getIamPolicy"'
+  - permission: resourcemanager.folders.get
+    scopes: [organization]
+    purpose: Read a folder parent, to walk inherited audit configs (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/gcp/coverage/GcpCoverageRestClient.java
+        line: 77
+        call: '"resourcemanager.folders.get"'
+  - permission: resourcemanager.folders.getIamPolicy
+    scopes: [organization]
+    purpose: Read folder auditConfigs that a project inherits (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/gcp/coverage/GcpCoverageRestClient.java
+        line: 82
+        call: '"resourcemanager.folders.getIamPolicy"'
+  - permission: resourcemanager.organizations.getIamPolicy
+    scopes: [organization]
+    purpose: Read organization auditConfigs that a project inherits (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/gcp/coverage/GcpCoverageRestClient.java
+        line: 83
+        call: '"resourcemanager.organizations.getIamPolicy"'
+  - permission: resourcemanager.folders.list
+    scopes: [organization]
+    purpose: List the sub-folders of a folder for folder-wide discovery.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/GCPFolderManagementServiceImpl.java
+        line: 125
+        call: foldersClient.listFolders(request)
+  - permission: resourcemanager.projects.list
+    scopes: [organization]
+    purpose: List the projects of a folder for folder-wide discovery.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/GCPFolderManagementServiceImpl.java
+        line: 236
+        call: projectsClient.listProjects(request)
+no_permission_sources:
+  - source: da-discovery/src/main/java/com/dlap/discovery/common/auth/CloudAuthenticationService.java
+    reason: Uses com.google.auth.Credentials as the generic credentials type; makes no Google call.
+  - source: da-discovery/src/main/java/com/dlap/discovery/common/auth/impl/oracle/IOracleAuthenticationService.java
+    reason: Uses com.google.auth.Credentials as the generic credentials type; makes no Google call.
+  - source: da-discovery/src/main/java/com/dlap/discovery/common/auth/impl/oracle/OracleAuthenticationServiceImpl.java
+    reason: Uses com.google.auth.Credentials as the generic credentials type; makes no Google call.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/auth/AWSAuthenticationService.java
+    reason: Uses com.google.auth.Credentials as the generic credentials type; makes no Google call.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/auth/AWSAuthenticationServiceImpl.java
+    reason: Uses com.google.auth.Credentials as the generic credentials type; makes no Google call.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/azure/auth/AzureAuthenticationServiceImpl.java
+    reason: Uses com.google.auth.Credentials as the generic credentials type; makes no Google call.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/gcp/auth/GCPAuthenticationServiceImpl.java
+    reason: Loads Application Default Credentials; the token exchange needs no IAM permission on the project.
+  - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/GcpCredentials.java
+    reason: Loads Application Default Credentials; the token exchange needs no IAM permission on the project.
+  - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/GCPResourceCrawler.java
+    reason: Base crawler; holds credentials and calls nothing.
+  - source: da-discovery/src/main/java/com/dlap/discovery/config/CloudProvidersConfig.java
+    reason: Builds the BigQuery and Storage client beans; building a client calls nothing.
+  - source: da-discovery/src/main/java/com/dlap/discovery/log/service/gcp/GcpLogAnalyzer.java
+    reason: Hands the injected clients to the fetcher strategies, which are cited above.
+  - source: da-discovery/src/main/java/com/dlap/discovery/common/model/enumeration/DataAssetType.java
+    reason: Imports a BigQuery model type only.
+  - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/bigquery/BigQueryRowJson.java
+    reason: Converts result rows to JSON; calls nothing.
+  - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/BqRowJson.java
+    reason: Converts result rows to JSON; calls nothing.
+  - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/LogEntryJson.java
+    reason: Converts log entries to JSON; calls nothing.
+  - source: da-logingest/src/main/java/com/dlap/logingest/providers/gcp/logging/LoggingApiTransport.java
+    reason: Uses the LogEntry model type; the call is made by GapicEntriesPager, cited above.

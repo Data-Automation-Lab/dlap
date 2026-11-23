@@ -1,0 +1,65 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:49.123456838Z|bq2-shapes-1",
+      "eventTime": "2026-09-03T10:00:49.123456838Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sharedEventId": "projects/proj-0d1a0001/jobs/bquxjob_base_1"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:50.123456839Z|bq2-shapes-dup",
+      "eventTime": "2026-09-03T10:00:50.123456839Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sharedEventId": "projects/proj-0d1a0001/jobs/bquxjob_base_2"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:51.123456839Z|bq2-shapes-dup",
+      "eventTime": "2026-09-03T10:00:51.123456839Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sharedEventId": "projects/proj-0d1a0001/jobs/bquxjob_base_3"
+    }
+  ]
+}

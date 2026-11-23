@@ -1,0 +1,6 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"folders/999900000002/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-12T08:02:00.121212Z|r25-status-1","resultStatus":"FAILURE","eventCategory":"EVENT_CATEGORY_DATA_READ","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"auditlog"},
+ {"nativeEventId":"organizations/999900000001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-12T08:02:01.232323Z|r25-status-2","resultStatus":"FAILURE","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"auditlog"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fpolicy|2026-09-12T08:02:02.343434Z|r25-status-3","operation":"storage.buckets.create","resultStatus":"FAILURE","targetResource":{"canonicalUri":"gs://dlap-fixture-us-bucket"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"auditlog"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fpolicy|2026-09-12T08:02:03.454545Z|r25-status-4","resultStatus":"FAILURE","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"auditlog"}
+]}

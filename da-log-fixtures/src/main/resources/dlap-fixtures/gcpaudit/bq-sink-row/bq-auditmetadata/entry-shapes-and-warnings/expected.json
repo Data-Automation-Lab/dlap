@@ -1,0 +1,5 @@
+{"outcome":"PARSED_WITH_WARNINGS","events":[
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:11:00.636363Z|r2-wrn-1","parseWarnings":["PARSE_WARNING_UNKNOWN_FIELDS"],"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:11:01.747474Z|r2-wrn-2","parseWarnings":["PARSE_WARNING_EVENT_TIME_FALLBACK"],"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:11:02.858585Z|r2-wrn-3","parseWarnings":["PARSE_WARNING_PROVIDER_TRUNCATED"],"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"}
+]}

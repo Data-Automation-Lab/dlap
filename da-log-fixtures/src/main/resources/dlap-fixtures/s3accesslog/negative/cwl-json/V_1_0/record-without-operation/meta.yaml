@@ -1,0 +1,10 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/sal-cw-log-format.html
+doc_date: 2026-11-01
+license: synthetic
+covers: []
+variant_ids:
+  - record.missing-required
+expected_outcome: QUARANTINED:MISSING_REQUIRED_FIELD
+anonymised: false
+notes: "Written by PARSE-02. The format says operation defaults to null when not available; a record without an operation cannot be classified or keyed, so it is quarantined, never guessed. Every value is invented."

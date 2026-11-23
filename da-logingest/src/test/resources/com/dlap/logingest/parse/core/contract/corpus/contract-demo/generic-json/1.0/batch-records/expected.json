@@ -1,0 +1,7 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {"nativeEventId": "evt-0010", "principal": {"type": "USER", "id": "user-7"}, "targetResource": {"canonicalUri": "s3://bucket-a/a.csv"}},
+    {"nativeEventId": "evt-0011", "principal": {"type": "USER", "id": "user-7"}, "targetResource": {"canonicalUri": "s3://bucket-a/b.csv"}}
+  ]
+}

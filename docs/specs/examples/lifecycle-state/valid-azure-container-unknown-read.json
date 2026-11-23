@@ -1,0 +1,43 @@
+{
+  "specVersion": "0.1",
+  "asset": "az://examplestore/archive-2019",
+  "platform": {
+    "provider": "AZURE",
+    "kind": "BLOB_CONTAINER"
+  },
+  "asOf": "2026-10-31T12:00:00Z",
+  "createdAt": "2019-02-01T10:00:00Z",
+  "lastReadAt": null,
+  "lastWrittenAt": null,
+  "readCoverage": null,
+  "readCoverageReasons": [
+    "permission Microsoft.Insights/diagnosticSettings/read was refused"
+  ],
+  "readCoverageSince": null,
+  "sizeBytes": null,
+  "sizeObservedAt": null,
+  "retention": {
+    "status": "UNKNOWN",
+    "basis": "LAST_ACCESSED",
+    "days": 730,
+    "fixedDate": null,
+    "expiresAt": null,
+    "source": "LABEL_DEFAULT"
+  },
+  "legalHold": false,
+  "disposition": null,
+  "provenance": [
+    {
+      "field": "createdAt",
+      "channel": "CRAWLER",
+      "bindingIds": [],
+      "eventIds": ["78af4ac4a17dabd70b3c40597431af482b0965190a917b48e8cfee70bea96df1"]
+    },
+    {
+      "field": "readCoverage",
+      "channel": "CRAWLER",
+      "bindingIds": [],
+      "eventIds": ["693b8502f97d8c49dec9e422c0dd4f055491fb25843cbf198c64140c965a8b93"]
+    }
+  ]
+}

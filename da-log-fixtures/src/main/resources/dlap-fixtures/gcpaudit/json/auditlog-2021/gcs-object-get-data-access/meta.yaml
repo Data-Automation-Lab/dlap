@@ -1,0 +1,16 @@
+origin: public-dataset
+repo: GoogleCloudPlatform/professional-services
+commit: "d86f53e2dccb7bef1f4755e43bd92d8fd5d2d060"
+source_url: https://github.com/GoogleCloudPlatform/professional-services/blob/d86f53e2dccb7bef1f4755e43bd92d8fd5d2d060/examples/audit-log-examples/cloud-storage/gcs-data-access-object-get.log
+doc_date: 2026-10-05
+license: Apache-2.0
+covers:
+  - storage.googleapis.com:storage.objects.get
+variant_ids:
+  - log.data-access
+  - actor.principal-email
+  - gcs.object-resource-name
+  - gcs.resource-labels
+expected_outcome: PARSED
+anonymised: true
+notes: "Anonymised excerpt of GoogleCloudPlatform/professional-services at d86f53e2dccb: cloud-storage/gcs-data-access-object-get.log, whole file. Changed from the source: identifiers anonymised by com.dlap.fixtures.anon.Anonymiser, records wrapped in the provider's delivery envelope, JSON re-indented. The example logs were published in 2021 and 2022, so they predate authorizationInfo.permissionType."

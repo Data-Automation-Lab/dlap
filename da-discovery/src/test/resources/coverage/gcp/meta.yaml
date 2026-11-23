@@ -1,0 +1,22 @@
+origin: hand-written
+source_url:
+  - https://cloud.google.com/resource-manager/reference/rest/v3/projects/get
+  - https://cloud.google.com/resource-manager/reference/rest/v3/folders/get
+  - https://cloud.google.com/resource-manager/reference/rest/v3/projects/getIamPolicy
+  - https://cloud.google.com/storage/docs/json_api/v1/buckets/list
+  - https://cloud.google.com/storage/docs/json_api/v1/buckets/getIamPolicy
+  - https://docs.cloud.google.com/logging/docs/audit/configure-data-access
+  - https://docs.cloud.google.com/storage/docs/audit-logging
+  - https://github.com/googleapis/googleapis/blob/ba591f1d7fdedc610639425448756cd8a64adc0f/google/iam/v1/policy.proto
+doc_date: 2026-10-20
+license: Apache-2.0
+anonymised: true
+covers:
+  - resourcemanager.projects.get
+  - resourcemanager.folders.get
+  - resourcemanager.projects.getIamPolicy
+  - resourcemanager.folders.getIamPolicy
+  - resourcemanager.organizations.getIamPolicy
+  - storage.buckets.list
+  - storage.buckets.getIamPolicy
+notes: "COV-01 test inputs. Written by hand from the resource and Policy field lists of the API references above and from the AuditConfig definition in the vendored google/iam/v1/policy.proto (da-log-fixtures/src/main/proto); the audit-logging rules were read on 2026-10-20. No vendor sample is copied. Project, folder, organization, bucket and principal names are invented."

@@ -1,0 +1,486 @@
+# ===================================================================
+# Spring Boot configuration.
+#
+# This configuration will be overridden by the Spring profile you use,
+# for example application-dev.yml if you use the "dev" profile.
+#
+# More information on profiles: https://www.jhipster.tech/profiles/
+# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+# ===================================================================
+# Standard Spring Boot properties.
+# Full reference is available at:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+# ===================================================================
+
+---
+# Conditionally disable springdoc on missing api-docs profile
+spring:
+  config:
+    activate:
+      on-profile: '!api-docs'
+  # Spring Shell configuration - this allows the application to work in both interactive and non-interactive modes
+  shell:
+    interactive:
+      enabled: false # Disable shell by default, only enable via code or explicit profile
+    noninteractive:
+      enabled: false # Disable non-interactive mode by default, CommandLineHandler will enable when needed
+    command:
+      script:
+        enabled: false # Disable script command to avoid conflicts with application arguments
+    history:
+      enabled: true
+      file:
+        name: ~/.da-discovery-shell-history
+springdoc:
+  api-docs:
+    enabled: false
+---
+# Eureka client disabled for Docker deployment
+eureka:
+  client:
+    enabled: false
+feign:
+  circuitbreaker:
+    enabled: true
+  # client:
+  #   config:
+  #     default:
+  #       connectTimeout: 5000
+  #       readTimeout: 5000
+management:
+  endpoints:
+    web:
+      # /actuator, not the JHipster /management: every other service, the Prometheus
+      # scrape job, the health scripts and the README use /actuator/health.
+      base-path: /actuator
+      exposure:
+        include:
+          - configprops
+          - env
+          - health
+          - info
+          - jhimetrics
+          - jhiopenapigroups
+          - logfile
+          - loggers
+          - prometheus
+          - threaddump
+          - caches
+          - flyway
+  endpoint:
+    health:
+      show-details: when_authorized
+      roles: 'ROLE_ADMIN'
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db
+    jhimetrics:
+      enabled: true
+  info:
+    git:
+      mode: full
+    env:
+      enabled: true
+  health:
+    mail:
+      enabled: false # When using the MailService, configure an SMTP server and set this to true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 60
+  observations:
+    key-values:
+      application: ${spring.application.name}
+  metrics:
+    enable:
+      http: true
+      jvm: true
+      logback: true
+      process: true
+      system: true
+    distribution:
+      percentiles-histogram:
+        all: true
+      percentiles:
+        all: 0, 0.5, 0.75, 0.95, 0.99, 1.0
+    data:
+      repository:
+        autotime:
+          enabled: true
+
+spring:
+  application:
+    name: DADiscovery
+  config:
+    import: optional:classpath:config/log-analyzers.yml
+  cloud:
+    gcp:
+      sql:
+        enabled: false
+      core:
+        enabled: false
+    config:
+      enabled: false # Disabled for Docker deployment
+    # BOOT-01: no Spring Cloud Stream binding is configured. Spring Shell 4's ThemeActive bean is a
+    # Supplier, and Stream's function autodetection would bind it as a Kafka source polled every
+    # second (themeActive-out-0), so detection is off and the service binds nothing, as before.
+    stream:
+      function:
+        autodetect: false
+    # NOTE: nothing reads spring.cloud.provider.*. The @ConditionalOnProperty guards,
+    # AwsClientFactory and UnityCatalogDiscoveryProperties all read cloud.provider.*
+    # (the top-level cloud: block further down), so a provider is switched on with the
+    # env var CLOUD_PROVIDER_<NAME>_ENABLED, and AWS through DLAP_AWS_* (cloud: block).
+    provider:
+      gcp:
+        enabled: true
+      azure:
+        enabled: false
+      oci:
+        enabled: false
+      unity:
+        # UC-5 (ADR-0029): Unity Catalog discovery source. Off by default.
+        enabled: ${CLOUD_PROVIDER_UNITY_ENABLED:false}
+        uri: ${CLOUD_PROVIDER_UNITY_URI:http://localhost:8080/api/2.1/unity-catalog}
+        token: ${CLOUD_PROVIDER_UNITY_TOKEN:}
+        page-size: 100
+  profiles:
+    # The commented value for `active` can be replaced with valid Spring profiles to load.
+    # Otherwise, it will be filled in by maven when building the JAR file
+    # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
+    active: dev #spring.profiles.active#
+    group:
+      dev:
+        - dev
+        - api-docs
+        # Uncomment to activate TLS for the dev profile
+        #- tls
+  jmx:
+    enabled: false
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+      hibernate.timezone.default_storage: NORMALIZE
+      hibernate.type.preferred_instant_jdbc_type: TIMESTAMP
+      hibernate.id.new_generator_mappings: true
+      hibernate.connection.provider_disables_autocommit: true
+      hibernate.cache.use_second_level_cache: true
+      hibernate.cache.use_query_cache: false
+      hibernate.generate_statistics: false
+      # modify batch size as necessary
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.order_updates: true
+      hibernate.query.fail_on_pagination_over_collection_fetch: true
+      hibernate.query.in_clause_parameter_padding: true
+      # Ensure PostgreSQL dialect is used for production, Hibernate 6+ has good JSONB support
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      # This property helps with LOB types like JSONB with certain drivers/setups
+      hibernate.jdbc.lob.non_contextual_creation: true
+    hibernate:
+      ddl-auto: none # Flyway (db/migration) owns the schema; Hibernate never alters it
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        # Spring Boot 4 moved the class to org.springframework.boot.hibernate (BOOT-01).
+        implicit-strategy: org.springframework.boot.hibernate.SpringImplicitNamingStrategy
+  messages:
+    basename: i18n/messages
+  main:
+    allow-bean-definition-overriding: true
+  mvc:
+    problemdetails:
+      enabled: true
+  task:
+    execution:
+      thread-name-prefix: dg-crawler-task-
+      pool:
+        core-size: 2
+        max-size: 50
+        queue-capacity: 10000
+    scheduling:
+      thread-name-prefix: dg-crawler-scheduling-
+      pool:
+        size: 2
+  thymeleaf:
+    mode: HTML
+  output:
+    ansi:
+      console-available: true
+  security:
+    oauth2:
+      client:
+        provider:
+          oidc:
+            # issuer-uri: http://localhost:9080/realms/jhipster
+            issuer-uri: '${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI:http://keycloak:8080/realms/dlap}'
+        registration:
+          oidc:
+            client-id: '${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID:account}'
+            client-secret: '${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET:}'
+            scope: openid, profile, email, offline_access
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+            post-logout-redirect-uri: '{baseUrl}'
+      resourceserver:
+        jwt:
+          issuer-uri: '${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI:http://keycloak:8080/realms/dlap}'
+          jwk-set-uri: '${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:http://keycloak:8080/realms/dlap/protocol/openid-connect/certs}'
+          audience: dlap-ui
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+
+springdoc:
+  show-actuator: true
+
+# Properties to be exposed on the /info management endpoint
+info:
+  # Comma separated list of profiles that will trigger the ribbon to show
+  display-ribbon-on-profiles: 'dev'
+
+# ===================================================================
+# JHipster specific properties
+#
+# Full reference is available at: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+jhipster:
+  clientApp:
+    name: 'dgCrawlerApp'
+  # By default CORS is disabled. Uncomment to enable.
+  # cors:
+  #   allowed-origins: "http://localhost:8100,http://localhost:9000"
+  #   allowed-methods: "*"
+  #   allowed-headers: "*"
+  #   exposed-headers: "Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params"
+  #   allow-credentials: true
+  #   max-age: 1800
+  mail:
+    from: DADiscovery@localhost
+  api-docs:
+    default-include-pattern: /api/**
+    management-include-pattern: /actuator/**
+    title: DG Crawler API
+    description: DG Crawler API documentation
+    version: 0.0.1
+    terms-of-service-url:
+    contact-name:
+    contact-url:
+    contact-email:
+    license: unlicensed
+    license-url:
+  security:
+    oauth2:
+      audience:
+        - account
+        - dlap-ui
+# ===================================================================
+# Application specific properties
+# Add your own application properties here, see the ApplicationProperties class
+# to have type-safe configuration, like in the JHipsterProperties above
+#
+# More documentation is available at:
+# https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+# application:
+
+# Cloud provider settings the code actually reads. The guards on every AWS bean and
+# AwsClientFactory read cloud.provider.aws.*; AWSConfigServiceImpl reads aws.region.
+# This is the ONE documented AWS variable set (.env.example section 5). An explicitly
+# set CLOUD_PROVIDER_AWS_* environment variable still overrides these defaults.
+# Caveat: config/application-dev.yml pins cloud.provider.aws.enabled=false, and a profile
+# file outranks this block. Under the dev profile only the CLOUD_PROVIDER_AWS_ENABLED
+# environment variable can switch AWS on; the dev compose maps DLAP_AWS_ENABLED onto it.
+# Leave endpoint, access-key and secret-key empty to use the AWS SDK default
+# credential chain; aws.access-key / aws.secret-key are deliberately not bound here
+# (AWSConfigServiceImpl treats null as "not set" and an empty string as a value).
+cloud:
+  provider:
+    aws:
+      enabled: ${DLAP_AWS_ENABLED:false}
+      endpoint: ${DLAP_AWS_ENDPOINT:}
+      access-key: ${DLAP_AWS_ACCESS_KEY:}
+      secret-key: ${DLAP_AWS_SECRET_KEY:}
+aws:
+  region: ${DLAP_AWS_REGION:us-east-1}
+
+# Application keys read by @Value (KafkaConfiguration, the crawlers, ResourceEventListener and
+# DiscoveryKafkaConsumer). This is not Spring Boot's namespace: client settings (bootstrap servers,
+# consumer, producer, admin, security) are spring.kafka.* in application.properties (Q-334).
+kafka:
+  topics:
+    resource-events: ${KAFKA_TOPIC_RESOURCE_EVENTS:discovery-resource-events}
+    log-events: ${KAFKA_TOPIC_LOG_EVENTS:discovery-log-events}
+  group:
+    catalog-updater: ${KAFKA_GROUP_CATALOG_UPDATER:discovery-catalog-updater}
+  topic:
+    name: crawler-topic
+
+datasource:
+  type: com.zaxxer.hikari.HikariDataSource
+  driver-class-name: org.postgresql.Driver
+  hikari:
+    minimum-idle: 2
+    maximum-pool-size: 10
+    idle-timeout: 10000
+    pool-name: HikariCP
+    max-lifetime: 1800000
+    connection-timeout: 30000
+    connection-test-query: SELECT 1
+
+discovery:
+  job:
+    executor:
+      mode: DEFAULT # Can be DEFAULT, SPARK, or NIFI
+      spark:
+        enabled: false
+      nifi:
+        enabled: false
+
+cloud-hierarchy:
+  providers:
+    - provider: AWS
+      services:
+        - id: ec2
+          displayName: EC2
+          resourceTypes:
+            - id: EC2_INSTANCE
+              displayName: EC2 Instance
+        - id: s3
+          displayName: Amazon S3
+          resourceTypes:
+            - id: aws_s3_bucket
+              displayName: S3 Bucket
+        - id: rds
+          displayName: Amazon RDS
+          resourceTypes:
+            - id: aws_rds_instance
+              displayName: RDS Instance
+        - id: glue
+          displayName: AWS Glue
+          resourceTypes:
+            - id: aws_glue_table
+              displayName: Glue Table
+    - provider: GCP
+      services:
+        - id: compute
+          displayName: Compute Engine
+          resourceTypes:
+            - id: COMPUTE_INSTANCE
+              displayName: Compute Instance
+        - id: bigquery
+          displayName: BigQuery
+          resourceTypes:
+            - id: gcp_bigquery_dataset
+              displayName: BigQuery Dataset
+            - id: gcp_bigquery_table
+              displayName: BigQuery Table
+            - id: BIGQUERY_VIEW
+              displayName: BigQuery View
+            - id: BIGQUERY_JOB
+              displayName: BigQuery Job
+        - id: gcs
+          displayName: Google Cloud Storage
+          resourceTypes:
+            - id: gcp_gcs_bucket
+              displayName: Google Cloud Storage Bucket
+            - id: gcp_gcs_object
+              displayName: Google Cloud Storage Object
+            - id: GCS_OBJECT_ACL
+              displayName: Google Cloud Storage Object ACL
+            - id: GCS_OBJECT_METADATA
+              displayName: Google Cloud Storage Object Metadata
+        - id: cloudsql
+          displayName: Cloud SQL
+          resourceTypes:
+            - id: gcp_cloudsql_instance
+              displayName: Cloud SQL Instance
+    - provider: AZURE
+      services:
+        - id: azurecompute
+          displayName: Azure Compute
+          resourceTypes:
+            - id: AZURE_COMPUTE_INSTANCE
+              displayName: Azure Compute Instance
+    - provider: OCI
+      services:
+        - id: ocicompute
+          displayName: OCI Compute
+          resourceTypes:
+            - id: OCI_COMPUTE_INSTANCE
+              displayName: OCI Compute Instance
+    - provider: UNITY
+      services:
+        - id: unity_catalog
+          displayName: Unity Catalog
+          resourceTypes:
+            - id: unity_table
+              displayName: Unity Catalog Table
+
+# ===================================================================
+# Catalog specific properties
+# ===================================================================
+
+catalog:
+  external:
+    enabled: false
+    baseUrl: 'http://localhost:8080/api/catalog'
+    apiKey: ''
+    connectionTimeout: 5000
+    readTimeout: 5000
+
+# ===================================================================
+# Properties migrated from application.properties
+# ===================================================================
+
+# No organisation, folder or project is built in (CLAUDE.md section 9): set these for a real GCP estate.
+google:
+  cloud:
+    orgId: ${DLAP_GCP_ORG_ID:}
+    parent: ${DLAP_GCP_PARENT:}
+    projectId: ${DLAP_GCP_PROJECT_ID:}
+    searchText: BigQuery, GCS
+    folderName: ${DLAP_GCP_FOLDER_NAME:}
+    folderId: ${DLAP_GCP_FOLDER_ID:}
+    audit:
+      table: cloudaudit_googleapis_com_data_access
+      dataset: ${DLAP_GCP_AUDIT_DATASET:dev}
+      activity_table: cloudaudit_googleapis_com_activity
+      data_access_table: ${DLAP_GCP_AUDIT_DATA_ACCESS_TABLE:}
+
+dg:
+  spider:
+    threads: 20
+  pe:
+    policy:
+      num-of-partitions: 1
+      replication-factor: 1
+
+audit:
+  storage:
+    methods: storage.objects.*
+  table:
+    methods: tableservice.*
+  resource:
+    excludes: .*'.json,.*aia-dev-audit-bucket.*
+
+auditlog:
+  queryFields: protopayload_auditlog.methodName AS method_name,protopayload_auditlog.resourceName AS resource_name,protopayload_auditlog.authenticationInfo.principalEmail AS principal_email,timestamp,receiveTimestamp
+  storageMethodRegex: storage\.objects\.create,storage\.objects\.update,storage\.objects\.delete
+  tableMethodRegex: tableservice\.insert,tableservice\.update
+  resourceFilterRegex: .*(?!\.json$|aia-dev-audit-bucket).*

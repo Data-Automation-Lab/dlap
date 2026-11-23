@@ -1,0 +1,35 @@
+{
+  "records": [
+    {
+      "time": "2025-01-27T14:23:00.0000000Z",
+      "resourceId": "/subscriptions/aa50cc5d-8bac-4c65-b813-fa1726e87781/resourceGroups/critical-data-rg/providers/Microsoft.Storage/storageAccounts/criticaldata001/providers/Microsoft.Authorization/locks/DoNotDelete",
+      "operationName": "MICROSOFT.AUTHORIZATION/LOCKS/DELETE",
+      "operationVersion": "2017-04-01",
+      "category": "Administrative",
+      "resultType": "Success",
+      "resultSignature": "200",
+      "callerIpAddress": "203.0.113.42",
+      "correlationId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "level": "Informational",
+      "location": "eastus",
+      "tenantId": "f79c9d5a-a017-407d-b30b-fa17259d2353",
+      "identity": {
+        "claims": {
+          "name": "user-8cbf3db4@example.org",
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn": "user-8cbf3db4@example.org"
+        }
+      }
+    },
+    {
+      "time": "2025-01-27T17:00:00.0000000Z",
+      "resourceId": "/subscriptions/aa50cc5d-8bac-4c65-b813-fa1726e87781/resourceGroups/protected-rg/providers/Microsoft.Authorization/locks/CriticalLock",
+      "operationName": "MICROSOFT.AUTHORIZATION/LOCKS/DELETE",
+      "category": "Administrative",
+      "resultType": "Failed",
+      "resultSignature": "403",
+      "callerIpAddress": "198.18.0.50",
+      "correlationId": "d4e5f6a7-b8c9-0123-def0-456789012345",
+      "tenantId": "33333333-3333-3333-3333-333333333333"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "0a5e0c11-1fe0-4e00-8000-000000000001",
+      "eventTime": "2026-11-02T03:14:07Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3lifecycle.amazonaws.com",
+      "operation": "DeleteObject",
+      "changeType": "DELETE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "lifecycle.s3.amazonaws.com",
+        "type": "SYSTEM"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e/raw/2026/09/orders.parquet",
+        "project": "123456789012",
+        "region": "us-east-1"
+      },
+      "requestMetadata": {
+        "callerIp": "lifecycle.s3.amazonaws.com"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    },
+    {
+      "nativeEventId": "0a5e0c11-1fe0-4e00-8000-000000000002",
+      "eventTime": "2026-11-02T03:14:09Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3lifecycle.amazonaws.com",
+      "operation": "LifecycleTransition",
+      "changeType": "ARCHIVE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "lifecycle.s3.amazonaws.com",
+        "type": "SYSTEM"
+      },
+      "targetResource": {
+        "canonicalUri": "s3://dlap-aws-e2e/raw/2026/08/orders.parquet"
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    }
+  ]
+}

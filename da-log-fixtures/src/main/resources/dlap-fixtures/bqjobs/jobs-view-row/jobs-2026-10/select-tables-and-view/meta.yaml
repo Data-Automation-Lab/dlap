@@ -1,0 +1,13 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SELECT
+variant_ids:
+  - read.referenced-tables-fanout
+  - read.referenced-logical-views
+  - row.repeated-poll-dedup
+expected_outcome: PARSED
+anonymised: false
+notes: "Two tables and one logical view: one DATA_READ per object, the first in canonical order keeps the job key and the others append the table. The contract base parses every case twice and compares the ids, which is the repeated-poll dedup check."

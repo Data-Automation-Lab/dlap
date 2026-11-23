@@ -1,0 +1,14 @@
+{
+  "TrailARN": "arn:aws:cloudtrail:us-east-1:111122223333:trail/org-trail",
+  "AdvancedEventSelectors": [
+    {
+      "Name": "GetObject only, not by the backup role",
+      "FieldSelectors": [
+        { "Field": "eventCategory", "Equals": ["Data"] },
+        { "Field": "resources.type", "Equals": ["AWS::S3::Object"] },
+        { "Field": "eventName", "Equals": ["GetObject"] },
+        { "Field": "userIdentity.arn", "NotStartsWith": ["arn:aws:sts::111122223333:assumed-role/backup"] }
+      ]
+    }
+  ]
+}

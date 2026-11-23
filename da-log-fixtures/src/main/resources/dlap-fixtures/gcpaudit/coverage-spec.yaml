@@ -1,0 +1,733 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# INDEPENDENT COVERAGE SPEC. READ-ONLY FOR PARSER PACKAGES.
+#
+# This file is the denominator of the gcpaudit coverage score (com.dlap.fixtures.CoverageSpec).
+# It was written from vendor documentation, published protos and Apache-2.0 public samples by a
+# package that does not build the parser (SPEC-01), so the parser author cannot grade their own
+# coverage. Parser and fixture packages use these ids in meta.yaml (covers, variant_ids) and never
+# edit this file. A change goes in its own commit, with no parser code and no fixture case in it;
+# scripts/ci-guards/post-test/coverage-spec-lock.sh fails any other commit.
+#
+# Status: documented entries are scored. unverified entries wait for an opened page or a capture
+# (LIVE-00, LIVE-01); deferred entries wait for a recorded decision. Neither is scored.
+
+spec: dlap-coverage-spec/1
+family: gcpaudit
+title: GCP Cloud Audit Logs (LogEntry with an AuditLog payload), including Cloud Storage and BigQuery audit entries
+source_kind: GCP_CLOUD_AUDIT
+written_by: SPEC-01
+written_on: "2026-10-19"
+research:
+  - "Hardening research, GCP log sources report (2026-10-18): sections 0 to 3, 5 and 7 (parser contract)"
+  - "Hardening research, log layer design (2026-10-18): B1 envelopes and versions, B7 required coverage"
+  - "googleapis bigquery_audit_metadata.proto and audit_data.proto (Apache-2.0, copyright 2025), opened 2026-10-19"
+  - "GoogleCloudPlatform/professional-services audit-log-examples/cloud-storage samples (Apache-2.0), opened 2026-10-19"
+  - "docs/specs/log-event.md (LOG-01 contract): operation spelling, native key, rawEvent conventions"
+operation_id_rule: "<protoPayload.serviceName>:<protoPayload.methodName>, exactly as the record spells them (log-event.md section 4.1, field 7)."
+version_rule: >-
+  Audit entries carry no version field, so the version is structural (research section 7). bq-auditmetadata:
+  protoPayload.metadata.@type is type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata. bq-auditdata-legacy:
+  protoPayload.serviceData.@type is type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData. Otherwise
+  auditlog-2025 when any authorizationInfo entry carries permissionType (added to the proto 2025-03-06), else
+  auditlog-2021. The two auditlog profiles both emit source_schema_version auditlog on the canonical event.
+notes: >-
+  Not scored here, by design: the Log Analytics linked-dataset shape (proto_payload.audit_log, snake_case) is known
+  only from a search snippet and has no opened page; DatasetService, RoutineService and RowAccessPolicyService
+  methods are documented only as wildcards; reads of public objects, InsertAll streaming and Get/List calls produce
+  no audit entry at all, so no fixture can show them (read-coverage limits belong to COV-01).
+
+envelopes:
+  - id: api-proto
+    title: LogEntry from the Cloud Logging API client (gRPC); protoPayload is an Any holding AuditLog, printed to JSON per log-event.md section 6
+    doc_url: https://docs.cloud.google.com/java/docs/reference/google-cloud-logging/latest/com.google.cloud.logging.Payload.ProtoPayload
+    versions: [auditlog-2021, auditlog-2025, bq-auditmetadata, bq-auditdata-legacy]
+  - id: json
+    title: LogEntry JSON in REST field naming, as entries.list over HTTPS returns it and as Cloud Storage sink files hold it
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    versions: [auditlog-2021, auditlog-2025, bq-auditmetadata, bq-auditdata-legacy]
+  - id: bq-sink-row
+    title: Row of a BigQuery Log Router sink table (protopayload_auditlog, metadataJson/requestJson/responseJson, servicedata_v1_bigquery)
+    doc_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+    versions: [auditlog-2021, auditlog-2025, bq-auditmetadata, bq-auditdata-legacy]
+
+versions:
+  - id: auditlog-2021
+    title: AuditLog with no permissionType on authorizationInfo (records before the 2025-03-06 proto change, such as the 2021 public samples)
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    detect: protoPayload @type AuditLog, or logName contains cloudaudit.googleapis.com (never require @type); no BigQuery metadata or serviceData type; no permissionType on any authorizationInfo entry
+    required_fields: [logName, insertId, timestamp, resource.type, protoPayload.serviceName, protoPayload.methodName, protoPayload.resourceName]
+    optional_fields: [receiveTimestamp, severity, operation, labels, trace, split, protoPayload.numResponseItems, protoPayload.resourceLocation, protoPayload.request, protoPayload.response]
+  - id: auditlog-2025
+    title: AuditLog with authorizationInfo[].permissionType (ADMIN_READ, ADMIN_WRITE, DATA_READ, DATA_WRITE), added to the proto 2025-03-06
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/audit_log.proto
+    detect: as auditlog-2021, and at least one authorizationInfo entry carries permissionType
+    required_fields: [logName, insertId, timestamp, resource.type, protoPayload.serviceName, protoPayload.methodName, protoPayload.resourceName]
+    optional_fields: [receiveTimestamp, severity, operation, labels, trace, split, protoPayload.numResponseItems, protoPayload.resourceLocation, protoPayload.request, protoPayload.response, protoPayload.policyViolationInfo]
+  - id: bq-auditmetadata
+    title: BigQuery v2 audit entry, BigQueryAuditMetadata in protoPayload.metadata (Google's current format, written since 2019-01-22)
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    detect: protoPayload.metadata.@type is type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata; methodName starts google.cloud.bigquery.v2.
+    required_fields: [protoPayload.resourceName, "one event key in protoPayload.metadata", principal]
+    optional_fields: [tableDataRead.reason, tableDataRead.jobName, tableDataRead.fields, tableDataRead.policyTags, jobChange.job.jobStats.queryStats.referencedTables, jobChange.job.jobConfig.queryConfig.statementType, jobChange.job.jobStats.endTime, jobChange.job.jobStats.totalBilledBytes, jobChange.job.jobStats.parentJobName, jobChange.job.jobStats.reservation]
+  - id: bq-auditdata-legacy
+    title: BigQuery v1 audit entry, AuditData in protoPayload.serviceData (the old format that reports API invocations)
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/bigquery/logging/v1/audit_data.proto
+    detect: protoPayload.serviceData.@type is type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData; resource.type bigquery_resource; lowercase methodName
+    required_fields: [serviceData.jobCompletedEvent.job.jobConfiguration, serviceData.jobCompletedEvent.job.jobStatistics.referencedTables, serviceData.jobCompletedEvent.job.jobName]
+    optional_fields: [serviceData.jobCompletedEvent.job.jobStatistics.totalTablesProcessed, serviceData.tableDataReadEvents, serviceData.jobCompletedEvent.eventName]
+
+operations:
+  # ---------------------------------------------------------------- Cloud Storage
+  - id: storage.googleapis.com:storage.objects.get
+    expected_category: DATA_READ
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://github.com/GoogleCloudPlatform/professional-services/tree/main/examples/audit-log-examples/cloud-storage
+    research: GCP report section 2, read versus write table (sample gcs-data-access-object-get.log)
+  - id: storage.googleapis.com:storage.objects.list
+    expected_category: MANAGEMENT
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://github.com/GoogleCloudPlatform/professional-services/tree/main/examples/audit-log-examples/cloud-storage
+    research: GCP report section 2 (sample gcs-data-access-object-list.log); logged under DATA_READ, but a listing is MANAGEMENT per log-event.md section 4.3
+  - id: storage.googleapis.com:storage.objects.create
+    expected_category: DATA_WRITE
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/eventarc/docs/determining-filters-cal
+    research: GCP report section 2 (sample gcs-data-access-object-create.log and the Eventarc page)
+  - id: storage.googleapis.com:storage.objects.delete
+    expected_category: DATA_WRITE
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    research: GCP report section 2, write (DATA_WRITE) row
+  - id: storage.googleapis.com:storage.objects.move
+    expected_category: DATA_WRITE
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    status: unverified
+    reason: The research table lists "move" among object writes but no opened page or sample states the methodName; confirm from a capture (LIVE-00)
+  - id: storage.googleapis.com:storage.setIamPermissions
+    expected_category: PERMISSION
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://github.com/GoogleCloudPlatform/professional-services/tree/main/examples/audit-log-examples/cloud-storage
+    research: GCP report section 2 (sample gcs-admin-set-iam-permissions.log; permission storage.buckets.setIamPolicy)
+  - id: storage.googleapis.com:storage.buckets.create
+    expected_category: MANAGEMENT
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://github.com/GoogleCloudPlatform/professional-services/blob/main/examples/audit-log-examples/cloud-storage/gcs-admin-activity.log
+    research: Sample opened 2026-10-19, Admin Activity log, permission storage.buckets.create
+  - id: storage.googleapis.com:storage.buckets.update
+    expected_category: MANAGEMENT
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://github.com/GoogleCloudPlatform/professional-services/blob/main/examples/audit-log-examples/cloud-storage/gcs-obj-vers.log
+    research: Sample opened 2026-10-19 (versioning change), Admin Activity log
+  - id: storage.googleapis.com:storage.buckets.delete
+    expected_category: MANAGEMENT
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    status: unverified
+    reason: Bucket deletion is in the audit-logging prose, but no opened page or sample states the methodName; confirm from a capture (LIVE-00)
+  - id: storage.googleapis.com:storage.buckets.get
+    expected_category: MANAGEMENT
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    status: unverified
+    reason: ADMIN_READ bucket metadata reads are in the prose only; the methodName is inferred from the permission name
+  - id: storage.googleapis.com:storage.buckets.list
+    expected_category: MANAGEMENT
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    status: unverified
+    reason: ADMIN_READ bucket listing is in the prose only; the methodName is inferred from the permission name
+  - id: storage.googleapis.com:storage.getIamPermissions
+    expected_category: MANAGEMENT
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    status: unverified
+    reason: IAM policy reads are in the prose only; the methodName is inferred from storage.setIamPermissions
+
+  # ---------------------------------------------------------------- BigQuery v2 (BigQueryAuditMetadata)
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.InsertJob
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3 methodName table; long-running, usually two entries; the event key decides the category (jobInsertion and jobChange MANAGEMENT, tableDataRead DATA_READ)
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.Query
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3 methodName table; long-running, usually two entries
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.GetQueryResults
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3 methodName table; tableDataRead reason GET_QUERY_RESULTS_REQUEST
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.CancelJob
+    expected_category: MANAGEMENT
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3 methodName table
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.DeleteJob
+    expected_category: MANAGEMENT
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3 methodName table (jobDeletion event in the proto)
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.TableDataService.List
+    expected_category: DATA_READ
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3; tableDataRead reason TABLEDATA_LIST_REQUEST
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.InsertTable
+    expected_category: MANAGEMENT
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3; tableCreation event
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.PatchTable
+    expected_category: MANAGEMENT
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3; tableChange event
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.UpdateTable
+    expected_category: MANAGEMENT
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3; tableChange event
+  - id: bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.DeleteTable
+    expected_category: MANAGEMENT
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3; tableDeletion event
+  - id: bigquery.googleapis.com:google.iam.v1.IAMPolicy.SetIamPolicy
+    expected_category: PERMISSION
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3 methodName table
+  - id: bigquery.googleapis.com:InternalTableExpired
+    expected_category: MANAGEMENT
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report sections 3 and 7, system event; tableDeletion reason EXPIRED
+
+  # ---------------------------------------------------------------- BigQuery v1 (AuditData)
+  - id: bigquery.googleapis.com:jobservice.jobcompleted
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3; reads come from jobCompletedEvent.job.jobStatistics.referencedTables; fires only on successful completion
+  - id: bigquery.googleapis.com:jobservice.insert
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 v1 methodName list
+  - id: bigquery.googleapis.com:jobservice.query
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 v1 methodName list
+  - id: bigquery.googleapis.com:jobservice.getqueryresults
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 v1 methodName list
+  - id: bigquery.googleapis.com:jobservice.cancel
+    expected_category: MANAGEMENT
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 v1 methodName list
+  - id: bigquery.googleapis.com:tabledataservice.list
+    expected_category: DATA_READ
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report sections 3 and 7 (v1 variant list)
+  - id: bigquery.googleapis.com:tableservice.insert
+    expected_category: MANAGEMENT
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 v1 methodName list
+  - id: bigquery.googleapis.com:tableservice.update
+    expected_category: MANAGEMENT
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 v1 methodName list
+  - id: bigquery.googleapis.com:tableservice.delete
+    expected_category: MANAGEMENT
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 v1 methodName list
+
+variants:
+  # ---------------------------------------------------------------- envelopes
+  - id: envelope.any-auditlog-unpack
+    title: protoPayload Any unpacked to AuditLog with a type registry; a plain cast or an empty registry loses the entry (GCP-00)
+    envelopes: [api-proto]
+    doc_url: https://docs.cloud.google.com/java/docs/reference/google-cloud-logging/latest/com.google.cloud.logging.Payload.ProtoPayload
+    research: GCP report section 0
+  - id: envelope.servicedata-typeurl-base64
+    title: Legacy serviceData kept as {typeUrl, base64} when the client hands DLAP the proto (log-event.md section 6)
+    envelopes: [api-proto]
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report section 0; log-event.md section 6
+  - id: envelope.rest-typed-expansion
+    title: REST JSON with @type expanded server side, including an expanded serviceData object
+    envelopes: [json]
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: GCP report section 0 (REST alternative)
+  - id: envelope.gcs-shard-array
+    title: Cloud Storage sink file holding a JSON array of LogEntry objects
+    envelopes: [json]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/storage
+    research: GCP report section 5; the export page says "a list of LogEntry objects" and leaves array versus NDJSON open
+  - id: envelope.gcs-shard-ndjson
+    title: Cloud Storage sink file holding newline-delimited LogEntry objects
+    envelopes: [json]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/storage
+    research: GCP report section 5
+  - id: envelope.gcs-addendum-shard
+    title: Late entries in an _An addendum shard parse like an _Sn shard and are not double counted
+    envelopes: [json]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/storage
+    research: GCP report section 5
+  - id: envelope.gcs-nested-log-id-path
+    title: Shard path nests the log id cloudaudit.googleapis.com/data_access as directories under the bucket
+    envelopes: [json]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/storage
+    research: GCP report section 5
+  - id: envelope.gcs-unsorted-duplicates
+    title: Entries in a shard are unsorted and overlapping sinks duplicate them; dedup on the native key
+    envelopes: [json]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/storage
+    research: GCP report section 5
+  - id: envelope.pubsub-base64-data
+    title: Pub/Sub message data is a base64-encoded LogEntry JSON with a logging.googleapis.com/timestamp attribute
+    envelopes: [json]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/pubsub
+    status: deferred
+    reason: ADR-0023 and plan decision D6, no Pub/Sub transport in 0.x
+  - id: envelope.bq-protopayload-column
+    title: protoPayload arrives as the protopayload_auditlog column with lowercased sub-field names
+    envelopes: [bq-sink-row]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+    research: GCP report section 5
+  - id: envelope.bq-json-string-columns
+    title: metadata, request and response arrive as STRING JSON columns metadataJson, requestJson and responseJson
+    envelopes: [bq-sink-row]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+    research: GCP report section 5
+  - id: envelope.bq-servicedata-struct
+    title: Legacy serviceData arrives as the typed servicedata_v1_bigquery struct
+    envelopes: [bq-sink-row]
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+    research: GCP report section 5
+  - id: envelope.bq-sharded-and-partitioned
+    title: Date-sharded (_YYYYMMDD) and partitioned sink tables, named from the log name with non-alphanumerics as underscores
+    envelopes: [bq-sink-row]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+    research: GCP report section 5
+  - id: envelope.bq-export-errors-row
+    title: A row of export_errors[_YYYYMMDD] (logEntry, schemaErrorDetail, sink) is a format-broke signal, never an audit event
+    envelopes: [bq-sink-row]
+    negative: true
+    doc_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+    research: GCP report section 5
+  - id: envelope.bq-statuscode-casing
+    title: Both statuscode and protoPayload_auditlog.statuscode casings appear in the sink docs
+    envelopes: [bq-sink-row]
+    doc_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+    status: unverified
+    reason: The docs show both casings; verify against a live sink schema (LIVE-00 BigQuery sink capture)
+
+  # ---------------------------------------------------------------- entry, time, dedup
+  - id: entry.invalid-json
+    title: Input that is not valid JSON is quarantined, never dropped silently
+    negative: true
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: Log layer design B3
+  - id: entry.missing-method-name
+    title: protoPayload without methodName is quarantined as a missing required field
+    negative: true
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report section 7, envelope row
+  - id: entry.unknown-payload-type
+    title: An unknown protoPayload @type, or an Any with an unknown type URL, is quarantined
+    negative: true
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: GCP report section 7, envelope row
+  - id: entry.protopayload-without-type
+    title: protoPayload with no @type is still recognised from logName (the google-cloudevents sample has @type only on serviceData)
+    doc_url: https://github.com/googleapis/google-cloudevents/tree/main/testdata/google/events/cloud/audit/v1
+    research: GCP report sections 6 and 7
+  - id: entry.unknown-fields
+    title: Unknown fields at any depth are ignored and counted, never a rejection
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: Log layer design B1 and B7
+  - id: entry.split
+    title: An oversized entry split into parts (LogEntry.split) is reassembled or flagged, not counted twice
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: GCP report sections 1 and 7
+  - id: entry.operation-first-last
+    title: A long-running operation's first and last entries (LogEntry.operation) describe one operation
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: GCP report section 1
+  - id: entry.num-response-items
+    title: numResponseItems and resourceLocation present (optional fields kept, not required)
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report sections 1 and 7
+  - id: time.receive-timestamp-fallback
+    title: No timestamp, so event time falls back to receiveTimestamp with a quality flag; never Instant.now()
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: GCP report section 7, cross-cutting rules
+  - id: time.no-timestamp
+    title: Neither timestamp nor receiveTimestamp, so the entry is skipped and counted
+    negative: true
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: GCP-00 acceptance; GCP report section 7
+  - id: dedup.same-insert-id
+    title: The same logName, timestamp and insertId twice gives one event (native key logName|timestamp|insertId)
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: GCP report sections 1 and 7; log-event.md section 5.2
+
+  # ---------------------------------------------------------------- log names
+  - id: log.admin-activity
+    title: logName suffix cloudaudit.googleapis.com%2Factivity
+    doc_url: https://docs.cloud.google.com/logging/docs/audit
+    research: GCP report sections 1 and 7
+  - id: log.data-access
+    title: logName suffix cloudaudit.googleapis.com%2Fdata_access
+    doc_url: https://docs.cloud.google.com/logging/docs/audit
+    research: GCP report sections 1 and 7
+  - id: log.system-event
+    title: logName suffix cloudaudit.googleapis.com%2Fsystem_event
+    doc_url: https://docs.cloud.google.com/logging/docs/audit
+    research: GCP report sections 1 and 7
+  - id: log.policy-denied
+    title: logName suffix cloudaudit.googleapis.com%2Fpolicy
+    doc_url: https://docs.cloud.google.com/logging/docs/audit
+    research: GCP report sections 1 and 7
+  - id: log.folder-or-organization
+    title: logName under folders/ or organizations/ (aggregated sinks), kept whole in the native key
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+    research: GCP report section 7; log-event.md section 5.2
+
+  # ---------------------------------------------------------------- result status
+  - id: status.nonzero-code
+    title: status.code other than 0 maps to FAILURE
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report section 7, cross-cutting rules
+  - id: status.granted-false
+    title: authorizationInfo[].granted false maps to FAILURE even without a status
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report sections 0 and 7
+  - id: status.org-policy-denial
+    title: Policy Denied entry with policyViolationInfo.orgPolicyViolationInfo (constraint, errorMessage, policyType) maps to FAILURE
+    doc_url: https://docs.cloud.google.com/logging/docs/audit
+    research: GCP report section 1, Policy Denied
+  - id: status.vpc-sc-denial
+    title: VPC Service Controls denial (metadata.@type VpcServiceControlAuditMetadata, violationReason, status.code 7) maps to FAILURE
+    doc_url: https://docs.cloud.google.com/vpc-service-controls/docs/troubleshooting
+    research: GCP report section 1, Policy Denied and VPC Service Controls
+  - id: status.vpc-sc-ingress-egress
+    title: VPC Service Controls ingress and egress violation objects with resourceNames[]
+    doc_url: https://docs.cloud.google.com/vpc-service-controls/docs/troubleshooting
+    research: GCP report section 7, Admin Activity row
+
+  # ---------------------------------------------------------------- actors
+  - id: actor.principal-email
+    title: Actor from authenticationInfo.principalEmail (first in the actor order)
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report section 7, actor order
+  - id: actor.principal-subject
+    title: Third-party caller with principalSubject and no principalEmail
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report sections 1 and 7
+  - id: actor.delegation-chain
+    title: serviceAccountDelegationInfo used when neither email nor subject is set
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report section 7, actor order
+  - id: actor.service-account
+    title: A service account principal (.iam.gserviceaccount.com) is a service principal type
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report section 0 (principalType)
+  - id: actor.masked-email
+    title: A redacted or masked principalEmail is a valid actor class, not a parse error
+    doc_url: https://docs.cloud.google.com/vpc-service-controls/docs/troubleshooting
+    research: GCP report sections 1 and 7; GCP-01 acceptance
+  - id: actor.google-internal
+    title: Some google.com callers appear as google-internal; kept as a valid actor class
+    doc_url: https://docs.cloud.google.com/vpc-service-controls/docs/troubleshooting
+    research: GCP report section 1
+  - id: actor.caller-ip-redacted
+    title: requestMetadata.callerIp redacted or absent; the event still parses
+    doc_url: https://docs.cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+    research: GCP report section 1
+
+  # ---------------------------------------------------------------- Cloud Storage specifics
+  - id: gcs.object-resource-name
+    title: Object calls carry resourceName projects/_/buckets/B/objects/O, parsed into bucket and object
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    research: GCP report section 2
+  - id: gcs.list-bucket-resource-name
+    title: storage.objects.list carries a bucket-level resourceName (projects/_/buckets/B, no object)
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://github.com/GoogleCloudPlatform/professional-services/tree/main/examples/audit-log-examples/cloud-storage
+    research: GCP report section 2 (recorded sample, not a doc statement)
+  - id: gcs.resource-labels
+    title: resource.type gcs_bucket with labels bucket_name, project_id and location
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    research: GCP report section 2
+  - id: gcs.create-request-response
+    title: storage.objects.create with request and response (size, generation) and both create and delete permissions checked
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/eventarc/docs/determining-filters-cal
+    research: GCP report section 2
+  - id: gcs.copy-compose-two-entries
+    title: Copy and compose emit two entries, one read and one write
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    research: GCP report sections 2 and 7
+  - id: gcs.setiam-servicedata-policy-delta
+    title: storage.setIamPermissions carries serviceData policyDelta next to request and response
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://github.com/GoogleCloudPlatform/professional-services/tree/main/examples/audit-log-examples/cloud-storage
+    research: GCP report sections 1 and 7
+  - id: gcs.admin-activity-servicedata
+    title: Admin Activity bucket entries may carry serviceData alongside request (the bucket-create sample does)
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://github.com/GoogleCloudPlatform/professional-services/blob/main/examples/audit-log-examples/cloud-storage/gcs-admin-activity.log
+    research: Sample opened 2026-10-19
+  - id: gcs.grpc-method-name
+    title: gRPC method names (for example ReadObject) as methodName, mapped like their JSON API equivalents
+    versions: [auditlog-2021, auditlog-2025]
+    doc_url: https://docs.cloud.google.com/storage/docs/audit-logging
+    status: unverified
+    reason: The research could not confirm the gRPC methodName form; add both forms once a capture shows it (LIVE-00)
+
+  # ---------------------------------------------------------------- BigQuery v2 specifics
+  - id: bq2.event.job-insertion
+    title: metadata.jobInsertion (reason JOB_INSERT_REQUEST or QUERY_REQUEST)
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: Proto opened 2026-10-19
+  - id: bq2.event.job-change-done
+    title: metadata.jobChange with after DONE carries jobStats (createTime, startTime, endTime, queryStats)
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3
+  - id: bq2.event.job-change-query
+    title: jobChange for a QUERY job (jobConfig.type QUERY, queryConfig with statementType and destinationTable)
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: Log layer design B7 (jobChange query); JobConfig.Type in the proto
+  - id: bq2.event.job-change-copy
+    title: jobChange for a COPY job
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: Log layer design B7 (jobChange copy); JobConfig.Type in the proto
+  - id: bq2.event.job-change-import
+    title: jobChange for an IMPORT (load) job
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: Log layer design B7 (jobChange load); the proto names the type IMPORT
+  - id: bq2.event.job-change-export
+    title: jobChange for an EXPORT (extract) job
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: JobConfig.Type in the proto
+  - id: bq2.event.job-deletion
+    title: metadata.jobDeletion
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: Proto opened 2026-10-19
+  - id: bq2.read.job
+    title: tableDataRead reason JOB; the table read is the resourceName
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, tableDataRead reasons
+  - id: bq2.read.tabledata-list
+    title: tableDataRead reason TABLEDATA_LIST_REQUEST
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3
+  - id: bq2.read.get-query-results
+    title: tableDataRead reason GET_QUERY_RESULTS_REQUEST
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3
+  - id: bq2.read.query-request
+    title: tableDataRead reason QUERY_REQUEST
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3
+  - id: bq2.read.storage-read-session
+    title: tableDataRead reason CREATE_READ_SESSION (Storage Read API) with sessionName; not a job, so the JOBS view never shows it
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report sections 3, 4 and 7
+  - id: bq2.read.materialized-view-refresh
+    title: tableDataRead reason MATERIALIZED_VIEW_REFRESH
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3
+  - id: bq2.read.fields-truncated
+    title: tableDataRead fields or policyTags truncated (fieldsTruncated, policyTagsTruncated set)
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3
+  - id: bq2.read.referenced-tables
+    title: jobChange.job.jobStats.queryStats.referencedTables[] names the tables a query read
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3; GCP-01 acceptance (reads from tableDataRead and referencedTables)
+  - id: bq2.read.referenced-tables-path-form
+    title: referencedTables entries in the string form projects/P/datasets/D/tables/T
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    status: unverified
+    reason: The proto says only repeated string; the path form comes from a third-party example (LIVE-00 capture)
+  - id: bq2.read.referenced-views
+    title: queryStats.referencedViews and referencedRoutines present
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3
+  - id: bq2.read.cache-hit-no-read
+    title: queryStats.cacheHit true, so no TableDataRead and no read is recorded
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3 (cache behaviour from a snippet; cacheHit in the proto); GCP-01 acceptance
+  - id: bq2.read.wildcard-table
+    title: A wildcard-table query produces a single TableDataRead
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3, read-signal caveats
+  - id: bq2.script.child-jobs
+    title: Multi-statement script, the parent emits no read; child jobs (script_job_ ids, parentJobName set) do
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3; GCP-01 acceptance
+  - id: bq2.job.failed-no-read
+    title: A failed job emits no TableDataRead or TableDataChange; its jobChange carries the error status
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3, read-signal caveats
+  - id: bq2.job.two-entries
+    title: InsertJob and Query emit two entries for one job; they give one job, not two reads
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report sections 3 and 7
+  - id: bq2.metadata-truncated
+    title: Metadata over 100K bytes is truncated; the entry is flagged for jobs.get completion, not misread
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs
+    research: GCP report section 3; query text is truncated over 50K
+  - id: bq2.reservation-usage-deprecated
+    title: Deprecated reservationUsage present or absent; jobStats.reservation used instead
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report sections 1 and 7
+  - id: bq2.write.table-data-change-job
+    title: tableDataChange reason JOB (insertedRowsCount, deletedRowsCount)
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, write signals
+  - id: bq2.write.table-data-change-query
+    title: tableDataChange reason QUERY
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, write signals
+  - id: bq2.write.table-data-change-mv-refresh
+    title: tableDataChange reason MATERIALIZED_VIEW_REFRESH
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, write signals
+  - id: bq2.write.table-data-change-write-api
+    title: tableDataChange reason WRITE_API
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, write signals
+  - id: bq2.table.creation
+    title: tableCreation (reasons JOB, QUERY, TABLE_INSERT_REQUEST)
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, write signals
+  - id: bq2.table.change
+    title: tableChange (reasons TABLE_UPDATE_REQUEST, JOB, QUERY)
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, write signals
+  - id: bq2.table.deletion
+    title: tableDeletion (reasons TABLE_DELETE_REQUEST, QUERY)
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, write signals
+  - id: bq2.table.deletion-expired
+    title: tableDeletion reason EXPIRED (table expiration), a system deletion
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: GCP report section 3, write signals
+  - id: bq2.dataset.lifecycle
+    title: datasetCreation, datasetChange and datasetDeletion events
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: Proto opened 2026-10-19
+  - id: bq2.dataset.set-iam-policy
+    title: datasetChange reason SET_IAM_POLICY is a permission change
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: Proto opened 2026-10-19
+  - id: bq2.other-resource-events
+    title: Model, routine, row access policy and unlinkDataset events are recognised and never read as table events
+    versions: [bq-auditmetadata]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/audit/bigquery_audit_metadata.proto
+    research: Proto opened 2026-10-19 (event oneof)
+  - id: bq2.resource-type
+    title: resource.type bigquery_project for job events and bigquery_dataset for dataset and table events
+    versions: [bq-auditmetadata]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 comparison table
+
+  # ---------------------------------------------------------------- BigQuery v1 specifics
+  - id: bq1.referenced-tables-objects
+    title: jobCompletedEvent.job.jobStatistics.referencedTables[] as {projectId, datasetId, tableId} objects
+    versions: [bq-auditdata-legacy]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/bigquery/logging/v1/audit_data.proto
+    research: GCP report sections 3 and 7
+  - id: bq1.table-data-read-events
+    title: tableDataReadEvents[] with tableName and referencedFields
+    versions: [bq-auditdata-legacy]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/bigquery/logging/v1/audit_data.proto
+    research: GCP report section 3; proto opened 2026-10-19
+  - id: bq1.referenced-views
+    title: jobStatistics.referencedViews[] present
+    versions: [bq-auditdata-legacy]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/bigquery/logging/v1/audit_data.proto
+    research: Proto opened 2026-10-19
+  - id: bq1.resource-type
+    title: resource.type bigquery_resource and a job resourceName projects/P/jobs/J
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 3 comparison table
+  - id: bq1.deprecated-fields
+    title: Deprecated jobQueryDoneResponse and jobStatistics.reservationUsage present and ignored
+    versions: [bq-auditdata-legacy]
+    doc_url: https://raw.githubusercontent.com/googleapis/googleapis/master/google/cloud/bigquery/logging/v1/audit_data.proto
+    research: GCP report section 3; proto opened 2026-10-19
+  - id: bq1.mixed-with-v2
+    title: v1 and v2 entries for one project during the overlap; each parses under its own version
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 7, v1 row
+  - id: bq1.binding-pinned-v1
+    title: A binding pinned to v1 only parses v1 and applies its mismatch policy to v2 entries
+    versions: [bq-auditdata-legacy]
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/auditlogs/migration
+    research: GCP report section 7, v1 row; GCP-01 acceptance (per-binding pin test)

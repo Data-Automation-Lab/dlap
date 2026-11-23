@@ -1,0 +1,181 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# AWS Reader role: the single source of truth (IAM-03). main.tf reads this file with
+# yamldecode; reader-role.cfn.yaml repeats the list because CloudFormation cannot read a file,
+# and da-discovery ReaderRoleTraceabilityTest fails when the two differ. The test also checks
+# every call site, that every action is a List, Get, Describe or LookupEvents action, that object
+# content (s3:GetObject) is readable only in the log buckets the operator names and query-result
+# content nowhere, and that every AWS SDK file of da-discovery and da-logingest is cited here or
+# listed under no_permission_sources.
+#
+# Scopes (main.tf and reader-role.cfn.yaml build one policy statement per scope):
+#   account             Resource "*". List and Describe actions do not support resource-level
+#                       scoping, and the S3 bucket configuration reads cover every bucket the
+#                       crawler lists.
+#   log_bucket          The log buckets the operator names (Terraform cloudtrail_log_bucket and
+#                       s3_access_log_bucket, CloudFormation CloudTrailLogBucket and
+#                       S3AccessLogBucket), as bucket ARNs. Bucket-level actions only.
+#   log_bucket_objects  The objects of those log buckets only (bucket ARN plus "/*"). Never a data
+#                       bucket and never "*". No statement is created when no log bucket is named.
+cloud: aws
+permissions:
+  - permission: s3:ListAllMyBuckets
+    scopes: [account]
+    purpose: List the buckets of the account (S3 ListBuckets) for discovery and read coverage.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/S3ResourceCrawler.java
+        line: 117
+        call: s3.listBuckets()
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/coverage/S3BucketInventory.java
+        line: 118
+        call: s3.listBuckets()
+  - permission: s3:GetBucketLocation
+    scopes: [account]
+    purpose: Read the region of each bucket.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/S3ResourceCrawler.java
+        line: 160
+        call: s3.getBucketLocation(
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/coverage/S3BucketInventory.java
+        line: 127
+        call: s3.getBucketLocation(
+  - permission: s3:GetBucketVersioning
+    scopes: [account]
+    purpose: Read the versioning state of each bucket.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/S3ResourceCrawler.java
+        line: 172
+        call: s3.getBucketVersioning(
+  - permission: s3:GetEncryptionConfiguration
+    scopes: [account]
+    purpose: Read the default encryption of each bucket (S3 GetBucketEncryption).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/S3ResourceCrawler.java
+        line: 183
+        call: s3.getBucketEncryption(
+  - permission: glue:GetDatabases
+    scopes: [account]
+    purpose: List Glue Data Catalog databases.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/GlueResourceCrawler.java
+        line: 142
+        call: glue.getDatabases(
+  - permission: glue:GetTables
+    scopes: [account]
+    purpose: List Glue Data Catalog tables.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/GlueResourceCrawler.java
+        line: 160
+        call: glue.getTables(
+  - permission: glue:GetJobs
+    scopes: [account]
+    purpose: List Glue ETL jobs as processing jobs.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/AwsProcessingJobResourceCrawler.java
+        line: 190
+        call: glue.getJobs(
+  - permission: athena:ListQueryExecutions
+    scopes: [account]
+    purpose: List Athena query executions of the primary workgroup as processing jobs.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/AwsProcessingJobResourceCrawler.java
+        line: 229
+        call: athena.listQueryExecutions(
+  - permission: athena:GetQueryExecution
+    scopes: [account]
+    purpose: Read the state and timing of each listed execution (not its results).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/AwsProcessingJobResourceCrawler.java
+        line: 231
+        call: athena.getQueryExecution(
+  - permission: elasticmapreduce:ListClusters
+    scopes: [account]
+    purpose: List EMR clusters.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/AwsProcessingJobResourceCrawler.java
+        line: 264
+        call: emr.listClusters(
+  - permission: elasticmapreduce:ListSteps
+    scopes: [account]
+    purpose: List the steps of each EMR cluster as processing jobs.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/AwsProcessingJobResourceCrawler.java
+        line: 266
+        call: emr.listSteps(
+  - permission: rds:DescribeDBInstances
+    scopes: [account]
+    purpose: List RDS instances.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/RdsResourceCrawler.java
+        line: 120
+        call: rds.describeDBInstances(
+  - permission: ec2:DescribeInstances
+    scopes: [account]
+    purpose: List EC2 instances.
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/EC2InstanceCrawler.java
+        line: 140
+        call: ec2Client.describeInstances(
+  - permission: cloudtrail:DescribeTrails
+    scopes: [account]
+    purpose: List the trails that apply to each bucket region, shadow trails included (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/coverage/AwsSignedJsonClient.java
+        line: 134
+        call: '"cloudtrail:DescribeTrails"'
+  - permission: cloudtrail:GetEventSelectors
+    scopes: [account]
+    purpose: Read which S3 data events a trail records (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/coverage/AwsSignedJsonClient.java
+        line: 147
+        call: '"cloudtrail:GetEventSelectors"'
+  - permission: cloudtrail:GetTrailStatus
+    scopes: [account]
+    purpose: Read whether a trail is logging (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/coverage/AwsSignedJsonClient.java
+        line: 159
+        call: '"cloudtrail:GetTrailStatus"'
+  - permission: cloudtrail:LookupEvents
+    scopes: [account]
+    purpose: Read CloudTrail management events (event history) for audit-log ingest.
+    calls:
+      - source: da-logingest/src/main/java/com/dlap/logingest/source/aws/CloudTrailLogSource.java
+        line: 407
+        call: client.lookupEvents(
+  - permission: s3:ListBucket
+    scopes: [log_bucket]
+    purpose: List the CloudTrail trail files and S3 server access log objects (S3 ListObjectsV2), and the region folders of the trail bucket. Granted on the named log buckets only.
+    calls:
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/aws/s3/SdkS3LogStore.java
+        line: 137
+        call: listObjectsV2Paginator(request.build())
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/aws/s3/SdkS3LogStore.java
+        line: 153
+        call: listObjectsV2Paginator(request)
+  - permission: s3:GetObject
+    scopes: [log_bucket_objects]
+    purpose: Read the CloudTrail trail files and S3 server access log objects. Granted on the objects of the named log buckets only, never on data buckets.
+    calls:
+      - source: da-logingest/src/main/java/com/dlap/logingest/providers/aws/s3/SdkS3LogStore.java
+        line: 170
+        call: getObjectAsBytes(request.build())
+no_permission_calls:
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/coverage/AwsSignedJsonClient.java
+    line: 171
+    call: Action=GetCallerIdentity
+    reason: STS GetCallerIdentity needs no permission and cannot be denied by policy.
+no_permission_sources:
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/auth/AWSAuthenticationService.java
+    reason: Credentials provider type only; makes no AWS call.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/auth/AWSAuthenticationServiceImpl.java
+    reason: Builds a static or default credentials provider; makes no AWS call.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/config/AwsClientFactory.java
+    reason: Builds the service clients; building a client calls nothing.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/coverage/AwsReadCoverageConfiguration.java
+    reason: Wires the coverage collector and endpoints; calls nothing.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/aws/service/AWSFilterBuilder.java
+    reason: Builds EC2 filter model objects; calls nothing.

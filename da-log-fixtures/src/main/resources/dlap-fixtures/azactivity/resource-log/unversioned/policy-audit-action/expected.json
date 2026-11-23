@@ -1,0 +1,11 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2025-04-23T11:02:06.696631900Z",
+      "sourceProvider": "AZURE",
+      "operation": "MICROSOFT.AUTHORIZATION/POLICIES/AUDIT/ACTION",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

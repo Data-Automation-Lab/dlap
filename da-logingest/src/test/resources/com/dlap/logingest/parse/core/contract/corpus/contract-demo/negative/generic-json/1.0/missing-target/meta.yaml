@@ -1,0 +1,9 @@
+origin: synthetic-from-doc
+source_url: https://www.rfc-editor.org/rfc/rfc8259
+doc_date: 2017-12-01
+license: synthetic
+covers: []
+variant_ids: [demo-missing-target]
+expected_outcome: QUARANTINED:MISSING_REQUIRED_FIELD
+anonymised: false
+notes: "No target: quarantined, with a partial pass-through event that keeps the audit fact."

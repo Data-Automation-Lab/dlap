@@ -1,0 +1,77 @@
+name: Bug report
+description: File a bug against DLAP services or tooling
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Issue hygiene
+      options:
+        - label: I searched existing issues (open and closed) for duplicates
+          required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences describing the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps, including commands if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: service
+    attributes:
+      label: Service affected
+      options:
+        - da-discovery
+        - da-catalog
+        - da-policyengine
+        - da-reporting
+        - da-autolabel
+        - da-autoarchival
+        - da-autodelete
+        - da-autocompliance
+        - da-admin-service
+        - da-logingest
+        - tooling / build / docs (not a single service)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / branch
+      description: e.g. `main` @ abc1234, or image tag
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Java version, Docker Compose profile, cloud provider if relevant.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack traces
+      description: Paste relevant logs (redact secrets).
+    validations:
+      required: false

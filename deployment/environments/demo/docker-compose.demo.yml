@@ -1,0 +1,591 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP hosted-demo overlay, "Lite" profile (DEMO-01, ADR-0058).
+#
+# A compose override file for the quickstart pair, not a second stack. up.sh applies it after
+#
+#   deployment/environments/dev/docker-compose.yml
+#   deployment/environments/dev/docker-compose.microservices.yml
+#
+# and then keycloak/docker-compose.demo.keycloak.yml when DEMO-02 has delivered it. Paths below are
+# relative to the first file (deployment/environments/dev), so this folder is ../demo. Needs Docker
+# Compose 2.24 or later for the !override and !reset tags.
+#
+# What it does:
+#   1. Runs 8 JVMs: da-catalog, da-policyengine, da-discovery (wave 1) and da-logingest, da-reporting,
+#      da-autolabel, da-autoarchival, da-autodelete (wave 2). da-admin-service and da-autocompliance
+#      are in the "plus" profile. The new-ui JVM and Ollama are gone: nginx serves the SPA, and
+#      da-autolabel labels with the deterministic rules provider (ADR-0052).
+#   2. Gives every container a memory limit and every JVM an explicit heap and the options of a small
+#      host. Postgres and Kafka are tuned down; Postgres no longer logs statements.
+#   3. Publishes TCP 80 and 443 (Caddy) and nothing else on the network. The two loopback ports
+#      (gateway 8081, Keycloak 8180) are for an SSH tunnel. The services have no host port.
+#   4. Puts the services on an internal network: no route to the internet. Caddy, the gateway and
+#      Keycloak also join a second network so they can be published. No cloud call is possible.
+#   5. Uses fixture data only. Every cloud log source, cloud crawl and cloud action is off. Deletes are
+#      dry runs and archival is mocked, by literals that an environment file cannot change.
+#   6. Starts the services in two waves (depends_on), because eight JVMs starting at once on 2 vCPU
+#      take longer than three and then five.
+#
+# What it does not do: the production Keycloak (DEMO-02: patched image, hardened realm, public
+# issuer), the SPA build (scripts/build-spa.sh) and the host firewall. See README.md.
+#
+# Sizes are the result of scripts/measure.sh; README.md has the numbers and the host they come from.
+
+x-demo-logging: &demo-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# Shared by the eight JVMs. cap_drop and read_only are possible because the distroless images run as a
+# non-root user, listen above 1024 and log to stdout; the JVM temp files go to a tmpfs.
+x-demo-jvm: &demo-jvm
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  read_only: true
+  tmpfs:
+    - /tmp:size=64m,mode=1777
+  stop_grace_period: 30s
+  logging: *demo-logging
+  healthcheck:
+    interval: 10s
+    timeout: 5s
+    retries: 30
+    start_period: 20s
+
+services:
+
+  # --- Infrastructure ---------------------------------------------------------------------------
+
+  postgresql:
+    ports: !reset []
+    volumes:
+      # Keep the quickstart seed (03-insert-test-data.sql): synthetic users, labels and assets. The
+      # replay fixtures add more. Both are fictional.
+      - ../../platform/database/init-scripts:/docker-entrypoint-initdb.d:ro
+    environment:
+      # No development fallback in the demo (SEC-12, Q-176, Q-449, Q-455). The services run under the prod
+      # profile, whose boot guard refuses a published database password, so every role has a real one:
+      # an unset variable stops compose here, and up.sh checks the values. The services read the same
+      # variables from docker-compose.microservices.yml. deployment/platform/database/gen-db-passwords.sh
+      # writes them into .env.demo.
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env.demo}
+      - DLAP_COMMON_DB_PASSWORD=${DLAP_COMMON_DB_PASSWORD:?DLAP_COMMON_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_DISCOVERY_DB_PASSWORD=${DA_DISCOVERY_DB_PASSWORD:?DA_DISCOVERY_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_CATALOG_DB_PASSWORD=${DA_CATALOG_DB_PASSWORD:?DA_CATALOG_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_POLICYENGINE_DB_PASSWORD=${DA_POLICYENGINE_DB_PASSWORD:?DA_POLICYENGINE_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_REPORTING_DB_PASSWORD=${DA_REPORTING_DB_PASSWORD:?DA_REPORTING_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_AUTOLABEL_DB_PASSWORD=${DA_AUTOLABEL_DB_PASSWORD:?DA_AUTOLABEL_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_AUTOARCHIVAL_DB_PASSWORD=${DA_AUTOARCHIVAL_DB_PASSWORD:?DA_AUTOARCHIVAL_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_AUTODELETE_DB_PASSWORD=${DA_AUTODELETE_DB_PASSWORD:?DA_AUTODELETE_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_AUTOCOMPLIANCE_DB_PASSWORD=${DA_AUTOCOMPLIANCE_DB_PASSWORD:?DA_AUTOCOMPLIANCE_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_ADMIN_DB_PASSWORD=${DA_ADMIN_DB_PASSWORD:?DA_ADMIN_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DA_LOGINGEST_DB_PASSWORD=${DA_LOGINGEST_DB_PASSWORD:?DA_LOGINGEST_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DLAP_MONITOR_DB_PASSWORD=${DLAP_MONITOR_DB_PASSWORD:?DLAP_MONITOR_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+      - DLAP_BACKUP_DB_PASSWORD=${DLAP_BACKUP_DB_PASSWORD:?DLAP_BACKUP_DB_PASSWORD must be set in .env.demo (gen-db-passwords.sh)}
+    command: !override
+      - "postgres"
+      - "-c"
+      - "max_connections=100"
+      - "-c"
+      - "shared_buffers=128MB"
+      - "-c"
+      - "effective_cache_size=384MB"
+      - "-c"
+      - "maintenance_work_mem=32MB"
+      - "-c"
+      - "work_mem=4MB"
+      - "-c"
+      - "max_parallel_workers_per_gather=0"
+      - "-c"
+      - "log_min_duration_statement=2000"
+      - "-c"
+      - "log_connections=off"
+      - "-c"
+      - "log_disconnections=off"
+      - "-c"
+      - "log_statement=none"
+    shm_size: 128m
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 200
+    logging: *demo-logging
+
+  keycloak:
+    # The admin console is reached through an SSH tunnel to this loopback port. DEMO-02 replaces the
+    # image, the command and the realm; the limits below stay.
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_KEYCLOAK:-8180}:8080"
+    environment:
+      - JAVA_OPTS_KC_HEAP=-Xms192m -Xmx512m
+      # The realm file reads the dlap-backend client secret from this variable when it is imported
+      # (dlap-realm.json, "secret"). The quickstart never passes it to this container, so the services
+      # could be given a new secret while the realm kept the published default.
+      - DLAP_BACKEND_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - dlap-network
+      - demo-edge
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+          pids: 400
+    logging: *demo-logging
+
+  kafka:
+    ports: !reset []
+    environment:
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx256m"
+      KAFKA_NUM_PARTITIONS: "1"
+      KAFKA_NUM_NETWORK_THREADS: "2"
+      KAFKA_NUM_IO_THREADS: "4"
+      KAFKA_LOG_RETENTION_HOURS: "24"
+      KAFKA_LOG_SEGMENT_BYTES: "67108864"
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 640m
+          pids: 300
+    logging: *demo-logging
+
+  # Opt-in infrastructure that the quickstart already keeps behind profiles. Off here. If someone
+  # switches one on, its port is at least loopback only.
+  prometheus:
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_PROMETHEUS:-9090}:9090"
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+  grafana:
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_GRAFANA:-3001}:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+  localstack:
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_LOCALSTACK:-4566}:4566"
+  unitycatalog:
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_UNITYCATALOG:-18080}:8080"
+
+  # --- Dropped from Lite: not part of the demo story, or replaced -------------------------------
+
+  # Replaced by nginx serving the built SPA (gateway/nginx.demo.conf).
+  new-ui:
+    profiles: ["not-in-demo"]
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_NEW_UI:-3000}:3000"
+
+  # The demo labels with the rules provider. No model, no 1.3 GB pull.
+  ollama:
+    profiles: ["not-in-demo"]
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_OLLAMA:-11434}:11434"
+  ollama-model-pull:
+    profiles: ["not-in-demo"]
+
+  # --- Front door -------------------------------------------------------------------------------
+
+  gateway:
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_GATEWAY:-8081}:8081"
+    volumes: !override
+      - ../demo/gateway/nginx.demo.conf:/etc/nginx/nginx.conf:ro
+      - ${DEMO_SPA_DIR:-../demo/spa}:/usr/share/nginx/html:ro
+    # nginx resolves every upstream per request, so it starts with none of them running.
+    depends_on: !reset null
+    networks:
+      - dlap-network
+      - demo-edge
+    cap_drop:
+      - ALL
+    cap_add:
+      # nginx starts as root and drops its workers to the nginx user.
+      - CHOWN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    healthcheck:
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+          pids: 100
+    logging: *demo-logging
+
+  caddy:
+    image: caddy:2.11.6-alpine@sha256:d44355d3c2149dc580ce2cac735955d1c08d3d00882c30489c241aa51a5c10d9
+    restart: unless-stopped
+    ports:
+      # The only ports reachable from outside. TCP only: HTTP/3 is off in the Caddyfile.
+      - "${DEMO_BIND_ADDR:-0.0.0.0}:${DEMO_HTTP_PORT:-80}:80"
+      - "${DEMO_BIND_ADDR:-0.0.0.0}:${DEMO_HTTPS_PORT:-443}:443"
+    environment:
+      - DEMO_APP_HOST=${DEMO_APP_HOST:-demo.localhost}
+      - DEMO_ID_HOST=${DEMO_ID_HOST:-id.localhost}
+      - DEMO_ID_PORT_SUFFIX=${DEMO_ID_PORT_SUFFIX:-}
+      - DEMO_CSP_STYLE_EXTRA=${DEMO_CSP_STYLE_EXTRA:-}
+      - DEMO_CSP_IMG_EXTRA=${DEMO_CSP_IMG_EXTRA:-}
+      - DEMO_CSP_FONT_EXTRA=${DEMO_CSP_FONT_EXTRA:-}
+      - DEMO_TLS=${DEMO_TLS:-auto}
+      - DEMO_ACME_CA=${DEMO_ACME_CA:-https://acme-v02.api.letsencrypt.org/directory}
+      # A port-only address that nothing publishes: the public host has no plain-HTTP route to the app.
+      # (An empty value would be an empty site address and stop Caddy.)
+      - DEMO_APP_HTTP_ADDRESS=${DEMO_APP_HTTP_ADDRESS:-:65080}
+      - GOMEMLIMIT=64MiB
+    volumes:
+      - ../demo/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../demo/maintenance:/srv/maintenance:ro
+      # nightly-reset.sh creates the file "maintenance" in this folder while it restores the data.
+      - ${DEMO_STATE_DIR:-../demo/state}/flags:/srv/flags:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      gateway:
+        condition: service_healthy
+    networks:
+      - dlap-network
+      - demo-edge
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    deploy:
+      resources:
+        limits:
+          memory: 96m
+          pids: 200
+    logging: *demo-logging
+
+  # --- Lifecycle services, wave 1 ---------------------------------------------------------------
+  #
+  # SPRING_JPA_HIBERNATE_DDL_AUTO is Spring's own relaxed name for spring.jpa.hibernate.ddl-auto, so
+  # it wins over every properties file whatever variable that file reads.
+  #
+  # JVM options of a small host: a 224 MiB heap, a bounded metaspace and code cache, the C1 compiler
+  # only (a quicker start and less compiler memory, at a cost in peak speed that a demo does not
+  # notice), and an exit on out of memory so the restart policy brings the service back instead of
+  # leaving it half dead. G1 stays: the images' entry point fixes it and a second collector flag
+  # would stop the JVM. -Xmx outranks the entry point's MaxRAMPercentage.
+
+  da-catalog:
+    <<: *demo-jvm
+    # A !reset tag does not survive a merge key, so every service resets its host port itself.
+    ports: !reset []
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+  da-policyengine:
+    <<: *demo-jvm
+    ports: !reset []
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+  da-discovery:
+    <<: *demo-jvm
+    ports: !reset []
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms96m -Xmx288m -Xss512k -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=64m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+      # What the prod profile of da-discovery needs (deployment/PRODUCTION.md, section 8.3).
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KAFKA_ADMIN_REPLICATION_FACTOR=1
+      - KAFKA_ADMIN_PARTITIONS=1
+      # The prod profile reads from "latest". A consumer group that joins after the replay would miss
+      # it, and the nightly reset wipes Kafka, so every group starts from the beginning.
+      - KAFKA_CONSUMER_AUTO_OFFSET_RESET=earliest
+      # The GCP clients are built for a project and never called: the network has no route out and no
+      # crawl is scheduled. Any project id works.
+      - GCP_PROJECT_ID=${DEMO_GCP_PROJECT_ID:-dlap-demo-project}
+      - GOOGLE_CLOUD_PROJECT=${DEMO_GCP_PROJECT_ID:-dlap-demo-project}
+      # Vestigial: bootstrap-prod.yml fails the context when it is unset. DLAP runs no JHipster registry.
+      - JHIPSTER_REGISTRY_PASSWORD=not-used
+      # Cloud sources, off by literal.
+      - DLAP_AWS_ENABLED=false
+      - CLOUD_PROVIDER_AWS_ENABLED=false
+      - CLOUD_PROVIDER_UNITY_ENABLED=false
+    deploy:
+      resources:
+        limits:
+          memory: 640m
+          pids: 400
+
+  # --- Lifecycle services, wave 2 ---------------------------------------------------------------
+  # Each waits for the three wave-1 services, so the replay in da-logingest runs when da-discovery and
+  # da-catalog are already consuming.
+
+  da-logingest:
+    <<: *demo-jvm
+    ports: !reset []
+    environment:
+      # prod loads the GCP and CloudTrail sources, which stay off (below). demo loads the fixture
+      # replay seeder.
+      - SPRING_PROFILES_ACTIVE=prod,demo
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+      # Fixture data only. The replay runs once per start and only when seed.sh asks for it
+      # (DEMO_REPLAY_ENABLED=true in its own environment). The nightly reset restores the data
+      # instead of replaying it.
+      - DLAP_LOGINGEST_REPLAY_ENABLED=${DEMO_REPLAY_ENABLED:-false}
+      - DLAP_LOGINGEST_REPLAY_DIR=/fixtures/replay
+      - DLAP_LOGINGEST_REPLAY_PROVIDER=
+      - DLAP_LOGINGEST_DEMO_SEED_ENABLED=false
+      # Cloud log sources, off by literal.
+      - DLAP_LOGINGEST_GCP_ENABLED=false
+      - DLAP_LOGINGEST_GCP_PROJECTS=
+      - DLAP_LOGINGEST_AWS_ENABLED=false
+      - DLAP_LOGINGEST_AWS_REGIONS=
+    volumes:
+      - ../../../e2e-tests/fixtures/replay:/fixtures/replay:ro
+    depends_on:
+      da-catalog:
+        condition: service_healthy
+      da-policyengine:
+        condition: service_healthy
+      da-discovery:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+  da-reporting:
+    <<: *demo-jvm
+    ports: !reset []
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+      # The mail health check dials smtp.gmail.com with placeholder credentials and would hold the
+      # aggregate health DOWN for ever. No mail is sent in the demo.
+      - MANAGEMENT_HEALTH_MAIL_ENABLED=false
+    depends_on:
+      da-catalog:
+        condition: service_healthy
+      da-policyengine:
+        condition: service_healthy
+      da-discovery:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+  da-autolabel:
+    <<: *demo-jvm
+    ports: !reset []
+    # No Ollama: the quickstart's wait on it is dropped.
+    depends_on: !override
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      da-catalog:
+        condition: service_healthy
+      da-policyengine:
+        condition: service_healthy
+      da-discovery:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+      # SPRING_APPLICATION_JSON outranks plain environment variables, so the whole value is replaced:
+      # the rules provider (ADR-0052) in place of the quickstart's mock, and no mock fallback.
+      - 'SPRING_APPLICATION_JSON={"da-catalog.service.url":"http://da-catalog:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend","dlap.service-auth.client-secret":"${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}","dlap.autolabel.llm-provider":"rules","dlap.autolabel.allow-mock":"false"}'
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+  da-autoarchival:
+    <<: *demo-jvm
+    ports: !reset []
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+      # Literals: an environment file cannot turn a real cloud call on.
+      - DLAP_AUTOARCHIVAL_GCS_MOCK_MODE=true
+      - DLAP_AUTOARCHIVAL_AZURE_MOCK_MODE=true
+    depends_on:
+      da-catalog:
+        condition: service_healthy
+      da-policyengine:
+        condition: service_healthy
+      da-discovery:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+  da-autodelete:
+    <<: *demo-jvm
+    ports: !reset []
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+      # A literal, not ${...:-true}: an environment file cannot turn real deletion on.
+      - DLAP_AUTODELETE_DRY_RUN_CLOUD_DELETE=true
+    depends_on:
+      da-catalog:
+        condition: service_healthy
+      da-policyengine:
+        condition: service_healthy
+      da-discovery:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+  # --- Plus profile: COMPOSE_PROFILES=plus, for a host with 4 vCPU and 8 to 12 GB -----------------
+  # Configured like the others, not measured. Their routes already exist in the gateway.
+
+  da-autocompliance:
+    <<: *demo-jvm
+    ports: !reset []
+    profiles: ["plus"]
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+    depends_on:
+      da-catalog:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+  da-admin-service:
+    <<: *demo-jvm
+    ports: !reset []
+    profiles: ["plus"]
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx224m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError
+      - DB_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_THREADS_MAX=24
+    depends_on:
+      da-catalog:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          pids: 400
+
+volumes:
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
+
+networks:
+  # No route to the internet: the services cannot reach a cloud even if one were configured.
+  dlap-network:
+    internal: true
+  # Caddy, the gateway and Keycloak join this one so their ports can be published.
+  demo-edge:
+    driver: bridge

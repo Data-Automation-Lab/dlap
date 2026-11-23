@@ -1,0 +1,68 @@
+{
+  "content": [
+    {
+      "assetId": "00000000-0000-4000-8000-000000000005",
+      "assetUri": "s3://orphan-logs",
+      "assetName": "orphan-logs",
+      "cloudProvider": "AWS",
+      "serviceType": "S3_BUCKET",
+      "assetType": null,
+      "region": null,
+      "status": "ACTIVE",
+      "ownerInfo": null,
+      "discoveredAt": null,
+      "discoverySource": null,
+      "cloudCreatedAt": null,
+      "cloudCreatedSource": null,
+      "ageDays": null,
+      "sizeBytes": null,
+      "sizeObservedAt": null,
+      "lastAccessedAt": null,
+      "lastAccessSource": null,
+      "idleDays": null,
+      "readCoverage": null,
+      "readCoverageReasons": null,
+      "readCoverageObservedAt": null,
+      "readCoverageSince": null,
+      "lastModifiedAt": null,
+      "lastPermissionChangeAt": null,
+      "recreatedAt": null,
+      "retentionStatus": "UNKNOWN",
+      "retentionExpiresAt": null,
+      "retentionEvaluatedAt": null,
+      "retentionDays": null,
+      "retentionBasis": null,
+      "retentionSource": null,
+      "retentionPolicyId": null,
+      "legalHold": false,
+      "labels": [],
+      "asOf": "2026-10-19T12:00:00Z"
+    }
+  ],
+  "pageable": {
+    "pageNumber": 2,
+    "pageSize": 2,
+    "offset": 4,
+    "paged": true,
+    "unpaged": false,
+    "sort": {
+      "empty": true,
+      "sorted": false,
+      "unsorted": true
+    }
+  },
+  "last": true,
+  "totalPages": 3,
+  "totalElements": 5,
+  "size": 2,
+  "number": 2,
+  "sort": {
+    "empty": true,
+    "sorted": false,
+    "unsorted": true
+  },
+  "first": false,
+  "numberOfElements": 1,
+  "empty": false,
+  "nextAfter": null
+}

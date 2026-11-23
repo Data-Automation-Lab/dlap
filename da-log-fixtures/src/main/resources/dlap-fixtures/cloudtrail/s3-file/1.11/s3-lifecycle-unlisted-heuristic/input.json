@@ -1,0 +1,39 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "AWSService",
+        "invokedBy": "lifecycle.s3.amazonaws.com"
+      },
+      "eventTime": "2026-11-03T03:00:02Z",
+      "eventSource": "s3lifecycle.amazonaws.com",
+      "eventName": "deleteExpiredObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "lifecycle.s3.amazonaws.com",
+      "requestParameters": {
+        "bucketName": "dlap-aws-e2e",
+        "key": "raw/2026/07/sales.parquet"
+      },
+      "responseElements": null,
+      "requestID": "PARSE03CTU000003",
+      "eventID": "0a5e0c11-1fe0-4e00-8000-000000000313",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e/raw/2026/07/sales.parquet"
+        },
+        {
+          "accountId": "123456789012",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e"
+        }
+      ],
+      "eventType": "AwsServiceEvent",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Data"
+    }
+  ]
+}

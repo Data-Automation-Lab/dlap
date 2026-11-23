@@ -1,0 +1,17 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-and-other-bucket-config.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3.amazonaws.com:S3.TRANSITION_SIA.OBJECT
+  - s3.amazonaws.com:S3.TRANSITION.OBJECT
+  - s3.amazonaws.com:S3.TRANSITION_GDA.OBJECT
+  - s3.amazonaws.com:S3.DELETE.UPLOAD
+variant_ids:
+  - lifecycle.transition
+  - lifecycle.abort-upload
+  - requester.null
+  - field.json-nulls
+expected_outcome: PARSED
+anonymised: false
+notes: "Written by PARSE-02 from the S3 lifecycle logging table: transitions to Standard-IA (S3.TRANSITION_SIA.OBJECT), Glacier Flexible Retrieval (S3.TRANSITION.OBJECT) and Glacier Deep Archive (S3.TRANSITION_GDA.OBJECT) are ARCHIVE events; an aborted incomplete multipart upload (S3.DELETE.UPLOAD) removes parts, never an object, so it is an UPDATE and never a delete. Every value is invented; the lifecycle requester is [unverified] and left null."

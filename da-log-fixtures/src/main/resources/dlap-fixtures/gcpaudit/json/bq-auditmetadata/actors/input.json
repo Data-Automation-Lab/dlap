@@ -1,0 +1,301 @@
+[
+  {
+    "insertId": "bq2-actors-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:43.123456832Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalSubject": "principal://iam.googleapis.com/locations/global/workforcePools/dlap-pool/subject/user-7"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataRead": {
+          "fields": [
+            "order_id",
+            "amount"
+          ],
+          "reason": "JOB",
+          "jobName": "projects/proj-0d1a0001/jobs/bquxjob_base_1"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:44.023456832Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-actors-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:44.123456833Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "serviceAccountDelegationInfo": [
+          {
+            "firstPartyPrincipal": {
+              "principalEmail": "sa-0d1a00d2@proj-0d1a0002.iam.gserviceaccount.com"
+            }
+          }
+        ]
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataRead": {
+          "fields": [
+            "order_id",
+            "amount"
+          ],
+          "reason": "JOB",
+          "jobName": "projects/proj-0d1a0001/jobs/bquxjob_base_2"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:45.023456833Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-actors-3",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:45.123456834Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "sa-0d1a00e1@proj-0d1a0001.iam.gserviceaccount.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataRead": {
+          "fields": [
+            "order_id",
+            "amount"
+          ],
+          "reason": "JOB",
+          "jobName": "projects/proj-0d1a0001/jobs/bquxjob_base_3"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:46.023456834Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-actors-4",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:46.123456835Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "..."
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataRead": {
+          "fields": [
+            "order_id",
+            "amount"
+          ],
+          "reason": "JOB",
+          "jobName": "projects/proj-0d1a0001/jobs/bquxjob_base_4"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:47.023456835Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-actors-5",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:47.123456836Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "google-internal"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataRead": {
+          "fields": [
+            "order_id",
+            "amount"
+          ],
+          "reason": "JOB",
+          "jobName": "projects/proj-0d1a0001/jobs/bquxjob_base_5"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:48.023456836Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-actors-6",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:48.123456837Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataRead": {
+          "fields": [
+            "order_id",
+            "amount"
+          ],
+          "reason": "JOB",
+          "jobName": "projects/proj-0d1a0001/jobs/bquxjob_base_6"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:49.023456837Z",
+    "severity": "INFO"
+  }
+]

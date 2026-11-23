@@ -1,0 +1,161 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "IAMUser",
+        "arn": "arn:aws:iam::123456789012:user/user-5a1020",
+        "accountId": "123456789012",
+        "userName": "user-5a1020"
+      },
+      "eventTime": "2026-11-03T09:40:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.0.2.31",
+      "userAgent": "aws-cli/2.17.0",
+      "requestParameters": {
+        "bucketName": "dlap-aws-e2e-versioned",
+        "Host": "dlap-aws-e2e-versioned.s3.us-east-1.amazonaws.com",
+        "key": "curated/2026/sales.parquet",
+        "versionId": "PARSE03vUserDelete000000000000301"
+      },
+      "responseElements": null,
+      "requestID": "PARSE03CTV000001",
+      "eventID": "0a5e0c11-1fe0-4e00-8000-000000000301",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e-versioned/curated/2026/sales.parquet"
+        },
+        {
+          "accountId": "123456789012",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e-versioned"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Data"
+    },
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "IAMUser",
+        "arn": "arn:aws:iam::123456789012:user/user-5a1020",
+        "accountId": "123456789012",
+        "userName": "user-5a1020"
+      },
+      "eventTime": "2026-11-03T09:40:05Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.0.2.31",
+      "userAgent": "aws-cli/2.17.0",
+      "requestParameters": {
+        "bucketName": "dlap-aws-e2e-versioned",
+        "Host": "dlap-aws-e2e-versioned.s3.us-east-1.amazonaws.com",
+        "key": "curated/2026/orders.parquet"
+      },
+      "responseElements": {
+        "x-amz-delete-marker": "true",
+        "x-amz-version-id": "PARSE03vDeleteMarker00000000000302"
+      },
+      "requestID": "PARSE03CTV000002",
+      "eventID": "0a5e0c11-1fe0-4e00-8000-000000000302",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e-versioned/curated/2026/orders.parquet"
+        },
+        {
+          "accountId": "123456789012",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e-versioned"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Data"
+    },
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "AWSService",
+        "invokedBy": "lifecycle.s3.amazonaws.com"
+      },
+      "eventTime": "2026-11-03T02:20:00Z",
+      "eventSource": "s3lifecycle.amazonaws.com",
+      "eventName": "DeleteObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "lifecycle.s3.amazonaws.com",
+      "requestParameters": {
+        "bucketName": "dlap-aws-e2e-versioned",
+        "key": "raw/2026/08/customers.parquet",
+        "versionId": "PARSE03vNoncurrent0000000000000303"
+      },
+      "responseElements": null,
+      "requestID": "PARSE03CTV000003",
+      "eventID": "0a5e0c11-1fe0-4e00-8000-000000000303",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e-versioned/raw/2026/08/customers.parquet"
+        },
+        {
+          "accountId": "123456789012",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e-versioned"
+        }
+      ],
+      "eventType": "AwsServiceEvent",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Data"
+    },
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "IAMUser",
+        "arn": "arn:aws:iam::123456789012:user/user-5a1020",
+        "accountId": "123456789012",
+        "userName": "user-5a1020"
+      },
+      "eventTime": "2026-11-03T09:41:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.0.2.31",
+      "userAgent": "aws-cli/2.17.0",
+      "requestParameters": {
+        "bucketName": "dlap-aws-e2e",
+        "Host": "dlap-aws-e2e.s3.us-east-1.amazonaws.com",
+        "key": "curated/2026/old.parquet"
+      },
+      "responseElements": null,
+      "requestID": "PARSE03CTV000004",
+      "eventID": "0a5e0c11-1fe0-4e00-8000-000000000304",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e/curated/2026/old.parquet"
+        },
+        {
+          "accountId": "123456789012",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Data"
+    }
+  ]
+}

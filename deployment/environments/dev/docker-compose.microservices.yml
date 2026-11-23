@@ -1,0 +1,689 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+version: '3.8'
+
+# DLAP Microservices Docker Compose Configuration
+# Strategy 3: Centralized Environment Management with Build Context References
+# Uses individual service Docker files with standardized port allocation
+#
+# Actuator (OBS-01): every service serves /actuator/health on its application port, open without a
+# token. /actuator/prometheus is served on a separate management port (MANAGEMENT_SERVER_PORT), open
+# without a token on that port only. docker-compose.monitoring.yml sets that port for all services
+# and the `monitoring` profile of docker-compose.yml starts Prometheus, Alertmanager, Grafana and the
+# exporters that scrape it.
+#
+# JWT issuer check (CLAUDE.md section 10.2): every resource-server service gets DLAP_SECURITY_JWT_VALIDATE_ISSUER,
+# DLAP_SECURITY_JWT_EXPECTED_ISSUER, DLAP_SECURITY_JWT_VALIDATE_AUDIENCE and DLAP_SECURITY_JWT_EXPECTED_AUDIENCE
+# from the environment (.env.example, "JWT validation"). The checks are off by default, which keeps the
+# dual-issuer dev setup (browser tokens from localhost:8180, service tokens from keycloak:8080). To validate,
+# set the variables in .env and list every issuer the realm signs for, separated by commas:
+#   DLAP_SECURITY_JWT_EXPECTED_ISSUER=https://auth.example.com/realms/dlap,http://keycloak:8080/realms/dlap
+#
+# Database passwords (SEC-12): each service connects as its own database user, and its password is the
+# variable <DATABASE>_DB_PASSWORD (DA_CATALOG_DB_PASSWORD, ...). The same variable reaches the PostgreSQL
+# container (docker-compose.yml), where the init script creates the user with it, and the service here, as
+# SPRING_DATASOURCE_PASSWORD. Unset, both fall back to the published <database>_pass of the init script,
+# so the quickstart boots with no setup; the prod boot guard refuses that default. The pilot and demo
+# overlays require real values; deployment/platform/database/gen-db-passwords.sh writes them.
+#
+# Secrets (SEC-05): every secret has a published dev default here so that the quickstart boots with no
+# setup. Under SPRING_PROFILES_ACTIVE=prod the boot guard (da-protos DevSecretGuard) refuses to start a
+# service that still carries one, or an empty one; deployment/PRODUCTION.md section 1 lists them. The
+# client secret of dlap-backend is passed in DLAP_SERVICE_AUTH_CLIENT_SECRET, never inside
+# SPRING_APPLICATION_JSON: a named variable can be taken from a secret store by itself, and the guard and
+# secret scanners see it as a secret instead of one more key of a JSON blob. (docker inspect shows the
+# environment of a running container either way; use a secret store outside the quickstart.)
+
+services:
+
+  # Frontend UI Service (React + Spring Boot)
+  new-ui:
+    build:
+      context: ../../../new-ui
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-new-ui
+    ports:
+      - "${DLAP_PORT_NEW_UI:-3000}:3000"    # Aligned with port standardization plan
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/dlap_common
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      # Serve the freshly-built frontend baked into the image (./static, post-rename
+      # "DLAP UI") ahead of the jar's bundled classpath:/static/ (an older "DaLab"
+      # build). Classpath locations remain as fallback.
+      - SPRING_WEB_RESOURCES_STATIC_LOCATIONS=file:/app/static/,classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway - single browser-facing origin (http://localhost:8081): serves the
+  # SPA and routes /api/v1/<service> to each backend. Same-origin => no CORS. See
+  # gateway/nginx.conf. nginx resolves the upstream service names at startup, so it
+  # depends_on every proxied service being started (not necessarily healthy).
+  gateway:
+    image: nginx:1.27-alpine
+    container_name: dlap-gateway
+    ports:
+      - "${DLAP_PORT_GATEWAY:-8081}:8081"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      new-ui:
+        condition: service_started
+      da-catalog:
+        condition: service_started
+      da-policyengine:
+        condition: service_started
+      da-reporting:
+        condition: service_started
+      da-discovery:
+        condition: service_started
+      da-autolabel:
+        condition: service_started
+      da-autoarchival:
+        condition: service_started
+      da-autodelete:
+        condition: service_started
+      da-autocompliance:
+        condition: service_started
+      da-admin-service:
+        condition: service_started
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      # Use 127.0.0.1 (not localhost): busybox wget resolves localhost to IPv6 ::1,
+      # but nginx listens on IPv4 only, so a localhost probe fails with "connection refused".
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8081/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Discovery Service - Data Asset Discovery
+  da-discovery:
+    build:
+      context: ../../../da-discovery
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-discovery
+    ports:
+      - "${DLAP_PORT_DISCOVERY:-8091}:8080"    # host 8081 is now the API gateway; da-discovery moved to 8091
+                       # (internal comms use da-discovery:8080). See gateway service.
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_discovery
+      # SEC-12: the password of da_discovery_user, the one the init script gave it (the published development value
+      # when DA_DISCOVERY_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_DISCOVERY_DB_PASSWORD:-da_discovery_pass}
+      - DB_PASS=${DA_DISCOVERY_DB_PASSWORD:-da_discovery_pass}
+      - 'SPRING_APPLICATION_JSON={"dlap.catalog-service.url":"http://da-catalog:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend"}'
+      # The client secret travels in its own variable, not inside SPRING_APPLICATION_JSON (SEC-05, B11-I1):
+      # the relaxed name DLAP_SERVICE_AUTH_CLIENT_SECRET binds to dlap.service-auth.client-secret, and the
+      # prod boot guard (DevSecretGuard) reads the setting by name. The same variable is on every service below.
+      - DLAP_SERVICE_AUTH_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+      # /actuator/health is public (Q-086), so its detail must not be: the dev profile of da-discovery
+      # (config/application-dev.yml) shows component detail to every caller.
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=when-authorized
+      # GCP must be ON so the gcpLogAnalyzer bean (required by the log
+      # controllers) is created; the BigQuery/Storage clients only need a
+      # project id to instantiate (they are never invoked in the E2E - we
+      # exercise the log-spine, not real GCP crawling).
+      - CLOUD_PROVIDER_GCP_ENABLED=true
+      # AWS discovery, off by default. One variable set (.env.example section 5):
+      # config/application.yml binds DLAP_AWS_* to cloud.provider.aws.* and aws.region.
+      # Leave ENDPOINT, ACCESS_KEY and SECRET_KEY empty for the SDK default credential chain.
+      # The dev Spring profile (config/application-dev.yml) pins cloud.provider.aws.enabled=false
+      # above the YAML binding, and only an environment variable beats a profile file, so
+      # the toggle is also mapped onto CLOUD_PROVIDER_AWS_ENABLED here.
+      - CLOUD_PROVIDER_AWS_ENABLED=${DLAP_AWS_ENABLED:-false}
+      - DLAP_AWS_ENABLED=${DLAP_AWS_ENABLED:-false}
+      - DLAP_AWS_REGION=${DLAP_AWS_REGION:-us-east-1}
+      - DLAP_AWS_ENDPOINT=${DLAP_AWS_ENDPOINT:-}
+      - DLAP_AWS_ACCESS_KEY=${DLAP_AWS_ACCESS_KEY:-}
+      - DLAP_AWS_SECRET_KEY=${DLAP_AWS_SECRET_KEY:-}
+      # UC-5 discovery source (off by default). To crawl a Unity Catalog metastore,
+      # bring up the `unity` profile and set CLOUD_PROVIDER_UNITY_ENABLED=true in .env
+      # (the URI default already targets the in-network unitycatalog service).
+      - CLOUD_PROVIDER_UNITY_ENABLED=${CLOUD_PROVIDER_UNITY_ENABLED:-false}
+      - CLOUD_PROVIDER_UNITY_URI=${CLOUD_PROVIDER_UNITY_URI:-http://unitycatalog:8080/api/2.1/unity-catalog}
+      - CLOUD_PROVIDER_UNITY_TOKEN=${CLOUD_PROVIDER_UNITY_TOKEN:-}
+      - GOOGLE_CLOUD_PROJECT=dlap-demo-project
+      - GCP_PROJECT_ID=dlap-demo-project
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Catalog Service - Asset Metadata Management
+  da-catalog:
+    build:
+      context: ../../../da-catalog
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-catalog
+    ports:
+      - "${DLAP_PORT_CATALOG:-8082}:8080"    # External:Internal (standardized ports)
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      # da-catalog is the asset manager: the canonical Asset/Label/User entities
+      # (da-protos, @Table schema="dlap_common") live in the shared dlap_common
+      # DATABASE, not in da-catalog's per-service DB. Connect there so asset
+      # upserts land in dlap_common.dlap_assets. da-catalog's own service-private
+      # tables (dlap_asset_lineage) live in the dlap_catalog schema of that same
+      # DB (created/owned by da_catalog_user - see 02-create-common-schema.sql).
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/dlap_common
+      # SEC-12: the password of da_catalog_user, the one the init script gave it (the published development value
+      # when DA_CATALOG_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_CATALOG_DB_PASSWORD:-da_catalog_pass}
+      - DB_PASS=${DA_CATALOG_DB_PASSWORD:-da_catalog_pass}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+      # Unity Catalog mirror (ADR-0029), off by default. Bring up the `unity` profile
+      # and set DLAP_UNITY_ENABLED=true in .env; the URI default is the in-network server.
+      - DLAP_UNITY_ENABLED=${DLAP_UNITY_ENABLED:-false}
+      - DLAP_UNITY_URI=${DLAP_UNITY_URI:-http://unitycatalog:8080/api/2.1/unity-catalog}
+      - DLAP_UNITY_TOKEN=${DLAP_UNITY_TOKEN:-}
+      - DLAP_UNITY_CATALOG=${DLAP_UNITY_CATALOG:-dlap}
+      - DLAP_UNITY_SCHEMA=${DLAP_UNITY_SCHEMA:-default}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Policy Engine Service - Policy Evaluation & Enforcement
+  da-policyengine:
+    build:
+      context: ../../../da-policyengine
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-policyengine
+    ports:
+      - "${DLAP_PORT_POLICYENGINE:-8083}:8080"    # External:Internal (standardized ports)
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_policyengine
+      # SEC-12: the password of da_policyengine_user, the one the init script gave it (the published development value
+      # when DA_POLICYENGINE_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_POLICYENGINE_DB_PASSWORD:-da_policyengine_pass}
+      - DB_PASS=${DA_POLICYENGINE_DB_PASSWORD:-da_policyengine_pass}
+      - 'SPRING_APPLICATION_JSON={"dlap.services.catalog.url":"http://da-catalog:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend"}'
+      - DLAP_SERVICE_AUTH_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Reporting Service - Analytics & Dashboard Generation
+  da-reporting:
+    build:
+      context: ../../../da-reporting
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-reporting
+    ports:
+      - "${DLAP_PORT_REPORTING:-8084}:8080"    # External:Internal (standardized ports)
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_reporting
+      # SEC-12: the password of da_reporting_user, the one the init script gave it (the published development value
+      # when DA_REPORTING_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_REPORTING_DB_PASSWORD:-da_reporting_pass}
+      - DB_PASS=${DA_REPORTING_DB_PASSWORD:-da_reporting_pass}
+      # Cross-service Feign targets: reach services by their compose name on the
+      # INTERNAL port 8080 (defaults point at localhost/host-ports → unreachable
+      # container-to-container). Fixes da-reporting dashboard aggregation.
+      - 'SPRING_APPLICATION_JSON={"dlap.services.da-catalog.url":"http://da-catalog:8080","dlap.services.da-policyengine.url":"http://da-policyengine:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend"}'
+      - DLAP_SERVICE_AUTH_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+      # Actuator on the application port, like the other services. application.properties puts it on
+      # port 8380, where nothing could reach it from outside the container. The monitoring overlay
+      # sets 9091 for every service. An empty value means "same port as the application".
+      - MANAGEMENT_SERVER_PORT=
+      # The mail health check dials smtp.gmail.com with placeholder credentials and holds the
+      # aggregate health DOWN (Q-177). Enable it again when SMTP is configured.
+      - MANAGEMENT_HEALTH_MAIL_ENABLED=false
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Ollama - zero-config LLM provider for the demo tour (ADR-0015 + P0-M).
+  # README's Demo Tour says "Ollama by default zero-config"; this service
+  # makes that real. On first startup the init script pulls the configured
+  # default model (override via OLLAMA_MODEL env var). da-autolabel calls
+  # http://ollama:11434 by default. Operators wanting OpenAI flip
+  # dlap.autolabel.llm-provider=openai and supply OPENAI_API_KEY.
+  ollama:
+    image: ollama/ollama:0.5.1
+    container_name: dlap-ollama
+    ports:
+      - "${DLAP_PORT_OLLAMA:-11434}:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_KEEP_ALIVE=24h
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Preloads a small Ollama model so a real-LLM auto-label call doesn't block on
+  # a multi-gigabyte download. The quickstart labels with the RULES provider (see
+  # da-autolabel SPRING_APPLICATION_JSON), so this pull is only the hedge for
+  # flipping dlap.autolabel.llm-provider=ollama. Defaults to the 1.3GB llama3.2:1b
+  # (down -v wipes the volume, so keep the pull cheap). Run-once init container.
+  ollama-model-pull:
+    image: ollama/ollama:0.5.1
+    container_name: dlap-ollama-model-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:1b}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - 'echo "Pulling $$OLLAMA_MODEL..."; ollama pull "$$OLLAMA_MODEL" && echo "Model $$OLLAMA_MODEL ready."'
+    networks:
+      - dlap-network
+    restart: "no"
+
+  # AutoLabel Service - AI-powered Data Classification
+  da-autolabel:
+    build:
+      context: ../../../da-autolabel
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-autolabel
+    ports:
+      - "${DLAP_PORT_AUTOLABEL:-8085}:8080"    # External:Internal (standardized ports)
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_autolabel
+      # SEC-12: the password of da_autolabel_user, the one the init script gave it (the published development value
+      # when DA_AUTOLABEL_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_AUTOLABEL_DB_PASSWORD:-da_autolabel_pass}
+      - DB_PASS=${DA_AUTOLABEL_DB_PASSWORD:-da_autolabel_pass}
+      # llm props go in SPRING_APPLICATION_JSON because dlap.autolabel.llm-provider is a
+      # hyphenated key that DLAP_AUTOLABEL_* env vars do NOT bind to.
+      # Quickstart: the deterministic RULES provider (SEC-05, Q-099). It labels from the asset's
+      # own name and fields, needs no model, and stamps SMART_LABEL_RULE on what it assigns. The
+      # mock provider that used to be selected here drew labels at random and is off:
+      # dlap.autolabel.allow-mock stays at its default false. Flip dlap.autolabel.llm-provider to
+      # "ollama" (+ a pulled model like llama3.2:1b) for LLM labels.
+      - 'SPRING_APPLICATION_JSON={"da-catalog.service.url":"http://da-catalog:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend","dlap.autolabel.llm-provider":"rules"}'
+      - DLAP_SERVICE_AUTH_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+      # Actuator on the application port, like the other services (application.properties says 8385).
+      # The monitoring overlay sets 9091 for every service. An empty value means "same port as the application".
+      - MANAGEMENT_SERVER_PORT=
+      - DLAP_AUTOLABEL_OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AutoArchival Service - Automated Data Archiving
+  da-autoarchival:
+    build:
+      context: ../../../da-autoarchival
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-autoarchival
+    ports:
+      - "${DLAP_PORT_AUTOARCHIVAL:-8086}:8080"    # External:Internal (standardized ports)
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_autoarchival
+      # SEC-12: the password of da_autoarchival_user, the one the init script gave it (the published development value
+      # when DA_AUTOARCHIVAL_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_AUTOARCHIVAL_DB_PASSWORD:-da_autoarchival_pass}
+      - DB_PASS=${DA_AUTOARCHIVAL_DB_PASSWORD:-da_autoarchival_pass}
+      # M2M lookup of each asset's real assetUri + cloudProvider before archiving it, and the re-read of every
+      # approval at the policy engine just before an archive runs (docs/specs/approvals.md section 9 rule 3).
+      # 8080 is the container port; 8083 is only the host mapping (WIRE-01, Q-602).
+      - 'SPRING_APPLICATION_JSON={"dlap.catalog-service.url":"http://da-catalog:8080","dlap.services.da-policyengine.url":"http://da-policyengine:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend"}'
+      - DLAP_SERVICE_AUTH_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AutoDelete Service - Automated Data Deletion
+  da-autodelete:
+    build:
+      context: ../../../da-autodelete
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-autodelete
+    ports:
+      - "${DLAP_PORT_AUTODELETE:-8087}:8080"    # External:Internal (standardized ports)
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_autodelete
+      # SEC-12: the password of da_autodelete_user, the one the init script gave it (the published development value
+      # when DA_AUTODELETE_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_AUTODELETE_DB_PASSWORD:-da_autodelete_pass}
+      - DB_PASS=${DA_AUTODELETE_DB_PASSWORD:-da_autodelete_pass}
+      # The approval re-reads of the hard-delete executor go to the policy engine (WIRE-01, Q-613).
+      - 'SPRING_APPLICATION_JSON={"dlap.catalog-service.url":"http://da-catalog:8080","dlap.policyengine-service.url":"http://da-policyengine:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend"}'
+      - DLAP_SERVICE_AUTH_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+      # The hard-delete sweeper is REAL by default (code default false). The dev stack opts
+      # out explicitly so a local run never destroys cloud data; dry-run rows are stamped
+      # "DRY-RUN: no cloud call". Same shape as DLAP_AUTOARCHIVAL_GCS_MOCK_MODE.
+      - DLAP_AUTODELETE_DRY_RUN_CLOUD_DELETE=${DLAP_AUTODELETE_DRY_RUN_CLOUD_DELETE:-true}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+      # Serve /actuator/health/liveness and /readiness. application.properties of da-autodelete does not enable
+      # the probe groups the way the other services do.
+      - MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED=true
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Log Ingest Service - audit-log normalization + synthetic-event entry (ADR-0010)
+  da-logingest:
+    build:
+      context: ../../../da-logingest
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-logingest
+    ports:
+      - "${DLAP_PORT_LOGINGEST:-8090}:8090"
+    environment:
+      # The GCP and AWS log sources are Spring-profile gated (GcpLogSource: gcp|prod,
+      # CloudTrailLogSource: aws|prod), so enabling one also needs its profile added
+      # here, for example DLAP_LOGINGEST_PROFILES=dev,gcp (.env.example section 6).
+      - SPRING_PROFILES_ACTIVE=${DLAP_LOGINGEST_PROFILES:-dev}
+      - SERVER_PORT=8090
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_logingest
+      # SEC-12: the password of da_logingest_user, the one the init script gave it (the published development value
+      # when DA_LOGINGEST_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_LOGINGEST_DB_PASSWORD:-da_logingest_pass}
+      - DB_PASS=${DA_LOGINGEST_DB_PASSWORD:-da_logingest_pass}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+      # Set true to emit ~50 synthetic GCS/BigQuery audit events on boot (E2E/demo).
+      - DLAP_LOGINGEST_DEMO_SEED_ENABLED=${DLAP_LOGINGEST_DEMO_SEED_ENABLED:-false}
+      # Real GCP Cloud Logging source (ADR-0023), off by default. The defaults below
+      # equal the code defaults in GcpLogSource, so an unset variable changes nothing.
+      - DLAP_LOGINGEST_GCP_ENABLED=${DLAP_LOGINGEST_GCP_ENABLED:-false}
+      - DLAP_LOGINGEST_GCP_PROJECTS=${DLAP_LOGINGEST_GCP_PROJECTS:-}
+      - DLAP_LOGINGEST_GCP_POLL_CRON=${DLAP_LOGINGEST_GCP_POLL_CRON:-0/60 * * * * ?}
+      - DLAP_LOGINGEST_GCP_PAGE_SIZE=${DLAP_LOGINGEST_GCP_PAGE_SIZE:-500}
+      - DLAP_LOGINGEST_GCP_INITIAL_LOOKBACK_MINUTES=${DLAP_LOGINGEST_GCP_INITIAL_LOOKBACK_MINUTES:-60}
+      # Real AWS CloudTrail source (ADR-0023), off by default; defaults equal
+      # application.properties. Empty ENDPOINT, ACCESS_KEY and SECRET_KEY select the
+      # AWS SDK default credential chain.
+      - DLAP_LOGINGEST_AWS_ENABLED=${DLAP_LOGINGEST_AWS_ENABLED:-false}
+      - DLAP_LOGINGEST_AWS_REGIONS=${DLAP_LOGINGEST_AWS_REGIONS:-}
+      - DLAP_LOGINGEST_AWS_POLL_CRON=${DLAP_LOGINGEST_AWS_POLL_CRON:-0/60 * * * * ?}
+      - DLAP_LOGINGEST_AWS_MAX_RESULTS=${DLAP_LOGINGEST_AWS_MAX_RESULTS:-50}
+      - DLAP_LOGINGEST_AWS_LOOKBACK_MINUTES=${DLAP_LOGINGEST_AWS_LOOKBACK_MINUTES:-60}
+      - DLAP_LOGINGEST_AWS_ENDPOINT=${DLAP_LOGINGEST_AWS_ENDPOINT:-}
+      - DLAP_LOGINGEST_AWS_ACCESS_KEY=${DLAP_LOGINGEST_AWS_ACCESS_KEY:-}
+      - DLAP_LOGINGEST_AWS_SECRET_KEY=${DLAP_LOGINGEST_AWS_SECRET_KEY:-}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8090"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Compliance Monitoring Service
+  da-autocompliance:
+    build:
+      context: ../../../da-autocompliance
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-autocompliance
+    ports:
+      - "${DLAP_PORT_AUTOCOMPLIANCE:-8088}:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_autocompliance
+      # SEC-12: the password of da_autocompliance_user, the one the init script gave it (the published development value
+      # when DA_AUTOCOMPLIANCE_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_AUTOCOMPLIANCE_DB_PASSWORD:-da_autocompliance_pass}
+      - DB_PASS=${DA_AUTOCOMPLIANCE_DB_PASSWORD:-da_autocompliance_pass}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+      # Catalog URL + service-auth so the compliance scan's Feign client can fetch
+      # real assets from da-catalog with a bearer token (catalog-backed evaluation).
+      - 'SPRING_APPLICATION_JSON={"dlap.services.catalog.url":"http://da-catalog:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend"}'
+      - DLAP_SERVICE_AUTH_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Admin Service - users + cloud connections + system admin
+  da-admin-service:
+    build:
+      context: ../../../da-admin-service
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-admin-service
+    ports:
+      - "${DLAP_PORT_ADMIN:-8089}:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_admin
+      # SEC-12: the password of da_admin_user, the one the init script gave it (the published development value
+      # when DA_ADMIN_DB_PASSWORD is unset). DB_PASS reaches the unused dlap.common-db.password of the property file too.
+      - SPRING_DATASOURCE_PASSWORD=${DA_ADMIN_DB_PASSWORD:-da_admin_pass}
+      - DB_PASS=${DA_ADMIN_DB_PASSWORD:-da_admin_pass}
+      # Cross-service Feign targets (compose name + internal port 8080) for the
+      # admin job-status aggregation across the lifecycle services.
+      - 'SPRING_APPLICATION_JSON={"services.da-discovery.url":"http://da-discovery:8080","services.da-autolabel.url":"http://da-autolabel:8080","services.da-autodelete.url":"http://da-autodelete:8080","services.da-autoarchival.url":"http://da-autoarchival:8080","services.da-autocompliance.url":"http://da-autocompliance:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend"}'
+      - DLAP_SERVICE_AUTH_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=${DLAP_SECURITY_JWT_VALIDATE_ISSUER:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_SECURITY_JWT_EXPECTED_ISSUER:-}
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=${DLAP_SECURITY_JWT_VALIDATE_AUDIENCE:-false}
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${DLAP_SECURITY_JWT_EXPECTED_AUDIENCE:-}
+      # da-admin drives the Keycloak admin API (admin-cli) to manage users; give it
+      # the same bootstrap admin creds the keycloak service uses. Both read KEYCLOAK_ADMIN_PASSWORD
+      # from .env; when it is unset the fallback is the published placeholder "changeme" (not the
+      # well-known admin/admin), which the prod boot guard refuses.
+      - KEYCLOAK_ADMIN_USER=${KEYCLOAK_ADMIN:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-changeme}
+      # AES-256 key for encrypting cloud-connection credentials at rest. The
+      # service requires it explicitly (no insecure default) and the value must
+      # resolve to exactly 32 bytes: 64 hex characters are decoded to 32 bytes, 32
+      # raw characters are used as-is. Dev-only key; override DLAP_ENCRYPTION_KEY in
+      # any real deployment.
+      - DLAP_ENCRYPTION_KEY=${DLAP_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/busybox", "nc", "-z", "127.0.0.1", "8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

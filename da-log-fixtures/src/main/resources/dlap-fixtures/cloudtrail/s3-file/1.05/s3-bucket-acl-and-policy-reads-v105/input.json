@@ -1,0 +1,155 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "1111:tester",
+        "arn": "arn:aws:sts::123456789012:assumed-role/tester",
+        "accountId": "123456789012",
+        "accessKeyId": "1",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "true",
+            "creationDate": "2019-01-01T00:00:00Z"
+          },
+          "sessionIssuer": {
+            "type": "Role",
+            "principalId": "1111",
+            "arn": "arn:aws:iam::123456789012:role/tester",
+            "accountId": "123456789012",
+            "userName": "tester"
+          }
+        }
+      },
+      "eventTime": "2019-01-01T00:00:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "PutBucketAcl",
+      "awsRegion": "us-west-2",
+      "sourceIPAddress": "198.19.244.171",
+      "userAgent": "Mozilla",
+      "requestParameters": {
+        "host": [
+          "bucket.s3.us-west-2.amazonaws.com"
+        ],
+        "bucketName": "bucket",
+        "acl": [
+          ""
+        ],
+        "x-amz-acl": [
+          "private"
+        ]
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "AuthenticationMethod": "AuthHeader"
+      },
+      "requestID": "1",
+      "eventID": "0270946f-2af7-3b3b-91c1-16c6fc53f3a3",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "1111:tester",
+        "arn": "arn:aws:sts::123456789012:assumed-role/tester",
+        "accountId": "123456789012",
+        "accessKeyId": "1",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "true",
+            "creationDate": "2019-01-01T00:00:00Z"
+          },
+          "sessionIssuer": {
+            "type": "Role",
+            "principalId": "1111",
+            "arn": "arn:aws:iam::123456789012:role/tester",
+            "accountId": "123456789012",
+            "userName": "tester"
+          }
+        }
+      },
+      "eventTime": "2019-01-01T00:00:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "errorCode": "AccessDenied",
+      "eventName": "PutBucketAcl",
+      "awsRegion": "us-west-2",
+      "sourceIPAddress": "198.19.244.171",
+      "userAgent": "Mozilla",
+      "requestParameters": {
+        "host": [
+          "bucket.s3.us-west-2.amazonaws.com"
+        ],
+        "bucketName": "bucket",
+        "acl": [
+          ""
+        ],
+        "x-amz-acl": [
+          "private"
+        ]
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "AuthenticationMethod": "AuthHeader"
+      },
+      "requestID": "1",
+      "eventID": "ca849d8e-4a82-3390-bf52-a53af79f18fb",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "1111:tester",
+        "arn": "arn:aws:sts::123456789012:assumed-role/tester",
+        "accountId": "123456789012",
+        "accessKeyId": "1",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2019-01-01T00:00:00Z"
+          },
+          "sessionIssuer": {
+            "type": "Role",
+            "principalId": "1111",
+            "arn": "arn:aws:iam::123456789012:role/tester",
+            "accountId": "123456789012",
+            "userName": "tester"
+          }
+        }
+      },
+      "eventTime": "2019-01-01T00:00:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "GetBucketPolicy",
+      "awsRegion": "us-west-2",
+      "sourceIPAddress": "198.19.244.171",
+      "userAgent": "Mozilla",
+      "requestParameters": {
+        "host": [
+          "bucket.s3.us-west-2.amazonaws.com"
+        ],
+        "bucketName": "bucket",
+        "policy": [
+          ""
+        ]
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "AuthenticationMethod": "AuthHeader"
+      },
+      "requestID": "1",
+      "eventID": "ee84036c-2325-3a4d-9b65-aad67c3f1600",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    }
+  ]
+}

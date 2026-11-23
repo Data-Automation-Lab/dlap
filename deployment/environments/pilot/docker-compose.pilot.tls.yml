@@ -1,0 +1,664 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP read-only pilot, transport security overlay (SEC-06, docs/guides/transport-security.md).
+#
+# Applied by up.sh after docker-compose.pilot.base.yml (and after a keycloak overlay, if present).
+# It encrypts every hop of the default profiles and authenticates every client:
+#
+#   browser   -> gateway          TLS 1.2/1.3 on one entry point, HSTS and a CSP (nginx)
+#   gateway   -> new-ui, services TLS, upstream certificate verified against the pilot CA
+#   gateway   -> Keycloak         TLS, same origin under /realms/ (one issuer for browser tokens)
+#   services  -> services         https:// URLs, verified through the JVM trust store
+#   services  -> Keycloak         https://keycloak:8443 for keys and tokens; HTTP is switched off
+#   services  -> PostgreSQL       sslmode=verify-full; the server refuses any TCP connection without TLS
+#   services  -> Kafka            SASL_SSL with SCRAM-SHA-512, one user per service, ACLs per topic
+#   Kafka     -> Kafka            mutual TLS on the controller and inter-broker (SSL) listeners
+#
+# and it switches on the JWT issuer AND audience check in every resource server.
+#
+# Configuration is environment only: no application file, image or Java class changes. The
+# Spring services get server TLS from server.ssl.*, the database TLS from the JDBC URL, Kafka from
+# spring.kafka.*, the trust store from JDK_JAVA_OPTIONS and their Kafka login from an env_file
+# that gen-certs.sh writes.
+#
+# Before the first start:  deployment/environments/pilot/tls/gen-certs.sh --public-host <name>
+# Check a running pilot:   deployment/environments/pilot/tls/smoke-tls.sh
+# Check this file offline: deployment/environments/pilot/tls/smoke-tls.sh --static
+#
+# Settings read from the environment file (all optional; the defaults suit an SSH-tunnel rehearsal):
+#   PILOT_PUBLIC_ORIGIN       https://<name>[:port] the browsers use (default https://localhost). The
+#                             browser-side issuer is $PILOT_PUBLIC_ORIGIN/realms/dlap.
+#   PILOT_TLS_BIND_ADDRESS    host address of the entry point (default 127.0.0.1). Set 0.0.0.0, or the
+#                             VM's private address, to open the pilot to the network.
+#   PILOT_TLS_PORT            host port of the entry point (default 443).
+#   PILOT_TLS_DIR             folder gen-certs.sh wrote (default deployment/environments/pilot/tls/generated;
+#                             a relative path is relative to deployment/environments/dev).
+#   PILOT_JWT_AUDIENCE        audience every service requires (default dlap-api). The realm must put it in
+#                             the access tokens of dlap-ui and dlap-backend (oidc-audience-mapper).
+#
+# Paths below are relative to the first compose file (deployment/environments/dev). Needs Docker
+# Compose 2.24 or later (!override, !reset, env_file with required).
+
+x-tls-logging: &tls-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+# What every Spring service gets. A mapping, so it merges with the lists of the files before.
+x-tls-spring-env: &tls-spring-env
+  # Server TLS on the application port. The certificate and key paths are per service (below).
+  SERVER_SSL_ENABLED: "true"
+  SERVER_SSL_ENABLED_PROTOCOLS: "TLSv1.3,TLSv1.2"
+  # The JVM trust store: the JDK's public roots plus the pilot CA. No password: it holds certificates
+  # only. JDK_JAVA_OPTIONS is read by the java launcher and leaves JAVA_TOOL_OPTIONS (the heap) alone.
+  JDK_JAVA_OPTIONS: "-Djavax.net.ssl.trustStore=/tls/jvm-truststore.p12 -Djavax.net.ssl.trustStoreType=PKCS12"
+  # The management port (Q-518). /actuator/prometheus is served without a token on this port only, so the
+  # port is TLS too: Prometheus scrapes https://<service>:9091 and verifies the service certificate
+  # against the pilot CA (deployment/platform/prometheus/prometheus.tls.yml). The certificate and key are
+  # the service's own, set per service below. Nothing publishes the port; it exists on the compose
+  # network. The application port no longer serves any actuator endpoint, health included, and the
+  # compose health checks (a TCP probe of the application port) do not need it.
+  MANAGEMENT_SERVER_PORT: "9091"
+  MANAGEMENT_SERVER_SSL_ENABLED: "true"
+  MANAGEMENT_SERVER_SSL_ENABLED_PROTOCOLS: "TLSv1.3,TLSv1.2"
+  # Keycloak over TLS, for keys (and, through SPRING_APPLICATION_JSON, tokens).
+  KEYCLOAK_AUTH_SERVER_URL: "https://keycloak:8443"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "https://keycloak:8443/realms/dlap"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "https://keycloak:8443/realms/dlap/protocol/openid-connect/certs"
+  # Issuer and audience, checked by the tokenValidator of every SecurityConfiguration. Browser tokens
+  # carry the public origin, service tokens fetched on the internal network the internal one.
+  DLAP_SECURITY_JWT_VALIDATE_ISSUER: "true"
+  DLAP_SECURITY_JWT_EXPECTED_ISSUER: "${PILOT_PUBLIC_ORIGIN:-https://localhost}/realms/dlap,https://keycloak:8443/realms/dlap"
+  DLAP_SECURITY_JWT_VALIDATE_AUDIENCE: "true"
+  DLAP_SECURITY_JWT_EXPECTED_AUDIENCE: "${PILOT_JWT_AUDIENCE:-dlap-api}"
+  # Kafka: SASL_SSL with SCRAM. The login (SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG) is in the
+  # service's env_file. The broker certificate is checked against the pilot CA and the name kafka.
+  SPRING_KAFKA_SECURITY_PROTOCOL: "SASL_SSL"
+  SPRING_KAFKA_PROPERTIES_SASL_MECHANISM: "SCRAM-SHA-512"
+  SPRING_KAFKA_SSL_TRUST_STORE_TYPE: "PEM"
+  SPRING_KAFKA_SSL_TRUST_STORE_LOCATION: "file:/tls/ca.crt"
+  SPRING_KAFKA_PROPERTIES_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "https"
+
+# What every container that reads the key material waits for.
+x-tls-ready: &tls-ready
+  tls-init:
+    condition: service_completed_successfully
+
+x-kafka-ready: &kafka-ready
+  tls-init:
+    condition: service_completed_successfully
+  kafka-init:
+    condition: service_completed_successfully
+
+services:
+
+  # --- Key material ------------------------------------------------------------------------------
+
+  # Copies the output of gen-certs.sh into the volume pilot-tls and hands every private file to the
+  # one container that reads it (tls/tls-init.sh). Fails, and so stops the start, when the material is
+  # missing. No network.
+  tls-init:
+    image: busybox:1.36.1-musl
+    user: "0:0"
+    entrypoint: ["sh", "/opt/dlap-tls/tls-init.sh"]
+    volumes:
+      - ../pilot/tls/tls-init.sh:/opt/dlap-tls/tls-init.sh:ro
+      - ${PILOT_TLS_DIR:-../pilot/tls/generated}:/src:ro
+      - pilot-tls:/tls
+    network_mode: "none"
+    restart: "no"
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+      - DAC_OVERRIDE
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 32m
+    logging: *tls-logging
+
+  # Creates the SCRAM users and the ACLs of tls/kafka-acls.txt (tls/kafka-init.sh), as the super user
+  # CN=dlap-kafka-admin on the broker's mutual-TLS listener. Every Kafka client waits for it.
+  kafka-init:
+    image: confluentinc/cp-kafka:7.5.3
+    entrypoint: ["bash", "/opt/dlap-tls/kafka-init.sh"]
+    environment:
+      - KAFKA_HEAP_OPTS=-Xms64m -Xmx192m
+    volumes:
+      - ../pilot/tls/kafka-init.sh:/opt/dlap-tls/kafka-init.sh:ro
+      - ../pilot/tls/kafka-acls.txt:/opt/dlap-tls/kafka-acls.txt:ro
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61011"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - dlap-network
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+    logging: *tls-logging
+
+  # --- Infrastructure ----------------------------------------------------------------------------
+
+  postgresql:
+    depends_on: *tls-ready
+    volumes:
+      - pilot-tls:/tls:ro
+      - ../pilot/tls/pg_hba.conf:/etc/dlap-tls/pg_hba.conf:ro
+    # The base overlay's settings plus TLS. ssl_min_protocol_version is the PostgreSQL 15 default,
+    # written out. hba_file refuses every TCP connection without TLS (tls/pg_hba.conf).
+    command: !override
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "effective_cache_size=1536MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "work_mem=8MB"
+      - "-c"
+      - "log_min_duration_statement=1000"
+      - "-c"
+      - "log_connections=on"
+      - "-c"
+      - "log_disconnections=on"
+      - "-c"
+      - "log_statement=none"
+      - "-c"
+      - "ssl=on"
+      - "-c"
+      - "ssl_cert_file=/tls/postgresql.crt"
+      - "-c"
+      - "ssl_key_file=/tls/postgresql.key"
+      - "-c"
+      - "ssl_min_protocol_version=TLSv1.2"
+      - "-c"
+      - "hba_file=/etc/dlap-tls/pg_hba.conf"
+
+  keycloak:
+    depends_on: *tls-ready
+    # The admin console stays on loopback, now over TLS: https://localhost:8180 through an SSH tunnel.
+    ports: !override
+      - "127.0.0.1:${DLAP_PORT_KEYCLOAK:-8180}:8443"
+    environment:
+      # The production Keycloak (docker-compose.pilot.keycloak.yml) keeps its data in PostgreSQL, which
+      # refuses TCP without TLS here (pg_hba.conf). Same verify-full rule as every service.
+      - KC_DB_URL=jdbc:postgresql://postgresql:5432/keycloak?sslmode=verify-full&sslrootcert=/tls/ca.crt
+      - KC_HTTPS_CERTIFICATE_FILE=/tls/keycloak.crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/tls/keycloak.key
+      - KC_HTTPS_PORT=8443
+      - KC_HTTPS_PROTOCOLS=TLSv1.3,TLSv1.2
+      - KC_HTTP_ENABLED=false
+      # sslRequired "all" for realm dlap (Q-514, D31): every hop to Keycloak is TLS here, so the realm
+      # refuses plain HTTP also from private addresses ("external", the template's default, admits them).
+      # Read by the realm import (docker-compose.pilot.keycloak.yml), so it applies to a new database;
+      # smoke-tls.sh reads the live value through the admin API.
+      - DLAP_REALM_SSL_REQUIRED=all
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61030"
+    # The quickstart probe speaks plain HTTP to 8080, which is closed now. The image has no TLS client,
+    # so the probe checks that the TLS port accepts connections; smoke-tls.sh checks the real answer.
+    healthcheck: !override
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8443"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+
+  kafka:
+    depends_on: *tls-ready
+    # Nothing outside the compose network talks to the broker.
+    ports: !reset []
+    environment:
+      # SASL_SSL (kafka:29092): the services, SCRAM-SHA-512. SSL (kafka:29094) and CONTROLLER (kafka:29093):
+      # the broker itself and the super user CN=dlap-kafka-admin, mutual TLS. No PLAINTEXT listener remains.
+      # The listener names are the protocol names on purpose: the image's start script wires the keystore
+      # and its password files only when an advertised listener is named ...SSL://.
+      KAFKA_LISTENERS: "CONTROLLER://kafka:29093,SSL://kafka:29094,SASL_SSL://kafka:29092"
+      KAFKA_ADVERTISED_LISTENERS: "SSL://kafka:29094,SASL_SSL://kafka:29092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:SSL,SSL:SSL,SASL_SSL:SASL_SSL"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "SSL"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      # The image's start script reads these file names under /etc/kafka/secrets (the volume).
+      KAFKA_SSL_KEYSTORE_FILENAME: "kafka.keystore.p12"
+      KAFKA_SSL_KEYSTORE_TYPE: "PKCS12"
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: "kafka.password"
+      KAFKA_SSL_KEY_CREDENTIALS: "kafka.password"
+      KAFKA_SSL_TRUSTSTORE_FILENAME: "kafka.truststore.p12"
+      KAFKA_SSL_TRUSTSTORE_TYPE: "PKCS12"
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: "kafka.password"
+      # Client certificates: required on the broker's own listeners, never asked of the services.
+      KAFKA_SSL_CLIENT_AUTH: "requested"
+      KAFKA_LISTENER_NAME_SSL_SSL_CLIENT_AUTH: "required"
+      KAFKA_LISTENER_NAME_CONTROLLER_SSL_CLIENT_AUTH: "required"
+      KAFKA_LISTENER_NAME_SASL__SSL_SSL_CLIENT_AUTH: "none"
+      KAFKA_SSL_ENABLED_PROTOCOLS: "TLSv1.3,TLSv1.2"
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "https"
+      # A certificate of gen-certs.sh (subject CN=<name>, O=DLAP pilot; Java writes it O first) is the
+      # principal User:<name>. Any other subject keeps its full name and matches no ACL.
+      KAFKA_SSL_PRINCIPAL_MAPPING_RULES: "RULE:^O=DLAP pilot,CN=([a-z0-9.-]+)$$/$$1/,RULE:^CN=([a-z0-9.-]+),O=DLAP pilot$$/$$1/,DEFAULT"
+      KAFKA_SASL_ENABLED_MECHANISMS: "SCRAM-SHA-512"
+      KAFKA_LISTENER_NAME_SASL__SSL_SASL_ENABLED_MECHANISMS: "SCRAM-SHA-512"
+      KAFKA_LISTENER_NAME_SASL__SSL_SCRAM___SHA___512_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.scram.ScramLoginModule required;"
+      # The image insists on KAFKA_OPTS once a SASL listener exists; the JAAS line above is per listener.
+      KAFKA_OPTS: "-Djdk.tls.rejectClientInitiatedRenegotiation=true"
+      # ACLs: deny unless granted (tls/kafka-acls.txt). The broker and the admin are the super users.
+      KAFKA_AUTHORIZER_CLASS_NAME: "org.apache.kafka.metadata.authorizer.StandardAuthorizer"
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
+      KAFKA_SUPER_USERS: "User:kafka;User:dlap-kafka-admin"
+    volumes:
+      - pilot-tls:/etc/kafka/secrets:ro
+    group_add:
+      - "61010"
+    healthcheck: !override
+      test:
+        - "CMD"
+        - "bash"
+        - "-c"
+        - >-
+          umask 077; p=$$(cat /etc/kafka/secrets/kafka.password);
+          printf '%s\n' security.protocol=SSL ssl.keystore.type=PKCS12
+          ssl.keystore.location=/etc/kafka/secrets/kafka.keystore.p12 "ssl.keystore.password=$$p" "ssl.key.password=$$p"
+          ssl.truststore.type=PKCS12 ssl.truststore.location=/etc/kafka/secrets/kafka.truststore.p12
+          "ssl.truststore.password=$$p" > /tmp/healthcheck.properties &&
+          kafka-broker-api-versions --bootstrap-server kafka:29094 --command-config /tmp/healthcheck.properties > /dev/null
+      interval: 30s
+      timeout: 25s
+      retries: 10
+      start_period: 60s
+
+  # --- Front door --------------------------------------------------------------------------------
+
+  gateway:
+    depends_on: *tls-ready
+    # The single entry point, TLS only. Loopback by default (SSH tunnel); PILOT_TLS_BIND_ADDRESS opens it.
+    ports: !override
+      - "${PILOT_TLS_BIND_ADDRESS:-127.0.0.1}:${PILOT_TLS_PORT:-443}:8443"
+    volumes: !override
+      - ../pilot/tls/nginx.pilot.tls.conf:/etc/nginx/nginx.conf:ro
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61020"
+    healthcheck: !override
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://127.0.0.1:8443/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # The static UI server. It talks to nothing, so its environment is replaced: the quickstart's
+  # Keycloak, database and Kafka settings were never read (it is a plain Spring MVC app).
+  new-ui:
+    depends_on: !override
+      tls-init:
+        condition: service_completed_successfully
+    environment: !override
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx256m -XX:+ExitOnOutOfMemoryError
+      - SPRING_WEB_RESOURCES_STATIC_LOCATIONS=file:/app/static/,classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_ENABLED_PROTOCOLS=TLSv1.3,TLSv1.2
+      - SERVER_SSL_CERTIFICATE=file:/tls/new-ui.crt
+      - SERVER_SSL_CERTIFICATE_PRIVATE_KEY=file:/tls/new-ui.key
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61040"
+    healthcheck: !override
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--no-check-certificate", "https://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # --- The Spring services ----------------------------------------------------------------------
+  #
+  # SPRING_APPLICATION_JSON outranks plain variables and is replaced as a whole, so each one repeats
+  # the keys of docker-compose.microservices.yml (and of the base overlay) with https:// URLs.
+  # smoke-tls.sh --static checks that no key went missing and that no http:// URL is left.
+
+  da-discovery:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-discovery.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61101"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-discovery.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-discovery.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-discovery.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-discovery.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_discovery?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI: "https://keycloak:8443/realms/dlap"
+      # The production Keycloak overlay sets the same "pilot" endpoints as plain variables over HTTP.
+      # SPRING_APPLICATION_JSON below already outranks them; these keep the merged model free of HTTP.
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_AUTHORIZATIONURI: "${PILOT_PUBLIC_ORIGIN:-https://localhost}/realms/dlap/protocol/openid-connect/auth"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_TOKENURI: "https://keycloak:8443/realms/dlap/protocol/openid-connect/token"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_JWKSETURI: "https://keycloak:8443/realms/dlap/protocol/openid-connect/certs"
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_USERINFOURI: "https://keycloak:8443/realms/dlap/protocol/openid-connect/userinfo"
+      # da-discovery carries a JHipster OIDC login registration ("oidc") that nothing calls but that
+      # CrawlerSecurityConfiguration wires in. With an issuer-uri, Spring reads the issuer's discovery
+      # document at start and stops if the issuer there differs (for example once a keycloak overlay
+      # fixes the public host name). As in the demo identity overlay, the registration points at a
+      # provider "pilot" with explicit endpoints, so nothing is discovered at start.
+      SPRING_APPLICATION_JSON: >-
+        {"dlap.catalog-service.url":"https://da-catalog:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend",
+        "spring.security.oauth2.client.registration.oidc.provider":"pilot",
+        "spring.security.oauth2.client.registration.oidc.authorization-grant-type":"authorization_code",
+        "spring.security.oauth2.client.provider.pilot.authorization-uri":"${PILOT_PUBLIC_ORIGIN:-https://localhost}/realms/dlap/protocol/openid-connect/auth",
+        "spring.security.oauth2.client.provider.pilot.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "spring.security.oauth2.client.provider.pilot.jwk-set-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/certs",
+        "spring.security.oauth2.client.provider.pilot.user-info-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/userinfo",
+        "spring.security.oauth2.client.provider.pilot.user-name-attribute":"preferred_username"}
+
+  da-catalog:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-catalog.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61102"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-catalog.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-catalog.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-catalog.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-catalog.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/dlap_common?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+
+  da-policyengine:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-policyengine.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61103"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-policyengine.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-policyengine.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-policyengine.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-policyengine.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_policyengine?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      # The audit log route over TLS (Q-690): dlap_common as da_policyengine_user, CA-verified like the
+      # service's own database. Without a working route every decision, withdrawal and policy change
+      # answers 503 audit-unavailable.
+      DLAP_AUDIT_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/dlap_common?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      SPRING_APPLICATION_JSON: >-
+        {"dlap.services.catalog.url":"https://da-catalog:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend"}
+
+  da-reporting:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-reporting.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61104"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-reporting.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-reporting.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-reporting.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-reporting.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_reporting?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      SPRING_APPLICATION_JSON: >-
+        {"dlap.services.da-catalog.url":"https://da-catalog:8080",
+        "dlap.services.da-policyengine.url":"https://da-policyengine:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend"}
+
+  da-autolabel:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-autolabel.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61105"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-autolabel.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-autolabel.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-autolabel.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-autolabel.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_autolabel?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      # The base overlay's keys (rules provider, no mock), with https:// URLs. The client secret stays in
+      # DLAP_SERVICE_AUTH_CLIENT_SECRET (SEC-05), not in this JSON.
+      SPRING_APPLICATION_JSON: >-
+        {"da-catalog.service.url":"https://da-catalog:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend",
+        "dlap.autolabel.llm-provider":"rules",
+        "dlap.autolabel.allow-mock":"false"}
+
+  da-autocompliance:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-autocompliance.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61108"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-autocompliance.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-autocompliance.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-autocompliance.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-autocompliance.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_autocompliance?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      SPRING_APPLICATION_JSON: >-
+        {"dlap.services.catalog.url":"https://da-catalog:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend"}
+
+  da-admin-service:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-admin-service.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61109"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-admin-service.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-admin-service.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-admin-service.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-admin-service.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_admin?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      SPRING_APPLICATION_JSON: >-
+        {"services.da-discovery.url":"https://da-discovery:8080",
+        "services.da-autolabel.url":"https://da-autolabel:8080",
+        "services.da-autodelete.url":"https://da-autodelete:8080",
+        "services.da-autoarchival.url":"https://da-autoarchival:8080",
+        "services.da-autocompliance.url":"https://da-autocompliance:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend"}
+
+  da-logingest:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-logingest.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61110"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-logingest.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-logingest.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-logingest.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-logingest.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_logingest?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+
+  # --- Actions (profile "actions") ----------------------------------------------------------------
+
+  da-autoarchival:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-autoarchival.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61106"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-autoarchival.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-autoarchival.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-autoarchival.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-autoarchival.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_autoarchival?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      # The approval API: the executor re-reads every approval here just before it acts (Q-602, Q-604). The
+      # request is verified against the pilot CA through JDK_JAVA_OPTIONS above, the same trust store as every
+      # other service-to-service call.
+      SPRING_APPLICATION_JSON: >-
+        {"dlap.catalog-service.url":"https://da-catalog:8080",
+        "dlap.services.da-policyengine.url":"https://da-policyengine:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend"}
+
+  da-autodelete:
+    depends_on: *kafka-ready
+    env_file:
+      - path: ${PILOT_TLS_DIR:-../pilot/tls/generated}/env/da-autodelete.env
+        required: false
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61107"
+    environment:
+      <<: *tls-spring-env
+      SERVER_SSL_CERTIFICATE: "file:/tls/da-autodelete.crt"
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-autodelete.key"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE: "file:/tls/da-autodelete.crt"
+      MANAGEMENT_SERVER_SSL_CERTIFICATE_PRIVATE_KEY: "file:/tls/da-autodelete.key"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/da_autodelete?sslmode=verify-full&sslrootcert=/tls/ca.crt"
+      # The approval API (Q-613): the default http://da-policyengine:8080 fits the dev and e2e compose only.
+      SPRING_APPLICATION_JSON: >-
+        {"dlap.catalog-service.url":"https://da-catalog:8080",
+        "dlap.policyengine-service.url":"https://da-policyengine:8080",
+        "dlap.service-auth.enabled":"true",
+        "dlap.service-auth.token-uri":"https://keycloak:8443/realms/dlap/protocol/openid-connect/token",
+        "dlap.service-auth.client-id":"dlap-backend"}
+
+  # --- Monitoring profile: the two exporters reach their targets over TLS --------------------------
+
+  # Prometheus scrapes the services over HTTPS with the pilot CA (Q-518). The CA is public; the volume also
+  # holds private keys, but every one is 0440 for a group Prometheus is not in, so it reads ca.crt only.
+  # The command repeats the base command with the TLS configuration file: compose replaces a command, it
+  # does not merge it (test-prometheus-tls.py keeps the other flags equal to the dev compose).
+  prometheus:
+    depends_on:
+      tls-init:
+        condition: service_completed_successfully
+      alertmanager:
+        condition: service_started
+    command: !override
+      - "--config.file=/etc/prometheus/prometheus.tls.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - pilot-tls:/tls:ro
+
+  postgres-exporter:
+    depends_on:
+      tls-init:
+        condition: service_completed_successfully
+    environment:
+      - DATA_SOURCE_URI=postgresql:5432/dlap?sslmode=verify-full&sslrootcert=/tls/ca.crt
+    volumes:
+      - pilot-tls:/tls:ro
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+    logging: *tls-logging
+
+  kafka-exporter:
+    depends_on: *kafka-ready
+    # The image has a shell; the password is read from the file that only this container's group sees.
+    entrypoint: ["/bin/sh", "-c"]
+    command: !override
+      - >-
+        exec /bin/kafka_exporter --kafka.server=kafka:29092
+        --tls.enabled --tls.ca-file=/tls/ca.crt --tls.server-name=kafka
+        --sasl.enabled --sasl.mechanism=scram-sha512 --sasl.username=dlap-kafka-exporter
+        --sasl.password="$$(cat /tls/kafka-exporter.password)"
+    volumes:
+      - pilot-tls:/tls:ro
+    group_add:
+      - "61012"
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+    logging: *tls-logging
+
+  # Not a TLS change: the base overlay gives Alertmanager no memory limit, so verify.sh failed with
+  # every profile on (as it did for the two exporters, which get theirs above).
+  alertmanager:
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+    logging: *tls-logging
+
+volumes:
+  pilot-tls:

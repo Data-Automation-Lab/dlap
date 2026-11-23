@@ -1,0 +1,23 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fsystem_event|2026-09-04T10:00:17.123456806Z|bq1-expiry-1",
+      "eventTime": "2026-09-04T10:00:17.123456806Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "DELETE",
+      "operation": "tableservice.delete",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SYSTEM"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/tmp_orders_20260801"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "bq-auditdata-legacy",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    }
+  ]
+}

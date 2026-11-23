@@ -1,0 +1,54 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE0SRG9UFWUT",
+        "arn": "arn:aws:iam::999945223994:user/user-c39c05",
+        "accountId": "999945223994",
+        "accessKeyId": "AKIAEXAMPLE8QEANFZNK",
+        "userName": "user-c39c05"
+      },
+      "eventTime": "2023-07-10T12:07:49Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteBucketLifecycle",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.168.10.20",
+      "userAgent": "[stratus-red-team_1807d824-ddbc-4a01-9249-8175115f1397]",
+      "requestParameters": {
+        "lifecycle": "",
+        "bucketName": "stratus-red-team-ctlr-bucket-zqfsvooxqj",
+        "Host": "stratus-red-team-ctlr-bucket-zqfsvooxqj.s3.us-east-1.amazonaws.com"
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "bytesTransferredIn": 0,
+        "AuthenticationMethod": "AuthHeader",
+        "x-amz-id-2": "ABu8KDu4dp2IbUOExQuYJCHxqjkkiuCoUOOIPMtnzSVZKjHOo6yF4T70mEsiFuWNKf7fkJLCPt4=",
+        "bytesTransferredOut": 0
+      },
+      "requestID": "0VTYVM320ZVNB8CM",
+      "eventID": "8ec435c9-76d1-47d1-8eae-8a8864e3dff5",
+      "readOnly": false,
+      "resources": [
+        {
+          "accountId": "999945223994",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::stratus-red-team-ctlr-bucket-zqfsvooxqj"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "stratus-red-team-ctlr-bucket-zqfsvooxqj.s3.us-east-1.amazonaws.com"
+      }
+    }
+  ]
+}

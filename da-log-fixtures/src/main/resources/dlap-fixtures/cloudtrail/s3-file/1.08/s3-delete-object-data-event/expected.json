@@ -1,0 +1,20 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "EXAMPLE-1234-5678-9012-EXAMPLE",
+      "eventTime": "2023-10-01T12:34:56Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "DeleteObject",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::123456789012:user/user-09ff66"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08",
+      "sharedEventId": "EXAMPLE-1234-5678-9012-EXAMPLE"
+    }
+  ]
+}

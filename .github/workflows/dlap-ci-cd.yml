@@ -1,0 +1,907 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP CI. Build, test and guard the backend; there is no deploy step.
+#
+# Cost controls (decision D15; the org is on the GitHub Free plan, so the
+# private-repo Actions minutes are a fixed monthly pool):
+#   - one planner job (scripts/ci-guards/plan.py) decides what runs:
+#       pull request   full module matrix when code or build files changed
+#                      (a bot author, such as Dependabot, is planned like a push)
+#       push           only the touched modules and their Gradle dependents
+#       nightly/manual full matrix (the nightly run is skipped on an idle repo)
+#   - the module matrix is derived from settings.gradle.kts
+#   - the integration job (cloud-pipeline-e2e.sh) runs only on non-draft pull
+#     requests that touch the log/discovery/catalog spine, nightly, and manual runs
+#   - the lifecycle-aws job (cloud-lifecycle-e2e.sh aws, Q-742) runs only on a push to feature/deployment,
+#     in CI lean mode (heap ceilings and container limits, Q-787) so it fits the 7.9 GB hosted runner;
+#     the scale and soak run is a separate workflow, nightly-soak.yml (E2E-02)
+#   - the iac-validate job (terraform validate and cfn-lint on deployment/iam, Q-770) runs on every event
+#   - the secret scan (gitleaks, CI-02a) is not path filtered: it scans the commits
+#     of every push and pull request, and the whole history nightly and on manual runs
+#   - cancel-in-progress on everything except the nightly run
+#   - Docker images are built, and scanned with Trivy, on pull requests, nightly and manual runs only
+#   - the dependency-check job (it builds every Spring Boot jar) runs nightly, on manual runs and on a
+#     push or pull request that can change the dependency set; jar artifacts are not uploaded
+#   - the script self-tests run when e2e-tests/ or deployment/ change, nightly and manual
+#   - the pilot TLS quick test (no Docker) runs on every run; the backup quick test (Docker) runs when
+#     deployment/ changes, nightly and manual (Q-542)
+#
+# Security scanning (work packages CI-02a and CI-02b). Every scanner runs from a wrapper script that pins
+# its container image by release and digest, so a laptop and CI give the same verdict:
+#   Secret scan (gitleaks)        every event                      job secret-scan
+#   SAST (Semgrep CE)             every event, project rules       job sast, semgrep/run.sh
+#   Config and lockfiles (Trivy)  every event                      job sast, scan/trivy.sh fs
+#   OSV-Scanner (CVSS 7 or more)  every event, runtime classpath   job compliance-scan, pre/osv.sh
+#   Dependency-Check (CVSS 7 or more) on the built jars            job dependency-check, scan/odc.sh
+#   Trivy images (HIGH, CRITICAL, with a fix)                       job build-and-test, scan/trivy.sh image
+#   Dependabot (version updates)  weekly, .github/dependabot.yml, unchanged by this workflow
+# Suppressions live in .semgrep.yml, .github/dependency-check-suppressions.xml, .github/osv-scanner.toml
+# and .github/trivy-ignore.yaml; pre/scan-suppressions.sh fails an entry that has no reason or no expiry.
+# Every action is pinned to a full commit SHA with its release as a comment
+# (scripts/ci-guards/pre/actions-pinned.sh enforces it).
+#
+# Guard hooks: scripts/ci-guards/pre/*.sh run in the compliance job,
+# scripts/ci-guards/post-test/*.sh run after the module tests.
+#
+# The nightly schedule fires only from the default branch (main).
+name: DLAP CI
+
+on:
+  push:
+    branches: [ main, develop, feature/deployment ]
+  pull_request:
+    branches: [ main, develop, feature/deployment ]
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      modules:
+        description: 'Gradle modules to build and test: "all" or a comma-separated list'
+        required: false
+        default: 'all'
+        type: string
+      integration:
+        description: 'Run the cloud pipeline integration job'
+        required: false
+        default: true
+        type: boolean
+      scans:
+        description: 'Run the dependency-check job (builds every Spring Boot jar)'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dlap-ci-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Decides which modules and optional jobs run (see scripts/ci-guards/plan.py).
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      modules: ${{ steps.plan.outputs.modules }}
+      run_build: ${{ steps.plan.outputs.run_build }}
+      integration: ${{ steps.plan.outputs.integration }}
+      post_test: ${{ steps.plan.outputs.post_test }}
+      scan_deps: ${{ steps.plan.outputs.scan_deps }}
+      script_tests: ${{ steps.plan.outputs.script_tests }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Plan modules and jobs
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          INPUT_MODULES: ${{ inputs.modules }}
+          INPUT_INTEGRATION: ${{ inputs.integration }}
+          INPUT_SCANS: ${{ inputs.scans }}
+        run: python3 scripts/ci-guards/plan.py
+
+  # Apache compliance gate: guard self-test, pre hooks, dependency audits.
+  compliance-scan:
+    name: Compliance gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HAS_UI_TOKEN: ${{ secrets.UI_REPO_TOKEN != '' }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve the new-ui revision
+        id: ui
+        if: ${{ env.HAS_UI_TOKEN == 'true' }}
+        run: echo "sha=$(git rev-parse --verify -q HEAD:new-ui || true)" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the new-ui submodule
+        if: ${{ env.HAS_UI_TOKEN == 'true' && steps.ui.outputs.sha != '' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Data-Automation-Lab/dlap-ui
+          ref: ${{ steps.ui.outputs.sha }}
+          token: ${{ secrets.UI_REPO_TOKEN }}
+          path: new-ui
+          persist-credentials: false
+
+      - name: Note the skipped new-ui checkout
+        if: ${{ env.HAS_UI_TOKEN != 'true' }}
+        run: |
+          echo "::notice title=new-ui not checked out::Secret UI_REPO_TOKEN is not available (not set, or a fork pull request). UI header and npm audit checks are skipped here; the ui repository runs its own CI."
+
+      # The guard hooks resolve the runtime classpath with Gradle (licence gate, OSV-Scanner SBOM, the
+      # resolved no-mvel check), so the job needs the same Java 21 and Gradle cache as the build jobs.
+      - name: Set up Java 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Guard framework self-test
+        run: bash scripts/ci-guards/selftest.sh
+
+      - name: Guard hooks (pre)
+        env:
+          DLAP_CI_EVENT: ${{ github.event_name }}
+          DLAP_CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: bash scripts/ci-guards/run.sh pre
+
+      - name: Frontend dependency audit (npm), when new-ui is checked out
+        run: |
+          if [ -f new-ui/frontend/package-lock.json ]; then
+            (cd new-ui/frontend && npm audit --audit-level=high) \
+              || echo "::warning::npm audit reported advisories (non-blocking)"
+          else
+            echo "new-ui frontend not checked out; npm audit runs in the ui repository CI"
+          fi
+
+      # SEC-04 (Q-152, Q-252): the static no-mvel scan runs in the pre hooks; this resolves every module's
+      # runtime and test classpath and catches a transitive MVEL or Easy Rules dependency.
+      - name: No MVEL on any resolved classpath
+        run: bash scripts/ci-guards/pre/no-mvel.sh --resolved
+
+  # Secret scan (work package CI-02a). gitleaks, pinned by release tag and image
+  # digest (the same digest is published on Docker Hub and ghcr.io; ghcr.io has no
+  # pull limit), with the narrow allowlists in .gitleaks.toml. Not path filtered:
+  # it runs on every push and pull request.
+  #   push, pull request  the commits the event adds (base..head); a new branch, a
+  #                       force push or an unknown base scans the pushed history
+  #   nightly, manual     the whole history, all refs (nightly only after a commit
+  #                       in the last 26 hours, like the planner's idle rule)
+  # Findings print redacted; no report is uploaded. Inline "gitleaks:allow"
+  # comments are ignored, so every exception is a reviewed change to .gitleaks.toml.
+  # A newer push to the same branch cancels a scan that is still running (the
+  # workflow concurrency group), so a push scan can be lost when two pushes land
+  # within a minute or two. The pull request scan and the nightly whole-history
+  # scan still cover those commits.
+  # Bump the image: change GITLEAKS_IMAGE here and the rev in .pre-commit-config.yaml.
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+    steps:
+      - name: Check out the full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Proves the config still catches what it must and allows only what it
+      # lists. The canary values are built from fragments, so this file never
+      # contains a value the scanner would match. Each case is a throwaway repo.
+      - name: Self-test the gitleaks configuration (canaries)
+        run: |
+          set -euo pipefail
+          cfg="$PWD/.gitleaks.toml"
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          aws="AKIA""Q7WZ3KXN5TBR2VHM"
+          ph="0123456789abcdef""0123456789abcdef"
+          hex="9f2c7a41d83b""6e05a7c94d1e2b8f6035"
+          hf="hf_""kQmPzXrTnWvBcLdYfGhJsAeUoIyNxZtRqM"
+          bearer="vT9mQx2LpR7sKdW4nYb8""ZcF3hJ6gAe1UoXi5N"
+          failed=0
+          # run_case <name> <leak|clean> <path> <content>
+          run_case() {
+            local name="$1" expect="$2" path="$3" content="$4" dir="$work/$1" rc=0 got
+            mkdir -p "$dir/$(dirname "$path")"
+            git init -q "$dir"
+            printf '%s\n' "$content" > "$dir/$path"
+            git -C "$dir" add -A
+            git -C "$dir" -c user.name=ci -c user.email=ci@example.invalid commit -q -m "canary $name"
+            docker run --rm -v "$dir:/repo" -v "$cfg:/cfg/.gitleaks.toml:ro" "$GITLEAKS_IMAGE" \
+              git /repo --config /cfg/.gitleaks.toml --redact --no-banner --no-color --ignore-gitleaks-allow \
+              >/dev/null 2>&1 || rc=$?
+            got=clean
+            if [ "$rc" -eq 1 ]; then got=leak; elif [ "$rc" -gt 1 ]; then got="error($rc)"; fi
+            if [ "$got" = "$expect" ]; then
+              echo "ok    $name: $got"
+            else
+              echo "::error title=gitleaks self-test::$name expected $expect, got $got"
+              failed=1
+            fi
+          }
+          run_case aws-key-detected        leak  src/Settings.java "String awsKey = \"$aws\";"
+          run_case inline-allow-ignored    leak  src/Settings.java "String awsKey = \"$aws\"; // gitleaks:allow"
+          run_case placeholder-allowed     clean .env.example "DLAP_ENCRYPTION_KEY=$ph"
+          run_case placeholder-other-path  leak  src/main/resources/application.properties "dlap.encryption.key=$ph"
+          run_case other-value-same-file   leak  .env.example "DLAP_ENCRYPTION_KEY=$hex"
+          run_case pinned-to-old-commit    leak  docs/workinglog.md "HF_TOKEN=$hf"
+          run_case doc-placeholder-allowed clean docs/guide.md "curl -X GET http://localhost/x -H \"Authorization: Bearer YOUR_TOKEN_HERE\""
+          run_case doc-real-token-detected leak  docs/guide.md "curl -X GET http://localhost/x -H \"Authorization: Bearer $bearer\""
+          exit "$failed"
+
+      - name: Scan for secrets
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          log_opts=""
+          case "$EVENT_NAME" in
+            pull_request)
+              scope="pull request commits ${PR_BASE:0:12}..${PR_HEAD:0:12}"
+              log_opts="${PR_BASE}..${PR_HEAD}"
+              ;;
+            push)
+              if [ -n "${PUSH_BEFORE//0/}" ] && git cat-file -e "${PUSH_BEFORE}^{commit}" 2>/dev/null; then
+                scope="pushed commits ${PUSH_BEFORE:0:12}..${PUSH_AFTER:0:12}"
+                log_opts="${PUSH_BEFORE}..${PUSH_AFTER}"
+              else
+                scope="all history of ${PUSH_AFTER:0:12} (new branch, force push or unknown base)"
+                log_opts="${PUSH_AFTER}"
+              fi
+              ;;
+            *)
+              if [ "$EVENT_NAME" = "schedule" ] && [ -z "$(git log -1 --since='26 hours ago' --format=%H)" ]; then
+                echo "::notice title=Secret scan skipped::no commit in the last 26 hours"
+                exit 0
+              fi
+              scope="whole history, all refs"
+              ;;
+          esac
+          echo "Secret scan scope: $scope"
+          args=(git /repo --config /repo/.gitleaks.toml --redact --no-banner --no-color --ignore-gitleaks-allow --verbose)
+          if [ -n "$log_opts" ]; then args+=("--log-opts=$log_opts"); fi
+          rc=0
+          docker run --rm -v "$PWD:/repo" "$GITLEAKS_IMAGE" "${args[@]}" || rc=$?
+          {
+            echo "### Secret scan"
+            echo "Scope: $scope"
+            if [ "$rc" -eq 0 ]; then echo "Result: no leaks found"; else echo "Result: FAILED (gitleaks exit code $rc)"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$rc" -ne 0 ]; then
+            echo "::error title=Secret scan::gitleaks exit code $rc. Revoke or rotate the credential first, then remove it. Values are redacted in this log. Policy and local reproduction: CONTRIBUTING.md, section Secret scanning."
+            exit 1
+          fi
+
+  # Static analysis and configuration scanning (work package CI-02b). No build is needed, so it runs on
+  # every event and finishes in a few minutes.
+  #   Semgrep CE   the rules in .semgrep.yml: ERROR findings fail, WARNING findings are listed. The rules are
+  #                proved against their fixtures first, so a rule that stopped matching fails loudly.
+  #   Trivy        vulnerabilities in lockfiles and misconfigurations in Dockerfiles, compose, Terraform and
+  #                Kubernetes files, HIGH and CRITICAL with a fix, minus the reasoned entries of
+  #                .github/trivy-ignore.yaml.
+  #   Community Semgrep packs run on nightly and manual runs only, as advice: they are not pinned.
+  # The steps run even when an earlier one failed, so one run lists every problem.
+  sast:
+    name: SAST and config scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Week number for the cache key
+        id: week
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the Trivy databases
+        id: trivy-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/trivy-cache
+          key: trivy-files-${{ runner.os }}-${{ steps.week.outputs.week }}
+          restore-keys: |
+            trivy-files-${{ runner.os }}-
+
+      - name: Prove the Semgrep rules against their fixtures
+        run: bash scripts/ci-guards/semgrep/run.sh test
+
+      - name: Semgrep (project rules)
+        if: ${{ !cancelled() }}
+        run: bash scripts/ci-guards/semgrep/run.sh scan
+
+      - name: Trivy (lockfiles and configuration)
+        if: ${{ !cancelled() }}
+        env:
+          TRIVY_CACHE_DIR: ${{ runner.temp }}/trivy-cache
+        run: bash scripts/ci-guards/scan/trivy.sh fs
+
+      - name: Semgrep community packs (advice, nightly and manual runs)
+        if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+        continue-on-error: true
+        run: bash scripts/ci-guards/semgrep/run.sh community
+
+      - name: Save the Trivy databases
+        if: ${{ always() && steps.trivy-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/trivy-cache
+          key: trivy-files-${{ runner.os }}-${{ steps.week.outputs.week }}
+
+  # OWASP Dependency-Check over the Spring Boot jars (work package CI-02b): what ships, including the
+  # libraries nested in each jar. A finding with a CVSS base score of 7 or higher fails the job. The NVD
+  # data comes from the Dependency-Check project's own daily mirror, so no API key is needed.
+  # Runs nightly, on manual runs and on a push or pull request that can change the dependency set (see
+  # scripts/ci-guards/plan.py, output scan_deps). The OSV-Scanner gate (compliance-scan) and the Trivy image
+  # scan (build-and-test) cover the other events with different data sources.
+  dependency-check:
+    name: Dependency-Check (CVSS 7 or higher)
+    needs: plan
+    if: ${{ needs.plan.outputs.scan_deps == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      # Two steps, so the optional secret below never reaches the Gradle build scripts of the commit under test.
+      - name: Build the Spring Boot jars
+        run: ./gradlew bootJar -x test --console=plain --no-daemon --max-workers=2
+
+      - name: Scan the jars with Dependency-Check
+        env:
+          # Optional: with it the NVD API is used; without it the Dependency-Check project's mirror.
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: bash scripts/ci-guards/scan/odc.sh
+
+      # The HTML report is large; it is kept on failure and on nightly or manual runs only.
+      - name: Upload the Dependency-Check report
+        if: ${{ !cancelled() && (failure() || github.event_name != 'pull_request') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dependency-check-report
+          path: |
+            build/reports/dependency-check/dependency-check-report.html
+            build/reports/dependency-check/dependency-check-report.json
+          retention-days: 14
+          if-no-files-found: ignore
+          overwrite: true
+
+  # Offline self-tests of three scripts that no module test covers (Q-166, Q-255, Q-266): the harness lock
+  # library (the flock backend exists on this runner), the pilot up script and the demo launcher. None starts
+  # a compose stack. Runs when e2e-tests/ or deployment/ change, nightly and on manual runs.
+  script-tests:
+    name: Script self-tests
+    needs: plan
+    if: ${{ needs.plan.outputs.script_tests == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Harness lock library (flock backend)
+        run: bash e2e-tests/test-harness-lib.sh --quick
+
+      - name: Scale harness library (E2E-02)
+        if: ${{ !cancelled() }}
+        run: bash e2e-tests/perf/test-perf-lib.sh
+
+      - name: Lifecycle harness lean mode (CI-03)
+        if: ${{ !cancelled() }}
+        run: bash e2e-tests/test-cloud-lifecycle-e2e.sh
+
+      # The whole tree stays free of em and en dashes outside the allowlist and the append-only logs
+      # (ADR-0127, Q-815); the guard hook checks only the lines a change adds.
+      - name: No dashes anywhere
+        if: ${{ !cancelled() }}
+        run: bash scripts/ci-guards/pre/no-dashes.sh --all
+
+      - name: Pilot up script
+        if: ${{ !cancelled() }}
+        run: bash deployment/environments/pilot/up-test.sh --quick
+
+      # test-demo.sh calls "python", and an Ubuntu image may only have python3 (all 26 V-* cases failed on a
+      # plain Ubuntu 24.04 with "python: command not found"). The shim keeps that script untouched.
+      - name: Provide python for the demo launcher tests
+        if: ${{ !cancelled() }}
+        run: |
+          if ! command -v python >/dev/null 2>&1; then
+            mkdir -p "$RUNNER_TEMP/bin"
+            ln -s "$(command -v python3)" "$RUNNER_TEMP/bin/python"
+            echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          fi
+
+      - name: Demo launcher (without Docker cases)
+        if: ${{ !cancelled() }}
+        run: bash deployment/environments/demo/test-demo.sh --no-docker
+
+  # The pilot TLS and the backup and restore tests (Q-542). test-tls.sh --quick needs no Docker and its T2 check
+  # proves kafka-acls.txt grants every topic and group the code uses, so a new topic without an ACL line fails
+  # here and not on a pilot. It runs on every run. test-dr.sh --quick needs Docker (unit tests in a PostgreSQL
+  # container, about 8 minutes), so it runs only when something under deployment/ changed, nightly, on manual
+  # runs and when the changed range is unknown. The idle nightly run skips both.
+  pilot-tests:
+    name: Pilot TLS and DR quick tests
+    needs: plan
+    if: ${{ github.event_name != 'schedule' || needs.plan.outputs.run_build == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Java 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Pilot TLS tooling and ACL tests
+        run: bash deployment/environments/pilot/tls/test-tls.sh --quick
+
+      - name: Decide whether the backup tests run
+        id: dr
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          run=true
+          if [ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "push" ]; then
+            # An all-zero base (a new branch) or a range git cannot diff leaves run=true.
+            if [ -n "$BASE_SHA" ] && [ -n "$HEAD_SHA" ] && [ -n "${BASE_SHA//0/}" ] \
+               && changed="$(git diff --name-only --no-renames "$BASE_SHA" "$HEAD_SHA" 2>/dev/null)"; then
+              if printf '%s\n' "$changed" | grep -q '^deployment/'; then run=true; else run=false; fi
+            fi
+          fi
+          echo "backup tests: $run"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
+      - name: Backup and restore tests
+        if: ${{ !cancelled() && steps.dr.outputs.run == 'true' }}
+        run: bash deployment/dr/test-dr.sh --quick
+
+  # One job per Gradle module from settings.gradle.kts (new-ui is built by the ui repo).
+  build-and-test:
+    name: Build and test (${{ matrix.module }})
+    needs: plan
+    if: ${{ needs.plan.outputs.run_build == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.plan.outputs.modules) }}
+    env:
+      MODULE: ${{ matrix.module }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Build and test the module
+        run: ./gradlew ":${MODULE}:build" --console=plain --no-daemon --max-workers=2
+
+      - name: Build Docker image (pull requests, nightly and manual runs)
+        if: ${{ github.event_name != 'push' && hashFiles(format('{0}/src/main/docker/Dockerfile', matrix.module)) != '' }}
+        run: docker build -f "${MODULE}/src/main/docker/Dockerfile" -t "dlap/${MODULE}:ci" "${MODULE}/"
+
+      # Trivy on the image just built (work package CI-02b): OS packages of the distroless base and the jars
+      # inside the image, HIGH and CRITICAL findings that have a fix. The databases are about 1 GB, so they
+      # are cached per week and shared by the module jobs.
+      - name: Week number for the Trivy cache key
+        id: week
+        if: ${{ github.event_name != 'push' && hashFiles(format('{0}/src/main/docker/Dockerfile', matrix.module)) != '' }}
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the Trivy databases
+        id: trivy-cache
+        if: ${{ github.event_name != 'push' && hashFiles(format('{0}/src/main/docker/Dockerfile', matrix.module)) != '' }}
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/trivy-cache
+          key: trivy-image-${{ runner.os }}-${{ steps.week.outputs.week }}
+          restore-keys: |
+            trivy-image-${{ runner.os }}-
+
+      - name: Scan the Docker image (Trivy)
+        if: ${{ github.event_name != 'push' && hashFiles(format('{0}/src/main/docker/Dockerfile', matrix.module)) != '' }}
+        env:
+          TRIVY_CACHE_DIR: ${{ runner.temp }}/trivy-cache
+        run: bash scripts/ci-guards/scan/trivy.sh image "dlap/${MODULE}:ci"
+
+      - name: Save the Trivy databases
+        if: ${{ always() && steps.trivy-cache.outcome == 'success' && steps.trivy-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/trivy-cache
+          key: trivy-image-${{ runner.os }}-${{ steps.week.outputs.week }}
+
+      - name: Upload test reports (on failure)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-reports-${{ matrix.module }}
+          path: |
+            ${{ matrix.module }}/build/reports/tests
+            ${{ matrix.module }}/build/test-results
+          retention-days: 7
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: Upload reports for the post-test guards
+        if: ${{ success() && needs.plan.outputs.post_test == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ci-reports-${{ matrix.module }}
+          path: |
+            ${{ matrix.module }}/build/test-results
+            ${{ matrix.module }}/build/reports/jacoco
+            ${{ matrix.module }}/build/jacoco
+          retention-days: 1
+          if-no-files-found: ignore
+          overwrite: true
+
+  # Cross-cloud offline pipeline: fixtures -> log ingest -> discovery -> catalog.
+  # Starts the Docker stack, so it runs only where it can matter (see plan.py). It
+  # builds its own three jars without tests, so it runs in parallel with the module
+  # matrix and still reports while unrelated module tests are red.
+  integration:
+    name: Integration (cloud pipeline E2E)
+    needs: plan
+    if: ${{ needs.plan.outputs.integration == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Runner memory before the stack starts
+        run: free -m
+
+      - name: Run the cloud pipeline E2E (gcp, aws, azure)
+        run: bash e2e-tests/cloud-pipeline-e2e.sh all
+
+      - name: Record stack memory
+        if: ${{ always() }}
+        run: |
+          {
+            echo "### Runner memory after the integration run"
+            echo '```'
+            free -m
+            echo '```'
+            echo '```'
+            docker stats --no-stream --format 'table {{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.CPUPerc}}' || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dump container logs (on failure)
+        if: ${{ failure() }}
+        run: |
+          docker ps -a --format 'table {{.Names}}\t{{.Status}}' || true
+          for name in $(docker ps -a --format '{{.Names}}' | grep '^dlap-' || true); do
+            echo "::group::docker logs $name"
+            docker logs --tail 200 "$name" 2>&1 || true
+            echo "::endgroup::"
+          done
+
+  # The retire lifecycle of the aws harness (Q-742, work package E2E-02): policies, dual-control approvals,
+  # the age-based S3 rule applied to an emulator, the CloudTrail trail file that proves it, and the rule
+  # end. It starts the whole stack (about ten services plus the emulator) for roughly half an hour, so it
+  # runs on a push to feature/deployment only, not on pull requests, nightly or manual runs (those use the
+  # integration job). The gcp and azure harnesses stay local until a run here has measured their cost.
+  #
+  # CI lean mode (Q-787, decision D41): DLAP_E2E_CI_LEAN=1 caps every JVM heap and every container
+  # (e2e-tests/docker-compose.ci-lean.yml), stops the services the retire phase does not call before LocalStack
+  # starts, samples docker stats every 5 s and fails the run when the peak total container memory is over
+  # 6,000 MiB. The first two runs without it filled the disk and then died with exit 137 (7,932 MB, 3 GB swap).
+  lifecycle-aws:
+    name: Lifecycle (aws harness)
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/deployment' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      # The harness builds every service image and pulls LocalStack; the default runner disk fills up
+      # and the runner then cannot even write its own log (first run of this job, 2026-11-02).
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          df -h /
+
+      - name: Runner memory before the stack starts
+        run: free -m
+
+      - name: Run the lifecycle harness for aws
+        env:
+          DLAP_E2E_CI_LEAN: '1'
+          DLAP_E2E_MEM_BUDGET_MIB: '6000'
+        run: bash e2e-tests/cloud-lifecycle-e2e.sh aws
+
+      - name: Record stack memory
+        if: ${{ always() }}
+        run: |
+          {
+            echo "### Runner memory after the aws lifecycle run"
+            echo '```'
+            free -m
+            echo '```'
+            echo '```'
+            docker stats --no-stream --format 'table {{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.CPUPerc}}' || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Record disk use
+        if: ${{ always() }}
+        run: |
+          df -h / || true
+          docker system df || true
+
+      - name: Dump container logs (on failure)
+        if: ${{ failure() }}
+        run: |
+          docker ps -a --format 'table {{.Names}}\t{{.Status}}' || true
+          for name in $(docker ps -a --format '{{.Names}}' | grep '^dlap-' || true); do
+            echo "::group::docker logs $name"
+            docker logs --tail 200 "$name" 2>&1 || true
+            echo "::endgroup::"
+          done
+
+  # Infrastructure as code that customers run in their own accounts (Q-770, CI-03): the least-privilege
+  # Reader and Actor roles under deployment/iam. Every module gets terraform init -backend=false and
+  # terraform validate (no state, no credentials, no secrets: validate reads no cloud account), and the
+  # CloudFormation templates get cfn-lint. Both tools run from images pinned by digest (the cfn-lint
+  # version is pinned too); each module is copied to a scratch directory first, so the checkout stays
+  # clean. Providers are downloaded once per run through a shared plugin cache.
+  iac-validate:
+    name: IaC validate (Terraform, CloudFormation)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TERRAFORM_IMAGE: hashicorp/terraform:1.13.5@sha256:6bbb82d575aa7bd4f0a2c6e3a0838ab9590426c08a71d7a2783643f01004d356
+      CFN_LINT_IMAGE: python:3.12.12-slim@sha256:f3fa41d74a768c2fce8016b98c191ae8c1bacd8f1152870a3f9f87d350920b7c
+      CFN_LINT_VERSION: '1.57.2'
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Terraform init and validate on every reader and actor module
+        run: |
+          set -euo pipefail
+          scratch="$RUNNER_TEMP/iac"
+          cache="$RUNNER_TEMP/tf-plugin-cache"
+          mkdir -p "$scratch" "$cache"
+          shopt -s nullglob
+          modules=(deployment/iam/*/reader deployment/iam/*/actor)
+          [ "${#modules[@]}" -gt 0 ] || { echo "::error title=iac-validate::no module under deployment/iam/*/reader or actor"; exit 1; }
+          failed=0
+          for module in "${modules[@]}"; do
+            name="${module#deployment/iam/}"
+            name="${name//\//-}"
+            rm -rf "${scratch:?}/$name"
+            cp -r "$module" "$scratch/$name"
+            echo "::group::terraform validate $module"
+            tf() {
+              docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -e TF_IN_AUTOMATION=1 -e TF_INPUT=0 \
+                -e TF_PLUGIN_CACHE_DIR=/plugin-cache -v "$cache:/plugin-cache" \
+                -v "$scratch/$name:/module" -w /module "$TERRAFORM_IMAGE" "$@"
+            }
+            if tf init -backend=false -input=false -no-color && tf validate -no-color; then
+              echo "validated $module"
+            else
+              echo "::error title=terraform validate::$module failed"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          echo "modules checked: ${#modules[@]}"
+          exit "$failed"
+
+      - name: cfn-lint on the CloudFormation templates
+        run: |
+          set -euo pipefail
+          mapfile -t templates < <(grep -rlE '^AWSTemplateFormatVersion' --include='*.yaml' --include='*.yml' --include='*.json' deployment | sort)
+          [ "${#templates[@]}" -gt 0 ] || { echo "::error title=iac-validate::no CloudFormation template found under deployment"; exit 1; }
+          printf 'template: %s\n' "${templates[@]}"
+          docker run --rm -v "$PWD:/repo:ro" -w /repo -e CFN_LINT_VERSION "$CFN_LINT_IMAGE" sh -ec \
+            'pip install --quiet --no-cache-dir --disable-pip-version-check "cfn-lint==$CFN_LINT_VERSION" && cfn-lint --version && cfn-lint -- "$@"' sh "${templates[@]}"
+
+  # Guards that need test output (coverage, fixture and API drift). Runs only when
+  # scripts/ci-guards/post-test/ holds at least one hook.
+  post-test-guards:
+    name: Post-test guards
+    needs: [plan, build-and-test]
+    if: ${{ !cancelled() && needs.build-and-test.result == 'success' && needs.plan.outputs.post_test == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Full history: coverage-spec-lock.sh compares the base commit with HEAD and skips (exit 77) in a
+      # depth-1 clone, which switched the SPEC-01 guard off in CI (Q-252).
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Java 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Download module reports
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: ci-reports-*
+          path: build/ci-reports
+
+      - name: Guard hooks (post-test)
+        env:
+          DLAP_CI_EVENT: ${{ github.event_name }}
+          DLAP_CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DLAP_CI_REPORTS_DIR: build/ci-reports
+        run: bash scripts/ci-guards/run.sh post-test
+
+  # The single check to require: it fails when any job above failed or was cancelled.
+  # Skipped jobs (path filters, draft pull requests) count as passing.
+  ci-gate:
+    name: CI gate
+    if: ${{ always() }}
+    needs: [plan, compliance-scan, secret-scan, sast, dependency-check, script-tests, pilot-tests, build-and-test, integration, lifecycle-aws, iac-validate, post-test-guards]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the results of the required jobs
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "job results: $RESULTS"
+          if echo "$RESULTS" | grep -Eq '"(failure|cancelled)"'; then
+            echo "::error title=CI gate::at least one required job failed or was cancelled"
+            exit 1
+          fi

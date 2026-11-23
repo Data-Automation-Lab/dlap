@@ -1,0 +1,54 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# ---------------------------------------------------------------------------
+# E2E override for the cross-cloud offline pipeline test (cloud-pipeline-e2e.sh).
+#
+# Layers on top of the dev compose to drive da-logingest's FixtureReplaySeeder:
+# mounts the per-cloud normalized-event fixtures read-only and enables replay.
+# Kept out of the dev compose so the dev stack stays clean; the harness supplies
+# DLAP_E2E_FIXTURES_DIR (absolute host path) and DLAP_LOGINGEST_REPLAY_PROVIDER.
+# Set DLAP_LOGINGEST_PIPELINE=registry to run the parser-registry path
+# (ADR-0060); the default stays legacy.
+# ---------------------------------------------------------------------------
+services:
+  da-logingest:
+    environment:
+      - DLAP_LOGINGEST_REPLAY_ENABLED=${DLAP_LOGINGEST_REPLAY_ENABLED:-true}
+      - DLAP_LOGINGEST_REPLAY_DIR=/fixtures/replay
+      - DLAP_LOGINGEST_REPLAY_PROVIDER=${DLAP_LOGINGEST_REPLAY_PROVIDER:-}
+      - DLAP_LOGINGEST_PIPELINE=${DLAP_LOGINGEST_PIPELINE:-legacy}
+    volumes:
+      - ${DLAP_E2E_FIXTURES_DIR}:/fixtures/replay:ro
+
+  # For the full-lifecycle harness: run the GCS/Azure archival services in mock
+  # mode so a credential-free archive action COMPLETES instead of erroring. The
+  # gate is task-row existence either way; this just keeps the run clean. (AWS S3
+  # has no mock; its archival task row is still created, so the ARCHIVE gate holds.)
+  da-autoarchival:
+    environment:
+      - DLAP_AUTOARCHIVAL_GCS_MOCK_MODE=${DLAP_AUTOARCHIVAL_GCS_MOCK_MODE:-true}
+      - DLAP_AUTOARCHIVAL_AZURE_MOCK_MODE=${DLAP_AUTOARCHIVAL_AZURE_MOCK_MODE:-true}
+
+  # The hard-delete sweeper is REAL by default (code default false, so a production
+  # deployment that configures nothing actually deletes). The offline harness opts out
+  # explicitly: it asserts on soft_delete_records rows, not on cloud side effects, and
+  # has no credentials. Dry-run rows carry "DRY-RUN: no cloud call" in last_error so the
+  # harness can never mistake one for a real deletion.
+  da-autodelete:
+    environment:
+      - DLAP_AUTODELETE_DRY_RUN_CLOUD_DELETE=${DLAP_AUTODELETE_DRY_RUN_CLOUD_DELETE:-true}

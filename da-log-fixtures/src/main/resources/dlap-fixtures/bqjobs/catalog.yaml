@@ -1,0 +1,74 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Which cell of the bqjobs coverage spec the parser claims (GCP-02).
+#
+# The denominator of the score is coverage-spec.yaml (SPEC-01), which this package does not edit.
+# This file only says that the BqJobsParser reads jobs-view-row / jobs-2026-10 (supported: true) and
+# lists the ids the cases claim. Every case is hand-written from the JOBS page and the Job REST
+# reference; none is generated, captured from an emulator or taken from a vendor sample.
+
+family: bqjobs
+description: "BigQuery INFORMATION_SCHEMA.JOBS_BY_PROJECT rows as read and write history (GCP_BQ_JOBS_VIEW)."
+envelopes:
+  - id: jobs-view-row
+    versions:
+      - id: "jobs-2026-10"
+        supported: true
+        operations:
+          - "COPY:NULL"
+          - "EXTRACT:NULL"
+          - "LOAD:NULL"
+          - "QUERY:ALTER_TABLE"
+          - "QUERY:CREATE_TABLE"
+          - "QUERY:CREATE_TABLE_AS_SELECT"
+          - "QUERY:CREATE_VIEW"
+          - "QUERY:DELETE"
+          - "QUERY:DROP_TABLE"
+          - "QUERY:EXPORT_DATA"
+          - "QUERY:INSERT"
+          - "QUERY:LOAD_DATA"
+          - "QUERY:MERGE"
+          - "QUERY:SCRIPT"
+          - "QUERY:SELECT"
+          - "QUERY:TRUNCATE_TABLE"
+          - "QUERY:UPDATE"
+        variants:
+          - "row.invalid-json"
+          - "row.state-done"
+          - "row.state-not-done"
+          - "row.background-job"
+          - "row.error-result"
+          - "row.end-time-is-event-time"
+          - "row.repeated-poll-dedup"
+          - "row.query-text-never-stored"
+          - "row.new-columns"
+          - "row.missing-required-column"
+          - "row.row-level-policy-blanking"
+          - "row.labels"
+          - "read.referenced-tables-fanout"
+          - "read.referenced-logical-views"
+          - "read.cache-hit-no-read"
+          - "read.script-parent-excluded"
+          - "read.script-child"
+          - "write.destination-table"
+          - "write.dml-statistics"
+          - "actor.user-email"
+          - "actor.service-account"
+          - "actor.principal-subject"
+          - "binding.backfill-180-days"
+          - "binding.region-mismatch"

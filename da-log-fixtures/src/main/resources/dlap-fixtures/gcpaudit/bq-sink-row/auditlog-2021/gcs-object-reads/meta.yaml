@@ -1,0 +1,20 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - storage.googleapis.com:storage.objects.get
+  - storage.googleapis.com:storage.objects.list
+variant_ids:
+  - envelope.bq-protopayload-column
+  - envelope.bq-sharded-and-partitioned
+  - entry.protopayload-without-type
+  - log.data-access
+  - actor.principal-email
+  - gcs.object-resource-name
+  - gcs.list-bucket-resource-name
+  - gcs.resource-labels
+  - entry.num-response-items
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. An object read and a bucket-level listing from the data_access sink table. The rows carry no @type: the column protopayload_auditlog names the payload. The first row stands for the date-sharded table cloudaudit_googleapis_com_data_access_20260911, the second for the partitioned table cloudaudit_googleapis_com_data_access; both kinds have these columns, and which tables a poll reads is BqSinkTransportTest."

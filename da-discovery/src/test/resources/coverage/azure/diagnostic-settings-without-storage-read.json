@@ -1,0 +1,18 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/rg-data/providers/Microsoft.Storage/storageAccounts/dlapdemoarchive/blobServices/default/providers/microsoft.insights/diagnosticSettings/writes-only",
+      "name": "writes-only",
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "properties": {
+        "workspaceId": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/rg-ops/providers/Microsoft.OperationalInsights/workspaces/law-ops",
+        "metrics": [ { "category": "Transaction", "enabled": true, "retentionPolicy": { "days": 0, "enabled": false } } ],
+        "logs": [
+          { "category": "StorageRead", "categoryGroup": null, "enabled": false, "retentionPolicy": { "days": 0, "enabled": false } },
+          { "category": "StorageWrite", "categoryGroup": null, "enabled": true, "retentionPolicy": { "days": 0, "enabled": false } },
+          { "category": "StorageDelete", "categoryGroup": null, "enabled": true, "retentionPolicy": { "days": 0, "enabled": false } }
+        ]
+      }
+    }
+  ]
+}

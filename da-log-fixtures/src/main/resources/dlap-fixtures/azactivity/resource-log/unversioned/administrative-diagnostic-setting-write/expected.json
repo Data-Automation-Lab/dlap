@@ -1,0 +1,17 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2025-04-15T10:16:32.987344100Z",
+      "sourceProvider": "AZURE",
+      "operation": "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/WRITE",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    },
+    {
+      "eventTime": "2025-04-15T10:16:33.987344100Z",
+      "sourceProvider": "AZURE",
+      "operation": "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/WRITE",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

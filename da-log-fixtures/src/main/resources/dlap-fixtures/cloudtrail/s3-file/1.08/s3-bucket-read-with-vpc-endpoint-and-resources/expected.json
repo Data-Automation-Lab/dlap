@@ -1,0 +1,31 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "3c856bc0-1a07-4c18-89d9-4d9205856714",
+      "eventTime": "2023-07-10T11:42:44Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "GetBucketPublicAccessBlock",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::999945223994:user/user-bf68fc"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    },
+    {
+      "nativeEventId": "d9a07e9d-28ac-45d9-b8ef-43433808f2f0",
+      "eventTime": "2023-07-10T11:42:44Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "GetBucketAcl",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::999945223994:user/user-bf68fc"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    }
+  ]
+}

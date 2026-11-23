@@ -1,0 +1,33 @@
+{
+  "records": [
+    {
+      "time": "2024-12-17T10:30:00.0000000Z",
+      "resourceId": "/subscriptions/aa50cc5d-8bac-4c65-b813-fa1726e87781/providers/Microsoft.Authorization/roleAssignments/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "operationName": "Microsoft.Authorization/roleAssignments/write",
+      "operationVersion": "2021-04-01",
+      "category": "Administrative",
+      "resultType": "Success",
+      "resultSignature": "200",
+      "callerIpAddress": "198.18.145.188",
+      "correlationId": "f1e2d3c4-b5a6-7890-bcde-f12345678901",
+      "location": "",
+      "tenantId": "f79c9d5a-a017-407d-b30b-fa17259d2353",
+      "identity": {
+        "authorization": {
+          "action": "Microsoft.Authorization/roleAssignments/write",
+          "evidence": {
+            "principalId": "0ae20e6f-fa2e-4199-bd36-fa17830fbfed",
+            "principalType": "User",
+            "role": "Owner",
+            "roleAssignmentId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "roleAssignmentScope": "/subscriptions/aa50cc5d-8bac-4c65-b813-fa1726e87781",
+            "roleDefinitionId": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+          }
+        }
+      },
+      "properties": {
+        "requestbody": "{\"Id\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"Properties\":{\"PrincipalId\":\"770797c4-e05a-43f9-bda2-1f1f379987ae\",\"PrincipalType\":\"ServicePrincipal\",\"RoleDefinitionId\":\"/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635\",\"Scope\":\"/subscriptions/aa50cc5d-8bac-4c65-b813-fa1726e87781\"}}"
+      }
+    }
+  ]
+}

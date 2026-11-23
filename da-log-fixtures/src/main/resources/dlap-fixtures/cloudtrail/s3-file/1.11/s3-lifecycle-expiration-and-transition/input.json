@@ -1,0 +1,69 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "AWSService",
+        "invokedBy": "lifecycle.s3.amazonaws.com"
+      },
+      "eventTime": "2026-11-02T03:14:07Z",
+      "eventSource": "s3lifecycle.amazonaws.com",
+      "eventName": "DeleteObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "lifecycle.s3.amazonaws.com",
+      "requestParameters": {
+        "bucketName": "dlap-aws-e2e",
+        "key": "raw/2026/09/orders.parquet"
+      },
+      "responseElements": null,
+      "requestID": "PARSE02LCX000001",
+      "eventID": "0a5e0c11-1fe0-4e00-8000-000000000001",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e/raw/2026/09/orders.parquet"
+        },
+        {
+          "accountId": "123456789012",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e"
+        }
+      ],
+      "eventType": "AwsServiceEvent",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Data"
+    },
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "AWSService",
+        "invokedBy": "lifecycle.s3.amazonaws.com"
+      },
+      "eventTime": "2026-11-02T03:14:09Z",
+      "eventSource": "s3lifecycle.amazonaws.com",
+      "eventName": "LifecycleTransition",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "lifecycle.s3.amazonaws.com",
+      "requestParameters": {
+        "bucketName": "dlap-aws-e2e",
+        "key": "raw/2026/08/orders.parquet"
+      },
+      "responseElements": null,
+      "requestID": "PARSE02LCX000002",
+      "eventID": "0a5e0c11-1fe0-4e00-8000-000000000002",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e/raw/2026/08/orders.parquet"
+        }
+      ],
+      "eventType": "AwsServiceEvent",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Data"
+    }
+  ]
+}

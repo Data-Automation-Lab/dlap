@@ -1,0 +1,11 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2025-04-24T12:49:14.624103500Z",
+      "sourceProvider": "AZURE",
+      "operation": "Microsoft.Resourcehealth/healthevent/Activated/action",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

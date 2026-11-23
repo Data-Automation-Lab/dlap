@@ -1,0 +1,47 @@
+{
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "status": {},
+    "authenticationInfo": {
+      "principalEmail": "user-3a6e7bf9@example.org"
+    },
+    "requestMetadata": {
+      "callerIp": "198.19.147.54",
+      "callerSuppliedUserAgent": "apitools Python/3.6.8 gsutil/4.67 (darwin) analytics/enabled interactive/True command/cp google-cloud-sdk/356.0.0,gzip(gfe)",
+      "requestAttributes": {
+        "time": "2021-09-13T03:03:08.926017323Z",
+        "auth": {}
+      },
+      "destinationAttributes": {}
+    },
+    "serviceName": "storage.googleapis.com",
+    "methodName": "storage.objects.list",
+    "authorizationInfo": [
+      {
+        "resource": "projects/_/buckets/scc-export-sample",
+        "permission": "storage.objects.list",
+        "granted": true,
+        "resourceAttributes": {}
+      }
+    ],
+    "resourceName": "projects/_/buckets/scc-export-sample",
+    "resourceLocation": {
+      "currentLocations": [
+        "us"
+      ]
+    }
+  },
+  "insertId": "-kj1h22dqg3c",
+  "resource": {
+    "type": "gcs_bucket",
+    "labels": {
+      "bucket_name": "scc-export-sample",
+      "project_id": "proj-7a14f7af",
+      "location": "us"
+    }
+  },
+  "timestamp": "2021-09-13T03:03:08.918318174Z",
+  "severity": "INFO",
+  "logName": "projects/proj-7a14f7af/logs/cloudaudit.googleapis.com%2Fdata_access",
+  "receiveTimestamp": "2021-09-13T03:03:09.951986944Z"
+}

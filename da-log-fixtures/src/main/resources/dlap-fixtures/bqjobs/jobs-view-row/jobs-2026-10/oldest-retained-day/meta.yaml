@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SELECT
+variant_ids:
+  - binding.backfill-180-days
+expected_outcome: PARSED
+anonymised: false
+notes: "A row from the first day of the 180-day window. The bound itself is enforced by the transport, not the parser: BqJobsViewTransportTest#aBackfillNeverAsksForMoreThanTheRetentionWindow proves it. This case only shows that the oldest retained rows parse."

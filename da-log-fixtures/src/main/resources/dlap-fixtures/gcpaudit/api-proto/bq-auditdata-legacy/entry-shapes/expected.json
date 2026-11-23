@@ -1,0 +1,62 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-04T10:00:34.123456823Z|bq1-shapes-1",
+      "eventTime": "2026-09-04T10:00:34.123456823Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "tabledataservice.list",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditdata-legacy",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-04T10:00:35.123456824Z|bq1-shapes-dup",
+      "eventTime": "2026-09-04T10:00:35.123456824Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "tabledataservice.list",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditdata-legacy",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-04T10:00:36.123456824Z|bq1-shapes-dup",
+      "eventTime": "2026-09-04T10:00:36.123456824Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "tabledataservice.list",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditdata-legacy",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ"
+    }
+  ]
+}

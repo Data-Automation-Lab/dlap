@@ -1,0 +1,9 @@
+origin: synthetic-from-doc
+source_url: https://www.rfc-editor.org/rfc/rfc8259
+doc_date: 2017-12-01
+license: synthetic
+covers: []
+variant_ids: [demo-heartbeat]
+expected_outcome: SKIPPED:NOT_AN_EVENT
+anonymised: false
+notes: "A declared non-event shape is skipped and counted."

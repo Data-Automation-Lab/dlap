@@ -1,0 +1,82 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:02.123456791Z|bq2-job-calls-1",
+      "eventTime": "2026-09-03T10:00:02.123456791Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "CREATE",
+      "operation": "google.cloud.bigquery.v2.JobService.Query",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bqjob://proj-0d1a0001/bquxjob_5f2a1c_0002"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:03.123456792Z|bq2-job-calls-2",
+      "eventTime": "2026-09-03T10:00:03.123456792Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "google.cloud.bigquery.v2.JobService.CancelJob",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bqjob://proj-0d1a0001/bquxjob_5f2a1c_0003"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:04.123456793Z|bq2-job-calls-3",
+      "eventTime": "2026-09-03T10:00:04.123456793Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "DELETE",
+      "operation": "google.cloud.bigquery.v2.JobService.DeleteJob",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bqjob://proj-0d1a0001/bquxjob_5f2a1c_0004"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT"
+    },
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:05.123456794Z|bq2-job-calls-4",
+      "eventTime": "2026-09-03T10:00:05.123456794Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "google.cloud.bigquery.v2.JobService.GetQueryResults",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/_8f3c1d2e/anon6b1f"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sharedEventId": "projects/proj-0d1a0001/jobs/bquxjob_5f2a1c_0001"
+    }
+  ]
+}

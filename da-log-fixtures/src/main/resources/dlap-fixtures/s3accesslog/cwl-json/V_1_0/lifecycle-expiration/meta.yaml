@@ -1,0 +1,15 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-and-other-bucket-config.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3.amazonaws.com:S3.EXPIRE.OBJECT
+  - s3.amazonaws.com:S3.CREATE.DELETEMARKER
+variant_ids:
+  - lifecycle.expire
+  - lifecycle.delete-marker
+  - requester.null
+  - field.json-nulls
+expected_outcome: PARSED
+anonymised: false
+notes: "Written by PARSE-02 from the S3 lifecycle logging table (S3.EXPIRE.OBJECT permanently deletes, S3.CREATE.DELETEMARKER logically deletes the current version) and the field list of the CloudWatch Logs record format (sal-cw-log-format, opened 2026-11-01: schema V_1_0, JSON nulls, source_region null for lifecycle). Every value is invented. What S3 writes in requester, remote_ip and request_uri for a lifecycle action is [unverified]; nulls are used, and the parser types any S3.* operation as a SYSTEM actor whatever the requester says. PARSE-03 (D36, Q-651): the delete marker keeps every version of the object, so S3.CREATE.DELETEMARKER is now an UPDATE of the object with versionAction.kind CREATE_DELETE_MARKER; only S3.EXPIRE.OBJECT without a version id stays a DELETE."

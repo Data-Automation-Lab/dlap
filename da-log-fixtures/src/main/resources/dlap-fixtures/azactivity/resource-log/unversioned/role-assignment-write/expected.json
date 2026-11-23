@@ -1,0 +1,11 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2024-12-17T10:30:00Z",
+      "sourceProvider": "AZURE",
+      "operation": "Microsoft.Authorization/roleAssignments/write",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

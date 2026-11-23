@@ -1,0 +1,378 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP static analysis rules for Semgrep Community Edition (work package CI-02b).
+#
+# These are project rules, written for this code base and licensed with it. They are
+# the blocking set: the CI job "SAST" runs them and fails on any ERROR finding. WARNING
+# findings are listed in the job summary and never fail a run; every WARNING rule names
+# the package that clears it, and is promoted to ERROR when that package has landed.
+# The community packs (p/java, p/owasp-top-ten, p/github-actions) run as an advisory
+# step on nightly and manual runs only; they are not pinned, so they never gate a change.
+#
+# Run it: bash scripts/ci-guards/semgrep/run.sh scan     (needs Docker or a semgrep binary)
+# Prove it: bash scripts/ci-guards/semgrep/run.sh test   (every rule has a positive and a
+#           negative fixture under scripts/ci-guards/semgrep/fixtures/)
+#
+# Suppressing a finding: fix the code. Where the code is right and the rule is wrong, add an
+# inline "// nosemgrep: <rule-id> -- <reason>" on the line (the reason is mandatory and
+# scripts/ci-guards/pre/scan-suppressions.sh checks it), or narrow the rule here with a
+# comment that states why. Never exclude a whole directory from a rule without a reason.
+#
+# All rules skip tests: a test may deserialize, spawn a process or accept any certificate on
+# purpose. Nothing under src/main may.
+
+rules:
+  # ---------------------------------------------------------------------------
+  # ERROR: blocking
+  # ---------------------------------------------------------------------------
+
+  - id: dlap-java-native-deserialization
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Native or XML-bean deserialization of bytes the service did not produce itself can run
+      attacker-chosen code. Parse JSON into a typed record instead. A SnakeYAML parser must use
+      new Yaml(new SafeConstructor(options)).
+    metadata:
+      category: security
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      owasp: "A08:2021 - Software and Data Integrity Failures"
+    paths:
+      exclude: ["**/src/test/**"]
+    pattern-either:
+      - pattern: new ObjectInputStream(...)
+      - pattern: new java.io.ObjectInputStream(...)
+      - pattern: new XMLDecoder(...)
+      - patterns:
+          - pattern: new Yaml(...)
+          - pattern-not: new Yaml(new SafeConstructor(...), ...)
+
+  - id: dlap-java-os-command
+    languages: [java]
+    severity: ERROR
+    message: >-
+      A service must not start operating-system processes. If a new integration truly needs one,
+      raise it as a design question first: a command built from event or request data is remote
+      code execution.
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+      owasp: "A03:2021 - Injection"
+    paths:
+      exclude: ["**/src/test/**"]
+    pattern-either:
+      - pattern: Runtime.getRuntime().exec(...)
+      - pattern: new ProcessBuilder(...)
+
+  - id: dlap-java-code-evaluation
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Evaluating text as code (script engines, Groovy, MVEL, Spring expressions built at run time)
+      was removed with SEC-04 and must not come back. Policy rules are data evaluated by the typed
+      DSL. A Spring expression is allowed only as a string literal.
+    metadata:
+      category: security
+      cwe: "CWE-94: Improper Control of Generation of Code"
+      owasp: "A03:2021 - Injection"
+    paths:
+      exclude: ["**/src/test/**"]
+    pattern-either:
+      - pattern: new GroovyShell(...)
+      - pattern: new groovy.lang.GroovyShell(...)
+      - pattern: new ScriptEngineManager(...)
+      - pattern: (ScriptEngine $E).eval(...)
+      - pattern: MVEL.eval(...)
+      - pattern: MVEL.executeExpression(...)
+      - pattern: MVEL.compileExpression(...)
+      - patterns:
+          - pattern: (ExpressionParser $P).parseExpression($EXPR, ...)
+          - pattern-not: (ExpressionParser $P).parseExpression("...", ...)
+      - patterns:
+          - pattern: new SpelExpressionParser(...).parseExpression($EXPR, ...)
+          - pattern-not: new SpelExpressionParser(...).parseExpression("...", ...)
+
+  - id: dlap-java-sql-concatenation
+    languages: [java]
+    severity: ERROR
+    message: >-
+      The statement text is built by concatenation or formatting. Use bind parameters (":name" or
+      "?"); only constants may form the SQL or JPQL text. For an identifier such as a partition
+      name, validate it against a fixed pattern and add a test that proves the validation.
+    metadata:
+      category: security
+      cwe: "CWE-89: SQL Injection"
+      owasp: "A03:2021 - Injection"
+    paths:
+      # DDL and partition maintenance cannot bind identifiers. These two repositories build
+      # statements from a schema name that the constructor checks against [a-z_][a-z0-9_]{0,62} and
+      # from partition names that come from partitionName(YearMonth) or pass the monthly pattern
+      # (LogEventPartitionRepositoryTest.onlyMonthlyPartitionsCanBeDropped,
+      # SqlIdentifierValidationTest). Every value is an identifier or a literal; no row data, header
+      # or event field reaches the text. Do not add a file here without the same two proofs.
+      exclude:
+        - "**/src/test/**"
+        - "**/logingest/repository/LogEventPartitionRepository.java"
+        - "**/logingest/repository/FormatObservationRepository.java"
+    patterns:
+      - pattern-either:
+          - pattern: (JdbcTemplate $J).$M($Q + $X, ...)
+          - pattern: (NamedParameterJdbcTemplate $J).$M($Q + $X, ...)
+          - pattern: (EntityManager $J).createQuery($Q + $X, ...)
+          - pattern: (EntityManager $J).createNativeQuery($Q + $X, ...)
+          - pattern: (Statement $J).$M($Q + $X, ...)
+          - pattern: (JdbcTemplate $J).$M(String.format(...), ...)
+          - pattern: (JdbcTemplate $J).$M($Q.formatted(...), ...)
+          - pattern: (NamedParameterJdbcTemplate $J).$M(String.format(...), ...)
+          - pattern: (EntityManager $J).createQuery(String.format(...), ...)
+          - pattern: (EntityManager $J).createNativeQuery(String.format(...), ...)
+          - pattern: (Statement $J).$M(String.format(...), ...)
+      - pattern-not: (JdbcTemplate $J).$M("..." + "...", ...)
+      - pattern-not: (NamedParameterJdbcTemplate $J).$M("..." + "...", ...)
+      - pattern-not: (EntityManager $J).createQuery("..." + "...", ...)
+      - pattern-not: (EntityManager $J).createNativeQuery("..." + "...", ...)
+      - pattern-not: (Statement $J).$M("..." + "...", ...)
+
+  - id: dlap-java-tls-verification-disabled
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Certificate or host name verification is switched off. Trust the real chain: configure a
+      trust store through the platform (JAVA_TOOL_OPTIONS, the image trust store) instead of
+      accepting every peer.
+    metadata:
+      category: security
+      cwe: "CWE-295: Improper Certificate Validation"
+      owasp: "A07:2021 - Identification and Authentication Failures"
+    paths:
+      exclude: ["**/src/test/**"]
+    pattern-either:
+      - pattern: NoopHostnameVerifier.INSTANCE
+      - pattern: new NoopHostnameVerifier()
+      - pattern: TrustAllStrategy.INSTANCE
+      - pattern: new TrustAllStrategy()
+      - pattern: TrustSelfSignedStrategy.INSTANCE
+      - pattern: new TrustSelfSignedStrategy()
+      - pattern: InsecureTrustManagerFactory.INSTANCE
+      - pattern: SSLContext.getInstance("SSL")
+      - pattern: $X.setHostnameVerifier((...) -> true)
+      - pattern: $X.hostnameVerifier((...) -> true)
+      - pattern: HttpsURLConnection.setDefaultHostnameVerifier((...) -> true)
+      - pattern: |
+          void checkServerTrusted(X509Certificate[] $CHAIN, String $TYPE) {
+          }
+      - pattern: |
+          void checkClientTrusted(X509Certificate[] $CHAIN, String $TYPE) {
+          }
+
+  - id: dlap-java-xml-external-entities
+    languages: [java]
+    severity: ERROR
+    message: >-
+      An XML parser factory is created without disabling DOCTYPE or external entities (XXE). Call
+      setFeature("http://apache.org/xml/features/disallow-doctype-decl", true) or set the
+      external-entity property to false in the same method, then add a test with a hostile
+      document.
+    metadata:
+      category: security
+      cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
+      owasp: "A05:2021 - Security Misconfiguration"
+    paths:
+      exclude: ["**/src/test/**"]
+    patterns:
+      - pattern-either:
+          - pattern: DocumentBuilderFactory.newInstance()
+          - pattern: SAXParserFactory.newInstance()
+          - pattern: XMLInputFactory.newInstance()
+          - pattern: XMLInputFactory.newFactory()
+          - pattern: TransformerFactory.newInstance()
+          - pattern: SchemaFactory.newInstance(...)
+          - pattern: XMLReaderFactory.createXMLReader()
+      - pattern-not-inside: |
+          $T $M(...) {
+            ...
+            $F.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            ...
+          }
+      - pattern-not-inside: |
+          $T $M(...) {
+            ...
+            $F.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+            ...
+          }
+      - pattern-not-inside: |
+          $T $M(...) {
+            ...
+            $F.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            ...
+          }
+      - pattern-not-inside: |
+          $T $M(...) {
+            ...
+            $F.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            ...
+          }
+
+  - id: dlap-java-weak-cipher
+    languages: [java]
+    severity: ERROR
+    message: >-
+      DES, 3DES, RC4, RC2, Blowfish and ECB mode do not protect data. A bare "AES" means ECB. Use
+      AES/GCM/NoPadding with a fresh 96-bit IV per message (BasicEncryptionServiceImpl is the
+      reference).
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A02:2021 - Cryptographic Failures"
+    paths:
+      # The legacy ECB format is decrypt-only: BasicEncryptionServiceImpl reads rows written before
+      # the GCM format and rewrites them as GCM on the next save (see its class comment). It never
+      # encrypts with ECB. Remove this exclusion when the backfill of legacy rows is complete.
+      exclude:
+        - "**/src/test/**"
+        - "**/adminservice/service/impl/BasicEncryptionServiceImpl.java"
+    patterns:
+      - pattern-either:
+          - pattern: Cipher.getInstance("$ALG", ...)
+          - pattern: javax.crypto.Cipher.getInstance("$ALG", ...)
+      - metavariable-regex:
+          metavariable: $ALG
+          regex: '^(AES|DES|DESede|TripleDES|RC4|RC2|ARCFOUR|Blowfish|(AES|DES|DESede|Blowfish)/ECB(/.*)?|(DES|DESede|Blowfish|RC2|RC4)(/.*)?)$'
+
+  - id: dlap-java-jackson-default-typing
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Jackson default typing lets the payload choose the class to instantiate, which is the classic
+      gadget-chain entry point. Declare the allowed subtypes with @JsonSubTypes and a NAME type id.
+    metadata:
+      category: security
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      owasp: "A08:2021 - Software and Data Integrity Failures"
+    paths:
+      exclude: ["**/src/test/**"]
+    pattern-either:
+      - pattern: $M.enableDefaultTyping(...)
+      - pattern: $M.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ...)
+      - pattern: $M.activateDefaultTyping(LaissezFaireSubTypeValidator.instance)
+
+  - id: dlap-java-log-credential
+    languages: [java]
+    severity: ERROR
+    message: >-
+      A credential-named value is passed to a log call (CLAUDE.md section 11: never log
+      credentials). Log an identifier or a length, never the value.
+    metadata:
+      category: security
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+      owasp: "A09:2021 - Security Logging and Monitoring Failures"
+    paths:
+      exclude: ["**/src/test/**"]
+    patterns:
+      - pattern: $LOG.$LVL(..., $ARG, ...)
+      - metavariable-regex:
+          metavariable: $LOG
+          regex: '^(log|logger|LOG|LOGGER|LOGGER_)$'
+      - metavariable-regex:
+          metavariable: $LVL
+          regex: '^(trace|debug|info|warn|error)$'
+      - metavariable-regex:
+          metavariable: $ARG
+          regex: '^(\w+\.)*(get)?(?i:password|passwd|pwd|secret|clientSecret|apiKey|accessKey|secretKey|privateKey|encryptionKey|accessToken|refreshToken|idToken|bearerToken|authorization|credentials?)(\(\))?$'
+
+  # ---------------------------------------------------------------------------
+  # WARNING: reported in the job summary, never blocking. Each names its owner.
+  # ---------------------------------------------------------------------------
+
+  - id: dlap-jackson-class-type-id
+    languages: [java]
+    severity: WARNING
+    message: >-
+      @JsonTypeInfo with a class-name type id lets the message name the class to build. Owner:
+      SEC-03 (Kafka deserialization hardening) replaces it with a NAME id and @JsonSubTypes, then
+      this rule becomes ERROR.
+    metadata:
+      category: security
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      owasp: "A08:2021 - Software and Data Integrity Failures"
+      owner: SEC-03
+    paths:
+      exclude: ["**/src/test/**"]
+    pattern-either:
+      - pattern: "@JsonTypeInfo(..., use = JsonTypeInfo.Id.CLASS, ...)"
+      - pattern: "@JsonTypeInfo(..., use = JsonTypeInfo.Id.MINIMAL_CLASS, ...)"
+
+  - id: dlap-kafka-trusted-packages-wildcard
+    languages: [java]
+    severity: WARNING
+    message: >-
+      A JSON Kafka consumer trusts every package, so a message can select any class on the
+      classpath. Owner: SEC-03 and KAFKA-01 (one shared consumer factory with a closed package
+      list), then this rule becomes ERROR.
+    metadata:
+      category: security
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      owasp: "A08:2021 - Software and Data Integrity Failures"
+      owner: SEC-03
+    paths:
+      exclude: ["**/src/test/**"]
+    pattern-either:
+      - pattern: $D.addTrustedPackages("*")
+      - pattern: $P.put(JsonDeserializer.TRUSTED_PACKAGES, "*")
+      - pattern-regex: '"\$\{[A-Za-z0-9_.\-]*trusted\.packages:\*\}"'
+
+  - id: dlap-spring-actuator-sensitive-endpoints
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      The actuator exposes env, configprops, heapdump, threaddump, logfile, shutdown or jolokia over
+      HTTP (or everything with "*"). Each leaks configuration or runtime state if one request gets
+      past the token check. Expose health, info, metrics and prometheus only. Owner: SEC-05
+      (secrets hygiene and dev-default boot guard).
+    metadata:
+      category: security
+      cwe: "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      owasp: "A05:2021 - Security Misconfiguration"
+      owner: SEC-05
+    paths:
+      include: ["*.properties", "*.yml", "*.yaml"]
+      exclude: ["**/src/test/**"]
+    # A single-quoted scalar keeps every backslash literal. Two shapes: the properties or inline form,
+    # and a YAML list under "exposure: include:" that holds a sensitive item.
+    pattern-regex: '(?:management\.endpoints\.web\.exposure\.include[ \t]*[=:][ \t]*["'']?(?:\*|[^\n]*\b(?:env|configprops|heapdump|threaddump|logfile|shutdown|jolokia)\b))|(?:exposure:[ \t]*\n[ \t]*include:[ \t]*\n(?:[ \t]*-[ \t]*[\w*-]+[ \t]*(?:#[^\n]*)?\n)*?[ \t]*-[ \t]*(?:env|configprops|heapdump|threaddump|logfile|shutdown|jolokia|\*)\b)'
+
+  - id: dlap-java-weak-hash
+    languages: [java]
+    severity: WARNING
+    message: >-
+      MD5 and SHA-1 are broken for integrity and signatures. Fine for a non-security fingerprint;
+      if this value protects or authenticates anything, use SHA-256 or better.
+    metadata:
+      category: security
+      cwe: "CWE-328: Use of Weak Hash"
+      owasp: "A02:2021 - Cryptographic Failures"
+      owner: review at the next touch of the file
+    paths:
+      exclude: ["**/src/test/**"]
+    patterns:
+      - pattern-either:
+          - pattern: MessageDigest.getInstance("$ALG", ...)
+          - pattern: java.security.MessageDigest.getInstance("$ALG", ...)
+      - metavariable-regex:
+          metavariable: $ALG
+          regex: '^(?i:MD2|MD4|MD5|SHA-?1)$'

@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:CREATE_TABLE_AS_SELECT
+variant_ids:
+  - write.destination-table
+  - read.referenced-tables-fanout
+expected_outcome: PARSED
+anonymised: false
+notes: "CREATE TABLE AS SELECT: DATA_WRITE with change type CREATE for the new table, DATA_READ for both sources (order_items before orders in canonical order)."

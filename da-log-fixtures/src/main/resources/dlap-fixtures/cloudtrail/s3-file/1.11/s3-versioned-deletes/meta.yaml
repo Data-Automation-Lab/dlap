@@ -1,0 +1,18 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3.amazonaws.com:DeleteObject
+  - s3lifecycle.amazonaws.com:DeleteObject
+variant_ids:
+  - uid.iam-user
+  - uid.aws-service
+  - uid.invoked-by
+  - s3.lifecycle-source
+  - s3.request-parameters-bucket-key
+  - s3.object-and-bucket-resources
+  - account.recipient-account-id
+expected_outcome: PARSED
+anonymised: false
+notes: "Written by PARSE-03 (D36, Q-651). Four DeleteObject data events: one that names requestParameters.versionId (removes that version only), one whose responseElements say x-amz-delete-marker true (a delete marker was added, every version is kept), a lifecycle expiration of a noncurrent version (s3lifecycle.amazonaws.com with a versionId), and a delete of the current object in an unversioned bucket. The first three are UPDATE events of the object with versionAction.kind and versionAction.versionId in the target's technical metadata; only the last stays a DELETE. Sources (opened 2026-11-01): the DeleteObject API reference (source_url: versionId request parameter, x-amz-delete-marker and x-amz-version-id response headers), the CloudTrail record contents page for requestParameters and responseElements. Every value is invented. Whether CloudTrail carries the two response headers in responseElements, and the s3lifecycle event names, are [unverified] until a live capture (Q-639)."

@@ -1,0 +1,21 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.InsertTable
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.PatchTable
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.UpdateTable
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.TableService.DeleteTable
+  - bigquery.googleapis.com:google.iam.v1.IAMPolicy.SetIamPolicy
+variant_ids:
+  - bq2.table.creation
+  - bq2.table.change
+  - bq2.table.deletion
+  - bq2.dataset.lifecycle
+  - bq2.dataset.set-iam-policy
+  - log.admin-activity
+  - bq2.resource-type
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Admin Activity rows of table and dataset events; a creation carries createTime; a dataset IAM change is a permission change."

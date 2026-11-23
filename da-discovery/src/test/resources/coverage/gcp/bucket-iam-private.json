@@ -1,0 +1,10 @@
+{
+  "kind": "storage#policy",
+  "resourceId": "projects/_/buckets/dlap-demo-legacy",
+  "version": 1,
+  "etag": "CAE=",
+  "bindings": [
+    { "role": "roles/storage.legacyBucketOwner", "members": ["projectOwner:dlap-demo-data"] },
+    { "role": "roles/storage.legacyBucketReader", "members": ["projectViewer:dlap-demo-data"] }
+  ]
+}

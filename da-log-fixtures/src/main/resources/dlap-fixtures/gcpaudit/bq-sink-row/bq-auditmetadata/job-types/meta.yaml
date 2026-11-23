@@ -1,0 +1,13 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.InsertJob
+variant_ids:
+  - bq2.event.job-change-copy
+  - bq2.event.job-change-import
+  - bq2.event.job-change-export
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. jobChange rows of a copy, a load and an extract job: job events only; their table reads and writes are their own rows."

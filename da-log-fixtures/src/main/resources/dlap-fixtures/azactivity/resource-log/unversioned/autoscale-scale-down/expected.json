@@ -1,0 +1,11 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2017-07-21T01:00:51.868157200Z",
+      "sourceProvider": "AZURE",
+      "operation": "MICROSOFT.INSIGHTS/AUTOSCALESETTINGS/SCALEDOWN/ACTION",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

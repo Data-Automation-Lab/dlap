@@ -1,0 +1,10 @@
+{
+  "name": "projects/123456789012",
+  "parent": "folders/200100",
+  "projectId": "dlap-demo-data",
+  "state": "ACTIVE",
+  "displayName": "DLAP demo data",
+  "createTime": "2025-01-15T10:00:00.000Z",
+  "updateTime": "2025-01-15T10:00:00.000Z",
+  "etag": "W/\"projetag\""
+}

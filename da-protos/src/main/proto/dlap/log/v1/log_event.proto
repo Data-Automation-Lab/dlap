@@ -1,0 +1,545 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+syntax = "proto3";
+
+package dlap.log.v1;
+
+option java_package = "com.dlap.proto.log.v1";
+option java_outer_classname = "LogEventProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+// DlapLogEvent: the canonical, cloud-neutral log event that every source
+// (AWS CloudTrail, GCP Cloud Audit Logs, Azure Activity, Databricks system
+// tables, crawlers) normalizes into. Spec: docs/specs/log-event.md.
+//
+// R-P1-9 / ADR-0003 / ADR-0010 / ADR-0016 / ADR-0045: the platform's
+// "log-enriched" differentiator depends on every downstream service
+// consuming this single shape, regardless of the cloud that produced
+// the original event. Producers publish it on the dlap.log.event.normalized
+// Kafka topic as single-encoded proto3 JSON (DlapLogEventCodec in da-protos).
+//
+// Versioning: this is v1. Backward-incompatible changes go under a v2
+// package; we never break v1 in place. Within v1 only additive changes
+// are allowed, enforced by LogEventProtoContractTest.
+//
+// Enum values are package-scoped in proto3, so enums added after the first
+// release prefix their values with the enum name (EVENT_CATEGORY_DATA_READ).
+message DlapLogEvent {
+    // Stable identifier for this normalized event:
+    // lowercase hex SHA-256 of "<source_provider>|<native_event_id>".
+    // Duplicate raw events (re-polls, overlap windows, a second envelope of
+    // the same record) share an event_id so consumers can dedupe.
+    string event_id = 1;
+
+    // When the action happened, by the provider's clock. The only clock
+    // that drives business state (last read, last modified, lifecycle
+    // transitions, retention). Never filled with a DLAP clock.
+    google.protobuf.Timestamp event_time = 2;
+
+    // When DLAP normalized the event. Operational only: lag metrics,
+    // processing windows and log-row retention. Never drives business state.
+    google.protobuf.Timestamp ingest_time = 3;
+
+    // Source provider that produced the original event.
+    SourceProvider source_provider = 4;
+
+    // Cloud-native service name that emitted the event, e.g.
+    // "storage.googleapis.com", "s3.amazonaws.com", "Microsoft.Storage".
+    string source_service = 5;
+
+    // High-level change type. Routes the event onto the typed lifecycle
+    // topics (ADR-0021). CHANGE_TYPE_UNSPECIFIED is never routed.
+    ChangeType change_type = 6;
+
+    // Cloud-native operation name, e.g. "storage.buckets.delete",
+    // "DeleteBucket", "Microsoft.Storage/storageAccounts/delete".
+    // Classified into change_type and event_category by the parser's
+    // operation table (ADR-0045).
+    string operation = 7;
+
+    // Outcome of the original operation.
+    ResultStatus result_status = 8;
+
+    // Who initiated the operation.
+    Principal principal = 9;
+
+    // What the operation acted on.
+    TargetResource target_resource = 10;
+
+    // Request-side metadata: caller IP, user agent, request id.
+    // Optional fields tolerated as null/absent.
+    RequestMetadata request_metadata = 11;
+
+    // Original cloud event in its native shape, retained for audit
+    // and replay. Stored as a generic Struct so the protobuf schema
+    // never has to track every cloud's payload variations. The per-source
+    // shape is fixed by the spec's rawEvent conventions.
+    google.protobuf.Struct raw_event = 12;
+
+    // Schema version, always "v1" for events using this message.
+    // Reserved for future migration to a v2 message in a side-by-side
+    // package.
+    string schema_version = 13;
+
+    // ---- Additive v1 fields (ADR-0045). Never renumber or reuse. ----
+
+    // Source kind and envelope of the record this event was parsed from,
+    // written "<SOURCE_KIND>/<envelope>", for example "AWS_CLOUDTRAIL/s3-file"
+    // or "GCP_CLOUD_AUDIT/api-proto". Both parts are open strings without "/".
+    // Empty on events from the legacy pipeline.
+    string source_format = 14;
+
+    // Schema version detected on the source record, for example "1.11"
+    // (CloudTrail eventVersion) or "bq-auditmetadata" (BigQuery v2 audit).
+    string source_schema_version = 15;
+
+    // Parser that produced this event, "<parser-id>@<semver>".
+    string parser_version = 16;
+
+    // Configured source binding (one account, project, subscription or
+    // workspace) the record arrived through.
+    string binding_id = 17;
+
+    // Provider-native idempotency key before hashing, built per source
+    // kind as the spec's idempotency table prescribes.
+    string native_event_id = 18;
+
+    // When the provider received or delivered the record (GCP
+    // receiveTimestamp, CloudTrail log-file LastModified). Optional.
+    google.protobuf.Timestamp observed_time = 19;
+
+    // What kind of access or change the event records. Drives which
+    // business fields a consumer may update.
+    EventCategory event_category = 20;
+
+    // How the event entered DLAP.
+    Origin origin = 21;
+
+    // How completely the parser understood the record.
+    ParseStatus parse_status = 22;
+
+    // Further resources the operation touched: the parent container of the
+    // target, lineage sources and destinations. Context only; state-changing
+    // consumers act on target_resource (and may roll it up to its PARENT).
+    repeated TargetResource related_resources = 23;
+
+    // event_id of an earlier event this one replaces (CloudTrail addendum
+    // UPDATED_DATA: the hashed originalEventID). Consumers apply this event
+    // instead of the superseded one.
+    string supersedes_event_id = 24;
+
+    // Provider id shared by copies of one action delivered to several
+    // accounts (CloudTrail sharedEventID). Usage counting dedupes on
+    // (shared_event_id, target canonical_uri) when it is set.
+    string shared_event_id = 25;
+
+    // Warnings raised while parsing; set when parse_status is
+    // PARSE_STATUS_WARNINGS or PARSE_STATUS_PARTIAL.
+    repeated ParseWarning parse_warnings = 26;
+}
+
+enum SourceProvider {
+    SOURCE_PROVIDER_UNSPECIFIED = 0;
+    GCP = 1;
+    AWS = 2;
+    AZURE = 3;
+    OCI = 4;
+    // Open-source Unity Catalog metastore (crawler source).
+    UNITY = 5;
+    // Databricks account or workspace (system tables, audit delivery).
+    DATABRICKS = 6;
+    // Snowflake account (ACCOUNT_USAGE views).
+    SNOWFLAKE = 7;
+}
+
+enum ChangeType {
+    CHANGE_TYPE_UNSPECIFIED = 0;
+    CREATE = 1;
+    UPDATE = 2;
+    DELETE = 3;
+    ACCESS = 4;
+    PERMISSION = 5;
+    // The provider moved the resource to an archive tier or archived it.
+    // Routed to dlap.discovery.asset.archived.
+    ARCHIVE = 6;
+}
+
+enum ResultStatus {
+    RESULT_STATUS_UNSPECIFIED = 0;
+    SUCCESS = 1;
+    FAILURE = 2;
+    PENDING = 3;
+}
+
+// What the event records, independent of change_type. Consumers update
+// last_accessed_at only from DATA_READ and DATA_READ_OBSERVED with SUCCESS,
+// last_modified_at only from DATA_WRITE, last_permission_change_at only
+// from PERMISSION.
+enum EventCategory {
+    // Legacy pipeline: the producer did not classify. Consumers derive a
+    // category from change_type (LogEventSemantics.effectiveCategory).
+    EVENT_CATEGORY_UNSPECIFIED = 0;
+    // Control-plane operation on configuration or metadata.
+    EVENT_CATEGORY_MANAGEMENT = 1;
+    // A recorded read of data content (one request, one record).
+    EVENT_CATEGORY_DATA_READ = 2;
+    // A recorded write of data content.
+    EVENT_CATEGORY_DATA_WRITE = 3;
+    // A change to who can access the resource.
+    EVENT_CATEGORY_PERMISSION = 4;
+    // Evidence that a read happened at or before event_time, taken from
+    // provider state (an inventory or metadata last-access time) rather than
+    // from a per-request record. Updates last_accessed_at; never counted as
+    // a usage event.
+    EVENT_CATEGORY_DATA_READ_OBSERVED = 5;
+}
+
+// How the event entered DLAP.
+enum Origin {
+    // Legacy pipeline: not reported.
+    ORIGIN_UNSPECIFIED = 0;
+    // Streamed from a provider log (live polling or a log sink).
+    ORIGIN_CLOUD_LOG = 1;
+    // Synthesized from a crawler observation.
+    ORIGIN_CRAWLER = 2;
+    // Re-published from stored events or fixtures (replay, demo seeding).
+    ORIGIN_REPLAY = 3;
+    // Read by a bounded historical backfill job.
+    ORIGIN_BACKFILL = 4;
+}
+
+// How completely the parser understood the record.
+enum ParseStatus {
+    // Legacy pipeline: not reported.
+    PARSE_STATUS_UNSPECIFIED = 0;
+    // Every declared field mapped; no warnings.
+    PARSE_STATUS_FULL = 1;
+    // Mapped, with warnings in parse_warnings.
+    PARSE_STATUS_WARNINGS = 2;
+    // Minimal pass-through of a quarantined record: provider, event time,
+    // operation and native id only, change_type unspecified. Kept as an
+    // audit fact; never mutates lifecycle state.
+    PARSE_STATUS_PARTIAL = 3;
+}
+
+// Non-fatal parser findings. Fatal findings quarantine the record instead
+// (QuarantineReason).
+enum ParseWarning {
+    PARSE_WARNING_UNSPECIFIED = 0;
+    // The record carried fields the parser does not declare.
+    PARSE_WARNING_UNKNOWN_FIELDS = 1;
+    // Schema minor version newer than any the parser knows; parsed as the
+    // highest known minor.
+    PARSE_WARNING_NEWER_MINOR = 2;
+    // The operation is not in the classification table; change_type and
+    // event_category come from verb heuristics.
+    PARSE_WARNING_HEURISTIC_CLASSIFICATION = 3;
+    // The provider truncated or omitted part of the record (CloudTrail
+    // omits requestParameters above 100 KB).
+    PARSE_WARNING_PROVIDER_TRUNCATED = 4;
+    // The detected version differs from the binding's pin and the binding
+    // allows parsing anyway.
+    PARSE_WARNING_VERSION_PIN_MISMATCH = 5;
+    // event_time came from the source's documented fallback provider clock
+    // (GCP receiveTimestamp when timestamp is absent).
+    PARSE_WARNING_EVENT_TIME_FALLBACK = 6;
+}
+
+message Principal {
+    // What kind of identity initiated the operation.
+    PrincipalType type = 1;
+
+    // Stable id of the principal, cloud-native form. e.g.
+    // "user:alice@example.com" (GCP), "AROA...:alice" (AWS).
+    string id = 2;
+
+    // Human-readable email for users / display name for service
+    // accounts. May be empty.
+    string display_name = 3;
+
+    // Cloud-native account / project / tenant id the principal lives
+    // in. Useful for cross-account audit.
+    string account_id = 4;
+}
+
+enum PrincipalType {
+    PRINCIPAL_TYPE_UNSPECIFIED = 0;
+    USER = 1;
+    SERVICE_ACCOUNT = 2;
+    GROUP = 3;
+    ROLE = 4;
+    SYSTEM = 5;
+}
+
+message TargetResource {
+    // Cloud-native resource kind, e.g. "storage.googleapis.com/Bucket",
+    // "AWS::S3::Bucket", "Microsoft.Storage/storageAccounts".
+    string kind = 1;
+
+    // Cloud-native resource id (full resource name where applicable).
+    string id = 2;
+
+    // Display name. Often the bucket name / table name / instance id.
+    string name = 3;
+
+    // Cloud-native account / project / subscription id.
+    string project = 4;
+
+    // Region or location identifier, normalized to provider-native
+    // form (e.g. "us-central1", "us-east-1", "westus").
+    string region = 5;
+
+    // Provider-specific resource path. Optional.
+    string resource_path = 6;
+
+    // Free-form labels / tags from the resource.
+    map<string, string> labels = 7;
+
+    // ---- Additive v1 fields (ADR-0045). Never renumber or reuse. ----
+
+    // Canonical asset id (AssetIdNormalizer, ADR-0047), for example
+    // "s3://bucket/key" or "bq://project/dataset/table". The join key with
+    // the catalog's asset_uri. Empty when the parser could not resolve one.
+    string canonical_uri = 8;
+
+    // When the provider created the resource, if the source knows it
+    // (crawler createdAt, inventory Creation-Time).
+    google.protobuf.Timestamp created_time = 9;
+
+    // Size of the resource in bytes as the source observed it. Absent when
+    // unknown; 0 is a real size.
+    optional int64 size_bytes = 10;
+
+    // Technical metadata observed with the resource (storage class,
+    // versioning, encryption, public access). Values are strings.
+    map<string, string> technical_metadata = 11;
+
+    // Role of this entry inside DlapLogEvent.related_resources. Unspecified
+    // on DlapLogEvent.target_resource.
+    ResourceRelation relation = 12;
+}
+
+// Role of a related resource relative to the event's target.
+enum ResourceRelation {
+    RESOURCE_RELATION_UNSPECIFIED = 0;
+    // The container of the target: the bucket of an object, the dataset of
+    // a table. Consumers may roll target activity up to it.
+    RESOURCE_RELATION_PARENT = 1;
+    // Data the operation read (lineage upstream).
+    RESOURCE_RELATION_SOURCE = 2;
+    // Data the operation wrote (lineage downstream). When an event lists
+    // SOURCE entries and no DESTINATION entry, the target is downstream.
+    RESOURCE_RELATION_DESTINATION = 3;
+    // Referenced without a read or write role.
+    RESOURCE_RELATION_OTHER = 4;
+}
+
+message RequestMetadata {
+    string caller_ip = 1;
+    string user_agent = 2;
+    string request_id = 3;
+    // Trace id for distributed tracing correlation. Optional.
+    string trace_id = 4;
+}
+
+// ===================================================================
+// Payload of dlap.log.event.quarantine (DlapConstants.KafkaTopic
+// .LOG_EVENT_QUARANTINE), keyed by binding_id. One record per source
+// record that could not be parsed. Spec: docs/specs/log-event.md section 9.
+// ===================================================================
+message LogQuarantineRecord {
+    // Lowercase hex SHA-256 of "<binding_id>|<raw_ref.uri>|<raw_ref.record_index>|<raw_sha256>".
+    // Quarantining the same record twice yields the same id.
+    string quarantine_id = 1;
+
+    string binding_id = 2;
+    SourceProvider source_provider = 3;
+    // Source kind, e.g. "AWS_CLOUDTRAIL" (open string).
+    string source_kind = 4;
+    string envelope = 5;
+    // Version detected on the record; empty if detection failed.
+    string detected_version = 6;
+    // Version the binding pins; empty when the binding uses "auto".
+    string pinned_version = 7;
+    string parser_version = 8;
+
+    QuarantineReason reason = 9;
+    // Human-readable detail, at most 1024 bytes of UTF-8. Names fields and
+    // paths; never carries raw values, secrets or personal data.
+    string reason_detail = 10;
+
+    // Where the raw record lives at the provider.
+    RawRecordRef raw_ref = 11;
+    // Leading part of the raw record as UTF-8 text after redaction
+    // (emails and IP addresses masked), bounded by the producer.
+    string raw_excerpt = 12;
+    // True when raw_excerpt is shorter than the raw record.
+    bool raw_truncated = 13;
+    // Lowercase hex SHA-256 of the complete raw record bytes.
+    string raw_sha256 = 14;
+    int64 raw_size_bytes = 15;
+
+    // Provider event time, when it could be extracted.
+    google.protobuf.Timestamp event_time = 16;
+    // When DLAP quarantined the record.
+    google.protobuf.Timestamp quarantined_time = 17;
+    // Native idempotency key, when it could be extracted.
+    string native_event_id = 18;
+    // event_id of the PARSE_STATUS_PARTIAL pass-through event published for
+    // this record, if any.
+    string pass_through_event_id = 19;
+
+    // Always "v1".
+    string schema_version = 20;
+}
+
+// Why a record was quarantined.
+enum QuarantineReason {
+    QUARANTINE_REASON_UNSPECIFIED = 0;
+    QUARANTINE_REASON_INVALID_ENCODING = 1;
+    QUARANTINE_REASON_INVALID_JSON = 2;
+    QUARANTINE_REASON_UNKNOWN_ENVELOPE = 3;
+    QUARANTINE_REASON_UNKNOWN_MAJOR_VERSION = 4;
+    QUARANTINE_REASON_VERSION_PIN_MISMATCH = 5;
+    QUARANTINE_REASON_MISSING_REQUIRED_FIELD = 6;
+    QUARANTINE_REASON_FIELD_TYPE_MISMATCH = 7;
+    // Only where the event category requires an asset.
+    QUARANTINE_REASON_UNRESOLVABLE_ASSET_ID = 8;
+    QUARANTINE_REASON_PARSER_EXCEPTION = 9;
+    QUARANTINE_REASON_OVERSIZE_RECORD = 10;
+}
+
+// Pointer to a raw record at its source, for replay and audit.
+message RawRecordRef {
+    // Transport name, e.g. "S3_TRAIL_FILES", "LOGGING_API" (open string).
+    string transport = 1;
+    // Location of the container: an object URI ("s3://b/AWSLogs/...json.gz"),
+    // a table or an API scope ("projects/p").
+    string uri = 2;
+    // Zero-based index of the record inside the container (array element
+    // or line number); -1 when not applicable.
+    int64 record_index = 3;
+    // Opaque transport cursor (page token, offset) when the record has no
+    // stable container.
+    string cursor = 4;
+}
+
+// ===================================================================
+// Payload of dlap.logingest.binding.status (DlapConstants.KafkaTopic
+// .LOGINGEST_BINDING_STATUS), keyed by binding_id. The latest message per
+// key is the binding's current state; the topic may be compacted.
+// Spec: docs/specs/log-event.md section 10.
+// ===================================================================
+message LogBindingStatus {
+    string binding_id = 1;
+    SourceProvider source_provider = 2;
+    // Source kind, e.g. "GCP_CLOUD_AUDIT" (open string).
+    string source_kind = 3;
+    // What the binding covers.
+    BindingScope scope = 4;
+
+    BindingState state = 5;
+    // Short reason for a non-active state. Never carries secrets.
+    string state_detail = 6;
+    // Lowercase hex SHA-256 of the binding's effective configuration.
+    string config_hash = 7;
+
+    // When this status was computed.
+    google.protobuf.Timestamp reported_time = 8;
+    // Event-time cursor: everything before low_watermark is acknowledged.
+    google.protobuf.Timestamp low_watermark = 9;
+    // Newest event time seen.
+    google.protobuf.Timestamp high_watermark = 10;
+    google.protobuf.Timestamp last_poll_time = 11;
+
+    // Outcome counts for the window [window_start, window_end).
+    RecordCounts counts = 12;
+    google.protobuf.Timestamp window_start = 13;
+    google.protobuf.Timestamp window_end = 14;
+
+    // Formats and versions seen on this binding.
+    repeated ObservedFormat observed_formats = 15;
+
+    // Whether this binding captures data reads. Reports must never call an
+    // asset "not read" unless coverage is READ_COVERAGE_CAPTURED and
+    // read_coverage_since precedes the period in question.
+    ReadCoverage read_coverage = 16;
+    // Earliest event time from which data reads are known to be captured.
+    google.protobuf.Timestamp read_coverage_since = 17;
+
+    // Always "v1".
+    string schema_version = 18;
+}
+
+// Scope of a binding.
+message BindingScope {
+    // "AWS_ACCOUNT", "GCP_PROJECT", "AZURE_SUBSCRIPTION",
+    // "DATABRICKS_WORKSPACE", "SNOWFLAKE_ACCOUNT" (open string).
+    string scope_type = 1;
+    // The account id, project id, subscription id or workspace id.
+    string scope_id = 2;
+    // Regions covered, where the source is regional.
+    repeated string regions = 3;
+}
+
+enum BindingState {
+    BINDING_STATE_UNSPECIFIED = 0;
+    BINDING_STATE_ACTIVE = 1;
+    BINDING_STATE_DISABLED = 2;
+    // Polling, but with errors, lag or quarantine above threshold.
+    BINDING_STATE_DEGRADED = 3;
+    // Polling fails (credentials, permissions, network).
+    BINDING_STATE_FAILED = 4;
+}
+
+enum ReadCoverage {
+    // Not yet known.
+    READ_COVERAGE_UNSPECIFIED = 0;
+    // Data reads are captured (read events seen, or the data-access log
+    // configuration verified).
+    READ_COVERAGE_CAPTURED = 1;
+    // The transport can carry reads but none were seen in the lookback;
+    // read logging may be disabled.
+    READ_COVERAGE_NONE_OBSERVED = 2;
+    // The transport cannot carry data reads (CloudTrail LookupEvents), or
+    // the provider configuration shows data-access logging off.
+    READ_COVERAGE_NOT_CAPTURED = 3;
+}
+
+message RecordCounts {
+    int64 parsed = 1;
+    int64 parsed_with_warnings = 2;
+    int64 skipped = 3;
+    int64 quarantined = 4;
+    int64 published = 5;
+    // Records whose event_id was already stored.
+    int64 duplicates = 6;
+}
+
+message ObservedFormat {
+    string envelope = 1;
+    string schema_version = 2;
+    // Shape fingerprint for sources without a version field.
+    string fingerprint = 3;
+    google.protobuf.Timestamp first_seen = 4;
+    google.protobuf.Timestamp last_seen = 5;
+    int64 count = 6;
+}

@@ -1,0 +1,82 @@
+DLAP (Data Lifecycle Automation Platform)
+Copyright 2024-2026 The DALab Contributors
+
+This product includes software developed by
+The DALab Contributors (https://github.com/Data-Automation-Lab/dlap).
+
+DLAP was built and released as open source by
+Data Automation Labs (DALab).
+
+===============================================================================
+Third-party components under weak-copyleft licences (ASF Category B)
+===============================================================================
+
+DLAP uses the libraries below unmodified, as separate jar files on the runtime
+classpath of its services. Each is used under the licence named, chosen from
+the licences the library offers. The source code of every library is available
+from the project URL given and from Maven Central (the "-sources" jar
+published beside each artifact).
+
+This list is checked against the Gradle runtime dependency report by
+scripts/ci-guards/pre/dependency-licenses.sh. The check fails when a shipped
+dependency relies on a Category B licence and is not named here.
+
+Eclipse Public License 1.0 (https://www.eclipse.org/legal/epl-v10.html)
+  ch.qos.logback:logback-classic    https://logback.qos.ch
+  ch.qos.logback:logback-core       https://logback.qos.ch
+  Logback is also offered under the GNU LGPL 2.1. DLAP uses it under the EPL.
+
+Eclipse Public License 2.0 (https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt)
+  com.github.jnr:jnr-posix                     https://github.com/jnr/jnr-posix
+  jakarta.annotation:jakarta.annotation-api    https://projects.eclipse.org/projects/ee4j.ca
+  jakarta.servlet:jakarta.servlet-api          https://projects.eclipse.org/projects/ee4j.servlet
+  jakarta.transaction:jakarta.transaction-api  https://projects.eclipse.org/projects/ee4j.jta
+  jakarta.websocket:jakarta.websocket-api      https://projects.eclipse.org/projects/ee4j.websocket
+  jakarta.websocket:jakarta.websocket-client-api  https://projects.eclipse.org/projects/ee4j.websocket
+  jakarta.ws.rs:jakarta.ws.rs-api              https://github.com/eclipse-ee4j/jaxrs-api
+  org.aspectj:aspectjweaver                    https://www.eclipse.org/aspectj/
+  These are also offered under the GPL 2 with the Classpath Exception (and, for
+  jnr-posix, the LGPL). DLAP uses them under the EPL.
+
+Common Development and Distribution License 1.0 and 1.1 (https://oss.oracle.com/licenses/CDDL)
+  javax.annotation:javax.annotation-api    https://javaee.github.io/glassfish
+  javax.xml.bind:jaxb-api                  (no project URL in its POM; see Maven Central)
+  These are also offered under the GPL 2 with the Classpath Exception. DLAP
+  uses them under the CDDL.
+
+===============================================================================
+Third-party components under the GNU Lesser General Public License 2.1 only
+===============================================================================
+
+Hibernate ORM 6.x is licensed under the GNU LGPL 2.1 and offers no other
+licence. It is a required dependency of every DLAP service that uses JPA. DLAP
+uses it unmodified, as separate jar files that can be replaced by another build
+of the same library. The licence is at https://www.gnu.org/licenses/lgpl-2.1
+and the source is at https://github.com/hibernate/hibernate-orm.
+
+  org.hibernate.orm:hibernate-core                      https://hibernate.org/orm
+  org.hibernate.orm:hibernate-jcache                    https://hibernate.org/orm
+  org.hibernate.common:hibernate-commons-annotations    https://hibernate.org
+
+This dependency is an open licensing question for the Apache incubation. See
+docs/OPEN_QUESTIONS.md for its status.
+
+===============================================================================
+Test fixture corpus (test support only, never shipped)
+===============================================================================
+
+The module da-log-fixtures holds anonymised excerpts of open datasets as test
+fixtures. It is a test dependency only: no service ships it. Identifiers in the
+excerpts (account numbers, addresses, e-mail addresses, project and tenant ids)
+are replaced by com.dlap.fixtures.anon.Anonymiser, and each case records its
+source repository, commit, licence and date in its meta.yaml.
+
+  invictus-ir/aws_dataset                         MIT
+  panther-labs/panther-analysis                   Apache-2.0
+  GoogleCloudPlatform/professional-services       Apache-2.0
+  googleapis/google-cloudevents                   Apache-2.0
+  open-telemetry/opentelemetry-collector-contrib  Apache-2.0
+
+The notices for each source, with copyright lines and the MIT licence text, are
+in da-log-fixtures/src/main/resources/dlap-fixtures/<family>/NOTICE.md, joined
+at build time into META-INF/dlap-fixtures-NOTICE.md of the module's jar.

@@ -1,0 +1,51 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDA-MOCKIAMUSERID-1",
+        "arn": "arn:aws:iam::111111111111:user/user-9915a6",
+        "accountId": "111111111111",
+        "accessKeyId": "AKIA-MOCKACCESSKEYID-1",
+        "userName": "user-9915a6"
+      },
+      "eventTime": "2025-12-03T18:00:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "PutObject",
+      "awsRegion": "us-west-2",
+      "sourceIPAddress": "198.19.145.94",
+      "userAgent": "aws-sdk-python/1.26.0",
+      "requestParameters": {
+        "bucketName": "production-data",
+        "key": "documents/financial/HOW_TO_DECRYPT_FILES.txt",
+        "Host": "sample-bucket-hungry-buck.s3.us-west-2.amazonaws.com"
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "TLS_AES_128_GCM_SHA256",
+        "bytesTransferredIn": 2048,
+        "bytesTransferredOut": 0,
+        "SSEApplied": "SSE_S3"
+      },
+      "requestID": "EXAMPLE987654321",
+      "eventID": "z9y8x7w6-5432-10fe-dcba-EXAMPLE22222",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::sample-bucket-hungry-buck",
+          "accountId": "111111111111"
+        },
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::sample-bucket-hungry-buck/documents/financial/HOW_TO_DECRYPT_FILES.txt"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": false,
+      "recipientAccountId": "111111111111"
+    }
+  ]
+}

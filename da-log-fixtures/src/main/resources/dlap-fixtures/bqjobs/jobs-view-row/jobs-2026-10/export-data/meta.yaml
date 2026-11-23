@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:EXPORT_DATA
+variant_ids:
+  - read.referenced-tables-fanout
+expected_outcome: PARSED
+anonymised: false
+notes: "EXPORT DATA AS SELECT: the exported tables are read."

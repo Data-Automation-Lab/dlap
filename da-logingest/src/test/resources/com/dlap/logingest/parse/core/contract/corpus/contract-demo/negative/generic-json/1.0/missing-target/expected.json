@@ -1,0 +1,7 @@
+{
+  "outcome": "QUARANTINED",
+  "reason": "MISSING_REQUIRED_FIELD",
+  "events": [
+    {"nativeEventId": "evt-0004", "operation": "GetObject", "changeType": "CHANGE_TYPE_UNSPECIFIED", "parseStatus": "PARSE_STATUS_PARTIAL"}
+  ]
+}

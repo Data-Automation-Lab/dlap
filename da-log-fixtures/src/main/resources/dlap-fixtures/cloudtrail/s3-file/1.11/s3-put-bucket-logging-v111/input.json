@@ -1,0 +1,109 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "AAAAAAAAAAAAAAAAAAAAA:user_name",
+        "arn": "arn:aws:sts::111111111111:assumed-role/sample-role-dreamy-yonath/sample-role-brave-yalow-role-intelligent-brahmagupta-role-beautiful-keldysh-role-happy-easley-role-bold-buck",
+        "accountId": "111111111111",
+        "accessKeyId": "ASIA-MOCKACCESSKEYID-1",
+        "sessionContext": {
+          "sessionIssuer": {
+            "type": "Role",
+            "principalId": "AAAAAAAAAAAAAAAAAAAAA",
+            "arn": "arn:aws:iam::111111111111:role/sample-role-quirky-greider/sso.amazonaws.com/us-west-2/sample-role-dreamy-yonath",
+            "accountId": "111111111111",
+            "userName": "AdminRole"
+          },
+          "attributes": {
+            "creationDate": "2024-01-15T10:30:00Z",
+            "mfaAuthenticated": "false"
+          }
+        }
+      },
+      "eventTime": "2024-01-15T10:45:23Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "PutBucketLogging",
+      "awsRegion": "us-west-2",
+      "sourceIPAddress": "198.19.145.94",
+      "userAgent": "[Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/1.2.3.4 Safari/537.36]",
+      "requestParameters": {
+        "logging": "",
+        "bucketName": "critical-data-bucket",
+        "BucketLoggingStatus": {
+          "xmlns": "http://s3.amazonaws.com/doc/2006-03-01/"
+        },
+        "Host": "sample-bucket-great-proskuriakova.s3.us-west-2.amazonaws.com"
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "TLS_AES_128_GCM_SHA256",
+        "bytesTransferredIn": 108,
+        "AuthenticationMethod": "AuthHeader",
+        "x-amz-id-2": "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890==",
+        "bytesTransferredOut": 0
+      },
+      "requestID": "ABC123DEF456",
+      "eventID": "4d675aff-b76c-3d07-9248-8d08f35551e2",
+      "readOnly": false,
+      "resources": [
+        {
+          "accountId": "111111111111",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::sample-bucket-great-proskuriakova"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "111111111111",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.3",
+        "cipherSuite": "TLS_AES_128_GCM_SHA256",
+        "clientProvidedHostHeader": "sample-bucket-great-proskuriakova.s3.us-west-2.amazonaws.com"
+      }
+    },
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "AAAAAAAAAAAAAAAAAAAAA:user_name",
+        "arn": "arn:aws:sts::111111111111:assumed-role/sample-role-dreamy-yonath/sample-role-brave-yalow-role-intelligent-brahmagupta-role-beautiful-keldysh-role-happy-easley-role-bold-buck",
+        "accountId": "111111111111",
+        "accessKeyId": "ASIA-MOCKACCESSKEYID-1"
+      },
+      "eventTime": "2024-01-15T10:45:23Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "PutBucketLogging",
+      "awsRegion": "us-west-2",
+      "sourceIPAddress": "198.19.145.94",
+      "userAgent": "[Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/1.2.3.4 Safari/537.36]",
+      "requestParameters": {
+        "logging": [
+          {
+            "targetBucket": "logging-bucket",
+            "targetPrefix": "logs/"
+          }
+        ],
+        "bucketName": "critical-data-bucket",
+        "BucketLoggingStatus": {
+          "xmlns": "http://s3.amazonaws.com/doc/2006-03-01/",
+          "LoggingEnabled": {
+            "TargetBucket": "logging-bucket",
+            "TargetPrefix": "logs/"
+          }
+        },
+        "Host": "sample-bucket-great-proskuriakova.s3.us-west-2.amazonaws.com"
+      },
+      "responseElements": null,
+      "requestID": "ABC123DEF456",
+      "eventID": "951b6a4e-075c-3eac-9c83-74c09a962c47",
+      "readOnly": false,
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "111111111111"
+    }
+  ]
+}

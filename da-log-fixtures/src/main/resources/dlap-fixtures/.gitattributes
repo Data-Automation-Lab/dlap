@@ -1,0 +1,6 @@
+# Fixture bytes must be identical on every platform: no end-of-line conversion for inputs and
+# expected results (a case that is CRLF on purpose must stay CRLF). Metadata keeps the
+# repository-wide LF rule.
+*       -text
+*.yaml  text eol=lf
+*.md    text eol=lf

@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SELECT
+variant_ids:
+  - row.new-columns
+expected_outcome: PARSED_WITH_WARNINGS
+anonymised: false
+notes: "edition is a documented optional column, continuous a documented ignored one, future_flag_x is unknown: the row parses with PARSE_WARNING_UNKNOWN_FIELDS and future_flag_x is not stored."

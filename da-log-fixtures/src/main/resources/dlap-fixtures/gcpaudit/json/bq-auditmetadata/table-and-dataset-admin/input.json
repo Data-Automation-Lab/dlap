@@ -1,0 +1,378 @@
+[
+  {
+    "insertId": "bq2-table-dataset-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-03T10:00:23.123456812Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.TableService.InsertTable",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/returns",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/returns",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableCreation": {
+          "table": {
+            "tableName": "projects/proj-0d1a0001/datasets/sales/tables/returns",
+            "createTime": "2026-09-03T12:00:00.250Z"
+          },
+          "reason": "TABLE_INSERT_REQUEST"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:24.023456812Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-table-dataset-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-03T10:00:24.123456813Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.TableService.PatchTable",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableChange": {
+          "table": {
+            "tableName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+            "updateTime": "2026-09-03T12:10:00Z"
+          },
+          "reason": "TABLE_UPDATE_REQUEST"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:25.023456813Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-table-dataset-3",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-03T10:00:25.123456814Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.TableService.UpdateTable",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableChange": {
+          "table": {
+            "tableName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+            "updateTime": "2026-09-03T12:10:00Z"
+          },
+          "reason": "TABLE_UPDATE_REQUEST"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:26.023456814Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-table-dataset-4",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-03T10:00:26.123456815Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.TableService.DeleteTable",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders_backup",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders_backup",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDeletion": {
+          "reason": "TABLE_DELETE_REQUEST"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:27.023456815Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-table-dataset-5",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-03T10:00:27.123456816Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.DatasetService.InsertDataset",
+      "resourceName": "projects/proj-0d1a0001/datasets/marketing",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/marketing",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "datasetCreation": {
+          "dataset": {
+            "datasetName": "projects/proj-0d1a0001/datasets/marketing",
+            "createTime": "2026-09-03T12:20:00Z"
+          },
+          "reason": "CREATE"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:28.023456816Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-table-dataset-6",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-03T10:00:28.123456817Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.DatasetService.PatchDataset",
+      "resourceName": "projects/proj-0d1a0001/datasets/marketing",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/marketing",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "datasetChange": {
+          "dataset": {
+            "datasetName": "projects/proj-0d1a0001/datasets/marketing",
+            "createTime": "2026-09-03T12:20:00Z"
+          },
+          "reason": "UPDATE"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:29.023456817Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-table-dataset-7",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-03T10:00:29.123456818Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.DatasetService.DeleteDataset",
+      "resourceName": "projects/proj-0d1a0001/datasets/marketing",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/marketing",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "datasetDeletion": {
+          "reason": "DELETE"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:30.023456818Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-table-dataset-8",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-03T10:00:30.123456819Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.iam.v1.IAMPolicy.SetIamPolicy",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "datasetChange": {
+          "dataset": {
+            "datasetName": "projects/proj-0d1a0001/datasets/sales",
+            "createTime": "2026-09-03T12:20:00Z"
+          },
+          "reason": "SET_IAM_POLICY"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:31.023456819Z",
+    "severity": "INFO"
+  }
+]

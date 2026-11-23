@@ -1,0 +1,16 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "12345678-1234-1234-1234-123456789012",
+      "eventTime": "2024-01-15T12:00:00Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "CopyObject",
+      "resultStatus": "SUCCESS",
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.09"
+    }
+  ]
+}

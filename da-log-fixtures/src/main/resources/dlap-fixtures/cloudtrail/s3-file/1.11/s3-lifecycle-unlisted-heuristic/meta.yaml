@@ -1,0 +1,15 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/filtering-data-events.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3lifecycle.amazonaws.com:deleteExpiredObject
+variant_ids:
+  - s3.lifecycle-source
+  - uid.aws-service
+  - uid.invoked-by
+  - s3.request-parameters-bucket-key
+  - account.recipient-account-id
+expected_outcome: PARSED_WITH_WARNINGS
+anonymised: false
+notes: "Written by PARSE-03 (D36, Q-650). An INVENTED S3 lifecycle event name, deleteExpiredObject, that no catch-all row reaches because it starts with a lower-case letter, so the verb heuristics read a delete verb. CloudTrailParser must still make it an UPDATE in category MANAGEMENT, keeping the heuristic classification warning. Source for the event source: the CloudTrail data event filtering page (source_url, example 4). Every value is invented."

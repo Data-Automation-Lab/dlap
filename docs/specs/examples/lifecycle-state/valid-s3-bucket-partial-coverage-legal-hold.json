@@ -1,0 +1,61 @@
+{
+  "specVersion": "0.1",
+  "asset": "s3://example-finance-raw",
+  "platform": {
+    "provider": "AWS",
+    "kind": "S3_BUCKET"
+  },
+  "asOf": "2026-10-31T12:00:00Z",
+  "createdAt": "2021-04-12T17:03:22Z",
+  "lastReadAt": "2026-10-02T14:27:09Z",
+  "lastWrittenAt": "2026-10-29T22:10:41Z",
+  "readCoverage": "PARTIAL",
+  "readCoverageReasons": [
+    "CloudTrail data events cover a prefix subset"
+  ],
+  "readCoverageSince": null,
+  "sizeBytes": 1879048192000,
+  "sizeObservedAt": "2026-10-30T00:00:00Z",
+  "retention": {
+    "status": "ON_HOLD",
+    "basis": "LAST_ACCESSED",
+    "days": 365,
+    "fixedDate": null,
+    "expiresAt": "2027-10-02T14:27:09Z",
+    "source": "POLICY"
+  },
+  "legalHold": true,
+  "disposition": null,
+  "provenance": [
+    {
+      "field": "createdAt",
+      "channel": "AUDIT_LOG:AWS_CLOUDTRAIL",
+      "bindingIds": ["aws-cloudtrail-111122223333"],
+      "eventIds": ["f63276b4bd50e32d064cfeacfe3bb99c4d0299105fb3d4422c222b530741a9d4"]
+    },
+    {
+      "field": "lastReadAt",
+      "channel": "AUDIT_LOG:AWS_CLOUDTRAIL",
+      "bindingIds": ["aws-cloudtrail-111122223333"],
+      "eventIds": ["67e59681a973efd772c689c8182b6bd66dbb14f2f9ab9d8f283d22ed8f9e6cfd"]
+    },
+    {
+      "field": "lastWrittenAt",
+      "channel": "AUDIT_LOG:AWS_CLOUDTRAIL",
+      "bindingIds": ["aws-cloudtrail-111122223333"],
+      "eventIds": ["689b7a0dc1f82a51d59bfb4bb411ded44aab80a3bbc73ffccf8c4f096484825c"]
+    },
+    {
+      "field": "readCoverage",
+      "channel": "CRAWLER",
+      "bindingIds": [],
+      "eventIds": ["e9fb7ff333a5c55af72b3f907aa03ea99b6e4adc216e0ff4477def37659305d7"]
+    },
+    {
+      "field": "sizeBytes",
+      "channel": "INVENTORY",
+      "bindingIds": [],
+      "eventIds": ["7791abc808dbfc0fe04ea654b85c2267444e75ed27de7e299f7121220af56417"]
+    }
+  ]
+}

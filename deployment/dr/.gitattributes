@@ -1,0 +1,4 @@
+# Shell-consumed and Linux-host files must stay LF even on Windows checkouts.
+*.sh text eol=lf
+systemd/* text eol=lf
+cron/* text eol=lf

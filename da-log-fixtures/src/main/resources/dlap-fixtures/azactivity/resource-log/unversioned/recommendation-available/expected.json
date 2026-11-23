@@ -1,0 +1,11 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2025-04-24T14:11:46.421669Z",
+      "sourceProvider": "AZURE",
+      "operation": "Microsoft.Advisor/recommendations/available/action",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

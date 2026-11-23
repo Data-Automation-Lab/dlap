@@ -1,0 +1,1280 @@
+{
+  "components": {
+    "schemas": {
+      "ArchivalConfigDTO": {
+        "properties": {
+          "defaultArchivalTier": {
+            "type": "string"
+          },
+          "defaultRetentionDays": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "providerConfigs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ProviderArchivalConfig"
+            },
+            "type": "object"
+          },
+          "requireApprovalForArchival": {
+            "type": "boolean"
+          },
+          "requireApprovalForRestore": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ArchivalConfigOverride": {
+        "properties": {
+          "afterDays": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "retentionDays": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "targetArchivalTier": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ArchivalKpisDTO": {
+        "properties": {
+          "activePolicies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsArchived": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsIdentified": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "averageArchivalTime": {
+            "format": "double",
+            "type": "number"
+          },
+          "estimatedMonthlySavings": {
+            "format": "double",
+            "type": "number"
+          },
+          "failedArchival": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lastPolicyRun": {
+            "type": "string"
+          },
+          "pendingArchival": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "storageReclaimed": {
+            "type": "string"
+          },
+          "totalSavingsToDate": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ArchivalOverviewResponseDTO": {
+        "properties": {
+          "archivalStatusData": {
+            "items": {
+              "$ref": "#/components/schemas/ArchivalStatusDataDTO"
+            },
+            "type": "array"
+          },
+          "costTrends": {
+            "items": {
+              "$ref": "#/components/schemas/CostSavingsTrendDTO"
+            },
+            "type": "array"
+          },
+          "kpis": {
+            "$ref": "#/components/schemas/ArchivalKpisDTO"
+          },
+          "recentActivities": {
+            "items": {
+              "$ref": "#/components/schemas/RecentActivityDTO"
+            },
+            "type": "array"
+          },
+          "storageConsumers": {
+            "items": {
+              "$ref": "#/components/schemas/StorageConsumerDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ArchivalScope": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "ArchivalStatusDataDTO": {
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ArchivalTaskListResponse": {
+        "properties": {
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/ArchivalTaskStatusDTO"
+            },
+            "type": "array"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ArchivalTaskRequest": {
+        "properties": {
+          "justification": {
+            "type": "string"
+          },
+          "overrideConfig": {
+            "$ref": "#/components/schemas/ArchivalConfigOverride"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ArchivalScope"
+          },
+          "taskName": {
+            "type": "string"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope"
+        ],
+        "type": "object"
+      },
+      "ArchivalTaskResponse": {
+        "properties": {
+          "estimatedProcessingTimeMinutes": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "submittedBy": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskName": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ArchivalTaskStatusDTO": {
+        "properties": {
+          "assetStatuses": {
+            "items": {
+              "$ref": "#/components/schemas/AssetArchivalStatus"
+            },
+            "type": "array"
+          },
+          "assetsArchivedSuccessfully": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsFailedToArchive": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsPendingArchival": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "errorMessages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "justification": {
+            "type": "string"
+          },
+          "overrideConfig": {
+            "$ref": "#/components/schemas/ArchivalConfigOverride"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ArchivalScope"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskName": {
+            "type": "string"
+          },
+          "totalAssetsInScope": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetArchivalStatus": {
+        "properties": {
+          "approvalId": {
+            "type": "string"
+          },
+          "archivalLocation": {
+            "type": "string"
+          },
+          "archivedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "restoredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ruleId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CostSavingsTrendDTO": {
+        "properties": {
+          "cumulativeSavings": {
+            "format": "double",
+            "type": "number"
+          },
+          "date": {
+            "type": "string"
+          },
+          "monthlySavings": {
+            "format": "double",
+            "type": "number"
+          },
+          "storageReclaimed": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "Pageable": {
+        "properties": {
+          "page": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sort": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PlanRequest": {
+        "properties": {
+          "afterDays": {
+            "format": "int32",
+            "maximum": 36500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "assetId": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "listingKeys": {
+            "format": "int32",
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "prefix": {
+            "maxLength": 1024,
+            "minLength": 0,
+            "type": "string"
+          },
+          "tier": {
+            "maxLength": 32,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "ProviderArchivalConfig": {
+        "properties": {
+          "archivalStorageLocation": {
+            "type": "string"
+          },
+          "customProperties": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "defaultRegion": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RecentActivityDTO": {
+        "properties": {
+          "assetName": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "policy": {
+            "type": "string"
+          },
+          "savingsAmount": {
+            "format": "double",
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          },
+          "storageSize": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RestoreRequestDTO": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "priorityRestore": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "requestedBy": {
+            "type": "string"
+          },
+          "restoreTier": {
+            "type": "string"
+          },
+          "retentionDays": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "targetLocation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "RestoreResponseDTO": {
+        "properties": {
+          "archivalTaskId": {
+            "type": "string"
+          },
+          "assetIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "estimatedCompletionAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "restoreTaskId": {
+            "type": "string"
+          },
+          "retentionDays": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "targetLocation": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RuleView": {
+        "properties": {
+          "afterDays": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "alreadyPresent": {
+            "type": "boolean"
+          },
+          "appliedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "approvalId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "assetUri": {
+            "type": "string"
+          },
+          "bucket": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "evidenceEventId": {
+            "type": "string"
+          },
+          "evidenceKind": {
+            "type": "string"
+          },
+          "evidenceOperation": {
+            "type": "string"
+          },
+          "executedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "mock": {
+            "type": "boolean"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "nativeClass": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "ruleId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StorageConsumerDTO": {
+        "properties": {
+          "cost": {
+            "format": "double",
+            "type": "number"
+          },
+          "currentSize": {
+            "type": "string"
+          },
+          "lastAccessed": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "recommendation": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TaskApprovalRequest": {
+        "properties": {
+          "comments": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "API for AutoArchival Service",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "termsOfService": "http://swagger.io/terms/",
+    "title": "da-autoarchival",
+    "version": "0.0.1-SNAPSHOT"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/api/v1/archival/config": {
+      "get": {
+        "operationId": "getArchivalConfig",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalConfigDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-config-controller"
+        ]
+      },
+      "put": {
+        "operationId": "updateArchivalConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchivalConfigDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalConfigDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-config-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/overview": {
+      "get": {
+        "operationId": "getArchivalOverview",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalOverviewResponseDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-overview-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/overview/kpis": {
+      "get": {
+        "operationId": "getArchivalKpis",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalKpisDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-overview-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/overview/recent-activities": {
+      "get": {
+        "operationId": "getRecentActivities",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecentActivityDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-overview-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/overview/status-distribution": {
+      "get": {
+        "operationId": "getArchivalStatusData",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ArchivalStatusDataDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-overview-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/overview/storage-consumers": {
+      "get": {
+        "operationId": "getStorageConsumers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StorageConsumerDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-overview-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/overview/trends": {
+      "get": {
+        "operationId": "getCostSavingsTrends",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "weeks",
+            "required": false,
+            "schema": {
+              "default": 7,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CostSavingsTrendDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-overview-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/overview/trigger-run": {
+      "post": {
+        "operationId": "triggerManualArchivalRun",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-overview-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/rules": {
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archive-rule-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/rules/plan": {
+      "post": {
+        "operationId": "plan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archive-rule-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/rules/{ruleId}": {
+      "get": {
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ruleId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleView"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archive-rule-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/rules/{ruleId}/reset": {
+      "post": {
+        "operationId": "reset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ruleId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archive-rule-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/rules/{ruleId}/retry": {
+      "post": {
+        "operationId": "retry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ruleId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archive-rule-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/tasks": {
+      "get": {
+        "operationId": "listArchivalTasks",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalTaskListResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-task-controller"
+        ]
+      },
+      "post": {
+        "operationId": "submitArchivalTask",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchivalTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalTaskResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-task-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/tasks/{taskId}": {
+      "get": {
+        "operationId": "getArchivalTaskStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalTaskStatusDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-task-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/tasks/{taskId}/approve": {
+      "post": {
+        "operationId": "approveArchivalTask",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalTaskStatusDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-task-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/tasks/{taskId}/reject": {
+      "post": {
+        "operationId": "rejectArchivalTask",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivalTaskStatusDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-task-controller"
+        ]
+      }
+    },
+    "/api/v1/archival/tasks/{taskId}/restore": {
+      "post": {
+        "operationId": "requestRestoreArchivalTask",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreResponseDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "archival-task-controller"
+        ]
+      }
+    }
+  }
+}

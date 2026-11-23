@@ -1,0 +1,92 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Example bindings file: GCP Cloud Audit Logs (source kind GCP_CLOUD_AUDIT, GCP-01).
+#
+# Use it like the example in README.md next to this file: save it as log-sources.yml, edit ids,
+# projects and locations, point DLAP_LOGINGEST_SOURCES_FILE at it and run the registry pipeline
+# (DLAP_LOGINGEST_PIPELINE=registry, legacy sources off). Reference: docs/guides/log-sources.md.
+#
+# Three transports read the same audit entries in three ways; read a project through one of them:
+#
+#   LOGGING_API  Cloud Logging entries.list (envelope api-proto). Needs roles/logging.viewer on the
+#                project, and roles/logging.privateLogViewer for the Data Access log. The API allows
+#                60 requests per minute per project; DLAP keeps every stream of a project under it.
+#                Location keys: project, filter (an extra Logging query clause), page-size.
+#   GCS_SINK     The files of a Cloud Storage Log Router sink (envelope json): hourly _Sn shards and
+#                late _An addendum shards, a JSON array or newline-delimited, under one folder per log
+#                id (cloudaudit.googleapis.com/data_access/YYYY/MM/DD/...). Needs
+#                roles/storage.objectViewer on the bucket. Location keys: bucket (required), prefix,
+#                log-ids, late-shard-lookback (ISO-8601, default P1D), max-object-bytes, project.
+#                Only the sink's writer identity should be able to write the bucket (threat B7-S1).
+#   BQ_SINK      The tables of a BigQuery Log Router sink (envelope bq-sink-row): partitioned or
+#                date-sharded cloudaudit_googleapis_com_* tables and the export_errors table, whose rows
+#                are quarantined as a format-broke signal. Needs roles/bigquery.dataViewer on the
+#                dataset and roles/bigquery.jobUser on the project. Each poll runs one query per table,
+#                billed at least 10 MB on demand, so poll every few minutes. Location keys: dataset
+#                (required), project, tables, include-export-errors, page-size.
+#
+# Versions are detected on every record: auditlog (Cloud Storage and every other service),
+# bq-auditmetadata (BigQuery v2) and bq-auditdata-legacy (BigQuery v1). A pin applies to the whole
+# stream, so pin only a stream that carries one format, such as a BigQuery-only sink; pin auditlog,
+# never the fixture profiles auditlog-2021 or auditlog-2025, which records are never detected as.
+#
+# credentials-ref names an environment variable that holds the path of a service account or workload
+# identity federation credentials file; without it the service uses Application Default Credentials.
+# BigQuery sink rows carry microsecond timestamps, so an entry read from a BigQuery sink gets another
+# event id than the same entry read through the API or a Cloud Storage sink when its timestamp has
+# nanoseconds: read each project through one transport.
+dlap:
+  logingest:
+    config-mode: FILE
+    config-validation: auto
+    sources:
+      - id: gcp-audit
+        kind: GCP_CLOUD_AUDIT
+        overlap: PT10M
+        bindings:
+          # A BigQuery project that still writes the legacy v1 format into its sink: pinned, anything
+          # else in this sink is quarantined.
+          - id: acme-gcp-legacy-bq
+            scope: { project-id: acme-legacy-bq }
+            stream:
+              transport: BQ_SINK
+              location: { dataset: audit_sink, tables: cloudaudit_googleapis_com_data_access }
+            format: { envelope: bq-sink-row, version: bq-auditdata-legacy, on-mismatch: QUARANTINE }
+            poll-interval: PT15M
+            credentials-ref: ACME_GCP_AUDIT_READER_CREDENTIALS
+
+          # A project on the current BigQuery v2 format, read through the API: pinned to v2.
+          - id: acme-gcp-analytics
+            scope: { project-id: acme-analytics }
+            stream:
+              transport: LOGGING_API
+              location: { filter: 'protoPayload.serviceName="bigquery.googleapis.com"' }
+            format: { envelope: api-proto, version: bq-auditmetadata, on-mismatch: QUARANTINE }
+            poll-interval: PT5M
+            credentials-ref: ACME_GCP_AUDIT_READER_CREDENTIALS
+
+          # A data lake project whose organization sink writes to Cloud Storage: every service, every
+          # version detected.
+          - id: acme-gcp-lake
+            scope: { project-id: acme-data-lake }
+            stream:
+              transport: GCS_SINK
+              location: { bucket: acme-org-audit-sink, prefix: data-lake }
+            format: { envelope: json, version: auto }
+            poll-interval: PT15M
+            credentials-ref: ACME_GCP_AUDIT_READER_CREDENTIALS

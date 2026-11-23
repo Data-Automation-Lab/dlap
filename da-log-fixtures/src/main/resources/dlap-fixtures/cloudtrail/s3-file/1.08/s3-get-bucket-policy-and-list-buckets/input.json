@@ -1,0 +1,104 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE922ZQZ52VG",
+        "arn": "arn:aws:iam::999945223994:user/user-bf68fc",
+        "accountId": "999945223994",
+        "accessKeyId": "AKIAEXAMPLE8G5SEICE0",
+        "userName": "user-bf68fc"
+      },
+      "eventTime": "2023-07-10T11:42:23Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "GetBucketPolicy",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "10.248.16.43",
+      "userAgent": "[Boto3/1.26.165 Python/3.10.6 Linux/5.19.0-46-generic Botocore/1.29.165]",
+      "requestParameters": {
+        "bucketName": "baker221b-bucketsevidenceeeedc25d-1q9cl0tuy4gbm",
+        "Host": "baker221b-bucketsevidenceeeedc25d-1q9cl0tuy4gbm.s3.us-east-1.amazonaws.com",
+        "policy": ""
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "bytesTransferredIn": 0,
+        "AuthenticationMethod": "AuthHeader",
+        "x-amz-id-2": "f2vaS6JPTLdKw37mgdFv5DyoXG70Bhv2oYdQdYMz5rhp297ibIqaToYq/m65r+tgjYs7KnXmTAk=",
+        "bytesTransferredOut": 373
+      },
+      "requestID": "GXK985FFMWTE90RA",
+      "eventID": "c20d93d2-87e1-483d-9c6c-9cdfc35671d4",
+      "readOnly": true,
+      "resources": [
+        {
+          "accountId": "999945223994",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::baker221b-bucketsevidenceeeedc25d-1q9cl0tuy4gbm"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "baker221b-bucketsevidenceeeedc25d-1q9cl0tuy4gbm.s3.us-east-1.amazonaws.com"
+      }
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE922ZQZ52VG",
+        "arn": "arn:aws:iam::999945223994:user/user-bf68fc",
+        "accountId": "999945223994",
+        "accessKeyId": "AKIAEXAMPLE0TCVDQZGD",
+        "userName": "user-bf68fc",
+        "sessionContext": {
+          "sessionIssuer": {},
+          "webIdFederationData": {},
+          "attributes": {
+            "creationDate": "2023-07-10T11:42:31Z",
+            "mfaAuthenticated": "true"
+          }
+        }
+      },
+      "eventTime": "2023-07-10T11:42:34Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "ListBuckets",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "10.248.16.43",
+      "userAgent": "[S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.488 Linux/5.4.242-163.349.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.372-b08 java/1.8.0_372 vendor/Oracle_Corporation cfg/retry-mode/standard]",
+      "requestParameters": {
+        "Host": "s3.amazonaws.com"
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "bytesTransferredIn": 0,
+        "AuthenticationMethod": "AuthHeader",
+        "x-amz-id-2": "SxxR+Lrvo3kEgV7NM2LMZrmpw1xnRdr3psLcXLnNUZRaB9blQGMKxp9xcD2nRVljn2L65zbMcdc=",
+        "bytesTransferredOut": 6322
+      },
+      "requestID": "P5RR163XD4EE3HCR",
+      "eventID": "44a42357-fa38-4c9c-a58c-709254a857f7",
+      "readOnly": true,
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "vpcEndpointId": "vpce-f40dc59d",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "s3.amazonaws.com"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+# HIPAA: flag PHI assets not marked encrypted-at-rest.
+# The encryption:enabled label comes from discovery/auto-label metadata.
+apiVersion: dlap/v1
+kind: Policy
+metadata:
+  id: hipaa-phi-unencrypted
+  name: "HIPAA - PHI not encrypted at rest"
+  owner: "security@example.com"
+  enabled: true
+spec:
+  triggers:
+    - type: event
+      topic: dlap.catalog.asset.upserted
+  match:
+    labels:
+      allOf: ["data-class:phi"]
+      noneOf: ["encryption:enabled", "compliance:hipaa:violation"]
+  action:
+    type: addLabel
+    parameters:
+      labelName: "compliance:hipaa:violation"
+      auditNote: "PHI asset lacks the encryption:enabled classification."

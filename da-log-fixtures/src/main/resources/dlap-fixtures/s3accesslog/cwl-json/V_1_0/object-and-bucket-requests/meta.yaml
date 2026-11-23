@@ -1,0 +1,16 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/sal-cw-log-format.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3.amazonaws.com:REST.GET.OBJECT
+  - s3.amazonaws.com:REST.DELETE.OBJECT
+  - s3.amazonaws.com:REST.GET.VERSIONING
+variant_ids:
+  - requester.role-arn
+  - requester.user-arn
+  - result.error-code
+  - target.bucket-only
+expected_outcome: PARSED
+anonymised: false
+notes: "Written by PARSE-02 from the field list of the CloudWatch Logs record format (sal-cw-log-format, opened 2026-11-01). Every value is invented; IP addresses are from the 192.0.2.0/24 documentation range. A read by an assumed role, a delete by a user (a person's delete, which never proves a lifecycle rule), a failed read (error_code NoSuchKey), and a bucket configuration read by a canonical user id, which has no principal type."

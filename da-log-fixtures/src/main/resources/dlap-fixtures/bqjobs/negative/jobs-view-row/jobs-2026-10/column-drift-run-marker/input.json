@@ -1,0 +1,11 @@
+{
+  "dlap_run_problem": {
+    "kind": "COLUMN_DRIFT",
+    "missing": [
+      "referenced_tables"
+    ],
+    "column_set_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "expected_column_set_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "location": "US"
+  }
+}

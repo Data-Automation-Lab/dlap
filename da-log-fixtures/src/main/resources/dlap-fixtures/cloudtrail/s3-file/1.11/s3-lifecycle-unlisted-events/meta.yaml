@@ -1,0 +1,15 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/filtering-data-events.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3lifecycle.amazonaws.com:DeleteMarkerCreated
+variant_ids:
+  - s3.lifecycle-source
+  - uid.aws-service
+  - uid.invoked-by
+  - s3.request-parameters-bucket-key
+  - account.recipient-account-id
+expected_outcome: PARSED
+anonymised: false
+notes: "Written by PARSE-03 (D36, Q-650). An S3 lifecycle event name the mapping does not list, INVENTED to test the catch-all row, not observed: DeleteMarkerCreated (the example of Q-650), once naming only the bucket and once naming an object. Both must be UPDATE events, never DELETE, and the bucket-only record must name no target at all (no id, no canonical URI). The case s3-lifecycle-unlisted-heuristic covers a name no catch-all row reaches. Source for the event source: the CloudTrail data event filtering page (source_url, example 4). Every value is invented."

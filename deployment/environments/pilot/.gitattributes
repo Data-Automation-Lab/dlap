@@ -1,0 +1,4 @@
+# Mounted into Linux containers or read by POSIX shell: keep LF on Windows checkouts (see the root .gitattributes).
+*.conf text eol=lf
+.env.pilot* text eol=lf
+*.csv text eol=lf

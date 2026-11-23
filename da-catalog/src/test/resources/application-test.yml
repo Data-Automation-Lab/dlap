@@ -1,0 +1,221 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Test configuration for da-catalog integration tests
+spring:
+  application:
+    name: da-catalog-test
+  
+  config:
+    import: classpath:config/catalog-config.yml
+    
+  # Database configuration (using H2 for tests)
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: password
+    hikari:
+      auto-commit: false
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: false
+      
+  # Disable Liquibase for tests
+  liquibase:
+    enabled: false
+    
+  # Disable Docker for tests
+  docker:
+    compose:
+      enabled: false
+
+  # Task execution configuration for tests
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 4
+        queue-capacity: 100
+      thread-name-prefix: test-task-
+    
+  # Cache configuration for tests
+  cache:
+    type: simple
+
+# Disable Docker for tests
+testcontainers:
+  enabled: false
+
+# Cloud provider configuration for tests
+aws:
+  enabled: false
+  access-key: test-access-key
+  secret-key: test-secret-key
+  region: us-west-2
+  s3:
+    bucket-name: test-bucket
+  dynamodb:
+    table-name: test-table
+
+azure:
+  enabled: false
+  client-id: test-dummy-client-id
+  client-secret: test-dummy-client-secret
+  tenant-id: test-dummy-tenant-id
+  subscription-id: "test-dummy-subscription-id"
+  resource-group-name: "test-dummy-rg"
+  region: "test-dummy-region"
+  storage:
+    account-name: "test-dummy-storage-account"
+    container-name: "test-dummy-storage-container"
+
+gcp:
+  project:
+    id: test-project
+  storage:
+    bucket-name: test-bucket
+  bigquery:
+    dataset: test_dataset
+    project-id: test-project
+
+# Application settings
+application:
+  kafka:
+    enabled: true
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: da-catalog-test
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+  scheduler:
+    enabled: false
+  metrics:
+    enabled: false
+
+# Catalog-specific configuration
+catalog:
+  search:
+    max-results: 100
+    default-page-size: 20
+  labeling:
+    auto-labeling-enabled: true
+    confidence-threshold: 0.8
+  lineage:
+    max-depth: 5
+    enabled: true
+
+# JHipster configuration
+jhipster:
+  clientApp:
+    name: "daCatalog"
+  security:
+    authentication:
+      jwt:
+        secret: test-jwt-secret
+        base64-secret: test-secret-which-needs-to-be-at-least-512-bits-long-need-to-be-at-least-512-bits-long-really-long-ok
+        token-validity-in-seconds: 86400
+  audit-events:
+    retention-period: 30
+  logging:
+    use-json-format: false
+  cors:
+    allowed-origins: "*"
+    allowed-methods: "*"
+
+# Test data configuration
+test:
+  data:
+    enabled: true
+    users:
+      - email: "admin@test.com"
+        roles: ["ADMIN", "USER"]
+        department: "IT"
+      - email: "cdo@test.com"
+        roles: ["CDO", "USER"]
+        department: "Executive"
+      - email: "director@test.com"
+        roles: ["DIRECTOR", "USER"]
+        department: "Management"
+      - email: "engineer@test.com"
+        roles: ["DATA_ENGINEER", "USER"]
+        department: "Engineering"
+    assets:
+      - uri: "gs://test-bucket/data.csv"
+        cloud-provider: "GCP"
+        service-type: "STORAGE"
+        name: "Customer Data CSV"
+      - uri: "s3://test-bucket/analytics.json"
+        cloud-provider: "AWS"
+        service-type: "STORAGE"
+        name: "Analytics Data JSON"
+      - uri: "https://test.blob.core.windows.net/models/"
+        cloud-provider: "AZURE"
+        service-type: "STORAGE"
+        name: "ML Models Directory"
+    labels:
+      - name: "PII"
+        category: "COMPLIANCE"
+        description: "Personally Identifiable Information"
+      - name: "PHI"
+        category: "COMPLIANCE"
+        description: "Protected Health Information"
+      - name: "FINANCIAL"
+        category: "COMPLIANCE"
+        description: "Financial Data"
+      - name: "PUBLIC"
+        category: "CLASSIFICATION"
+        description: "Public Data"
+      - name: "INTERNAL"
+        category: "CLASSIFICATION"
+        description: "Internal Use Only"
+      - name: "CONFIDENTIAL"
+        category: "CLASSIFICATION"
+        description: "Confidential Data"
+
+# Performance test configuration
+performance:
+  test:
+    enabled: false
+    concurrent-users: 10
+    ramp-up-time: 30
+    test-duration: 300
+    target-response-time: 2000 

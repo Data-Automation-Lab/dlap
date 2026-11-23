@@ -1,0 +1,33 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAI23HXS4EXAMPLE",
+        "arn": "arn:aws:iam::111111111111:user/user-4c0729",
+        "accountId": "111111111111",
+        "accessKeyId": "AKIA-MOCKACCESSKEYID-1"
+      },
+      "eventTime": "2024-01-15T10:45:23Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteBucketEncryption",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.19.145.94",
+      "userAgent": "aws-cli/2.13.0 Python/3.11.4 Linux/5.10.0-1234-aws exe/x86_64.ubuntu.22",
+      "errorCode": "AccessDenied",
+      "errorMessage": "Access Denied",
+      "requestParameters": {
+        "bucketName": "sensitive-data-bucket",
+        "host": "sample-bucket-pensive-jones.s3.amazonaws.com"
+      },
+      "responseElements": null,
+      "requestID": "ABC123DEF456",
+      "eventID": "12345678-1234-1234-1234-111111111111",
+      "readOnly": false,
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "111111111111"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SELECT
+variant_ids:
+  - row.state-not-done
+expected_outcome: SKIPPED:NOT_AN_EVENT
+anonymised: false
+notes: "A PENDING job: no event until it is DONE."

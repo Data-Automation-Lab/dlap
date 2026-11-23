@@ -1,0 +1,81 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e-versioned|2026-11-03T02:10:11Z|S3.EXPIRE.OBJECT|PARSE03SAL000001|raw/2026/08/customers.parquet",
+      "eventTime": "2026-11-03T02:10:11Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "S3.EXPIRE.OBJECT",
+      "changeType": "UPDATE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SYSTEM"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e-versioned/raw/2026/08/customers.parquet",
+        "technicalMetadata": {
+          "versionAction.kind": "DELETE_VERSION",
+          "versionAction.versionId": "PARSE03vNoncurrent0000000000000001"
+        }
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    },
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e-versioned|2026-11-03T02:10:12Z|S3.CREATE.DELETEMARKER|PARSE03SAL000002|raw/2026/08/orders.parquet",
+      "eventTime": "2026-11-03T02:10:12Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "S3.CREATE.DELETEMARKER",
+      "changeType": "UPDATE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SYSTEM"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e-versioned/raw/2026/08/orders.parquet",
+        "technicalMetadata": {
+          "versionAction.kind": "CREATE_DELETE_MARKER",
+          "versionAction.versionId": "PARSE03vDeleteMarker00000000000002"
+        }
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    },
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e-versioned|2026-11-03T09:30:00.500Z|REST.DELETE.OBJECT|PARSE03SAL000003|curated/2026/sales.parquet",
+      "eventTime": "2026-11-03T09:30:00.500Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "REST.DELETE.OBJECT",
+      "changeType": "UPDATE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::123456789012:user/user-5a1020",
+        "type": "USER",
+        "accountId": "123456789012"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e-versioned/curated/2026/sales.parquet",
+        "technicalMetadata": {
+          "versionAction.kind": "DELETE_VERSION",
+          "versionAction.versionId": "PARSE03vUserDelete000000000000003"
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.21",
+        "userAgent": "aws-cli/2.17.0",
+        "requestId": "PARSE03SAL000003"
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    }
+  ]
+}

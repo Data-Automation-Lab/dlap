@@ -1,0 +1,57 @@
+name: Feature request
+description: Propose a new capability for DLAP
+title: "[feat] "
+labels: ["enhancement", "triage"]
+body:
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Issue hygiene
+      options:
+        - label: I searched existing issues (open and closed) for duplicates
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user or operator pain does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: High-level design, APIs, or UX you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: dropdown
+    id: service
+    attributes:
+      label: Primary service (if applicable)
+      options:
+        - da-discovery
+        - da-catalog
+        - da-policyengine
+        - da-reporting
+        - da-autolabel
+        - da-autoarchival
+        - da-autodelete
+        - da-autocompliance
+        - da-admin-service
+        - da-logingest
+        - cross-cutting / platform
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to contribute a PR for this (may need maintainer guidance)
+          required: false

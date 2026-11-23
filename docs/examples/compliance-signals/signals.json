@@ -1,0 +1,23 @@
+[
+  {
+    "assetUri": "gs://acme-analytics/customers/pii.parquet",
+    "framework": "gdpr",
+    "controlId": "art-17-residency",
+    "status": "VIOLATION",
+    "detail": "Personal data stored outside the approved EU region."
+  },
+  {
+    "assetUri": "s3://acme-clinical/records/phi/",
+    "framework": "hipaa",
+    "controlId": "164.312(a)(2)(iv)",
+    "status": "COMPLIANT",
+    "detail": "Encryption at rest verified."
+  },
+  {
+    "assetUri": "gs://acme-analytics/logs/",
+    "framework": "soc-2",
+    "controlId": "CC6.1",
+    "status": "UNKNOWN",
+    "detail": "No posture reported - DLAP stamps no label for UNKNOWN."
+  }
+]

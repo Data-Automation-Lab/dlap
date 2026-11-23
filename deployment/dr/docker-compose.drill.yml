@@ -1,0 +1,52 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Compose override for the restore drill (DR-01). restore-drill.sh applies it LAST, after the
+# quickstart pair and every docker-compose.pilot.*.yml, under a project name of its own, so the drill
+# never touches a running pilot:
+#   - container names are project-scoped instead of the fixed dlap-* names of the quickstart,
+#   - the database publishes no host port,
+#   - the "off-host" store is an external named volume that survives the simulated loss of the stack,
+#   - the agent ships every 30 seconds instead of every 5 minutes.
+# The ship command itself comes from the environment file the drill writes, single-quoted as an
+# operator must write it, so the drill also proves that $1 and $2 reach the agent intact.
+# Variables: DR_DRILL_PREFIX (project name); DR_DRILL_REMOTE (the volume this project's agent ships
+# to, mounted at /remote); DR_DRILL_SOURCE (the off-host store of the lost stack, mounted read-only at
+# /source, where a restore reads from). Each restored stack ships to a store of its own, so it never
+# adds base backups of another cluster to the one the next restore reads. The drill exports all three.
+
+services:
+  postgresql:
+    container_name: ${DR_DRILL_PREFIX}-postgresql
+    ports: !override []
+
+  dlap-backup:
+    container_name: ${DR_DRILL_PREFIX}-backup
+    environment:
+      - DLAP_WAL_CYCLE_SECONDS=30
+      - DLAP_BACKUP_RETRY_SECONDS=5
+    volumes:
+      - drill-remote:/remote
+      - drill-source:/source:ro
+
+volumes:
+  drill-remote:
+    external: true
+    name: ${DR_DRILL_REMOTE}
+  drill-source:
+    external: true
+    name: ${DR_DRILL_SOURCE}

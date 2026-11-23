@@ -1,0 +1,99 @@
+[
+  {
+    "insertId": "a21-gcs-writes-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-01T10:00:02.123456791Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.create",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders-2.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders-2.csv",
+          "permission": "storage.objects.create",
+          "granted": true,
+          "resourceAttributes": { }
+        },
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders-2.csv",
+          "permission": "storage.objects.delete",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "request": {
+        "@type": "type.googleapis.com/storage.objects.insert",
+        "bucket": "dlap-fixture-bucket",
+        "name": "exports/2026/09/orders-2.csv"
+      },
+      "response": {
+        "@type": "type.googleapis.com/storage.objects.insert",
+        "bucket": "dlap-fixture-bucket",
+        "name": "exports/2026/09/orders-2.csv",
+        "size": "2048",
+        "generation": "1725184800123456",
+        "timeCreated": "2026-09-01T10:00:02.100Z"
+      }
+    },
+    "receiveTimestamp": "2026-09-01T10:00:02.823456791Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a21-gcs-writes-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-01T10:00:03.123456792Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.delete",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.delete",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ]
+    },
+    "receiveTimestamp": "2026-09-01T10:00:03.823456792Z",
+    "severity": "INFO"
+  }
+]

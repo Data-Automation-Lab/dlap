@@ -1,0 +1,18 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:tabledataservice.list
+variant_ids:
+  - log.folder-or-organization
+  - status.nonzero-code
+  - status.granted-false
+  - log.policy-denied
+  - status.org-policy-denial
+  - status.vpc-sc-denial
+  - status.vpc-sc-ingress-egress
+  - envelope.bq-json-string-columns
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. A denied tabledata.list in a folder-level sink and one in an organization-level sink; synthetic combinations, since the documentation shows no v1 service data on Policy Denied or VPC Service Controls entries: an organization policy denial and a VPC Service Controls denial (metadataJson) on v1 rows. The failure rule does not depend on the payload version."

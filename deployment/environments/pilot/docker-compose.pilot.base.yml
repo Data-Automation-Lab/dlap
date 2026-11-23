@@ -1,0 +1,480 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP read-only pilot, base overlay (DEP-01, ADR-0049 model M3).
+#
+# A compose override file for the quickstart pair, not a second stack (ADR-0037 as amended for
+# overlays). up.sh applies it after the pair, together with every other
+# docker-compose.pilot.*.yml in sorted order:
+#
+#   docker compose --env-file <env> \
+#     -f deployment/environments/dev/docker-compose.yml \
+#     -f deployment/environments/dev/docker-compose.microservices.yml \
+#     -f deployment/environments/pilot/docker-compose.pilot.base.yml up -d --build
+#
+# What this overlay does, and nothing more:
+#   1. Runs every Spring service under the prod profile, with ddl-auto=validate.
+#   2. Gives every container a memory limit and every JVM an explicit -Xmx.
+#   3. Publishes every port on 127.0.0.1 only. Nothing is reachable from the network until a later
+#      overlay (TLS, SEC-06) opens the single entry point.
+#   4. Leaves out da-autoarchival and da-autodelete, and also Ollama, unless their compose profile
+#      is switched on. If someone does switch the actions profile on, deletes are dry runs and
+#      archival is mocked.
+#   5. Drops the demo seed (03-insert-test-data.sql) from the database bootstrap.
+#   6. Turns the JWT issuer and audience checks on in every Spring service (Q-919), so a pilot without the TLS
+#      overlay starts under the strict boot guard of the prod profile (SEC-12). The issuer is DLAP_PILOT_ID_URL
+#      (default http://localhost:8180) and the audience PILOT_JWT_AUDIENCE (default dlap-api), both as the pilot
+#      Keycloak overlay writes them into its tokens. With the quickstart realm instead of that overlay
+#      (PILOT_ALLOW_DEV_REALM=1, lab only) service tokens carry http://keycloak:8080 as issuer; add it to
+#      DLAP_SECURITY_JWT_EXPECTED_ISSUER (comma separated) there.
+#
+# What it does NOT do (later overlays): TLS (SEC-06), a production Keycloak realm (IAM-02),
+# shadow mode and report labelling (PILOT-01), backups (DR-01). The seeded dev realm and its client
+# secret are still in force, which is why up.sh refuses to start unless PILOT_ALLOW_DEV_REALM=1.
+#
+# Paths below are relative to the first compose file (deployment/environments/dev), so the pilot
+# folder is ../pilot. Needs Docker Compose 2.24 or later for the !override tag.
+#
+# Memory sizes are conservative starting points that fit a 16 GB VM (about 10 GB of limits with the
+# default profiles). They are not measured yet; re-check with `docker stats` on the pilot VM.
+
+x-pilot-logging: &pilot-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+
+  # --- Infrastructure ---------------------------------------------------------------------------
+
+  postgresql:
+    ports: !override
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # Replaces the demo seed with an empty script (deployment/PRODUCTION.md, section 2). A file mount
+      # over an existing file of the directory above: the host directory is not modified.
+      - ../pilot/initdb/03-insert-test-data.sql:/docker-entrypoint-initdb.d/03-insert-test-data.sql:ro
+    environment:
+      # No development fallback in the pilot (SEC-12, Q-176, Q-449, Q-455). The quickstart pair gives every
+      # role a published default when its variable is unset; here an unset variable stops compose before
+      # anything starts, and up.sh checks that the values are real and all different. The services read the
+      # same variables from docker-compose.microservices.yml, so the role and its client always agree.
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env.pilot}
+      - DLAP_COMMON_DB_PASSWORD=${DLAP_COMMON_DB_PASSWORD:?DLAP_COMMON_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_DISCOVERY_DB_PASSWORD=${DA_DISCOVERY_DB_PASSWORD:?DA_DISCOVERY_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_CATALOG_DB_PASSWORD=${DA_CATALOG_DB_PASSWORD:?DA_CATALOG_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_POLICYENGINE_DB_PASSWORD=${DA_POLICYENGINE_DB_PASSWORD:?DA_POLICYENGINE_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_REPORTING_DB_PASSWORD=${DA_REPORTING_DB_PASSWORD:?DA_REPORTING_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_AUTOLABEL_DB_PASSWORD=${DA_AUTOLABEL_DB_PASSWORD:?DA_AUTOLABEL_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_AUTOARCHIVAL_DB_PASSWORD=${DA_AUTOARCHIVAL_DB_PASSWORD:?DA_AUTOARCHIVAL_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_AUTODELETE_DB_PASSWORD=${DA_AUTODELETE_DB_PASSWORD:?DA_AUTODELETE_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_AUTOCOMPLIANCE_DB_PASSWORD=${DA_AUTOCOMPLIANCE_DB_PASSWORD:?DA_AUTOCOMPLIANCE_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_ADMIN_DB_PASSWORD=${DA_ADMIN_DB_PASSWORD:?DA_ADMIN_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DA_LOGINGEST_DB_PASSWORD=${DA_LOGINGEST_DB_PASSWORD:?DA_LOGINGEST_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DLAP_MONITOR_DB_PASSWORD=${DLAP_MONITOR_DB_PASSWORD:?DLAP_MONITOR_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+      - DLAP_BACKUP_DB_PASSWORD=${DLAP_BACKUP_DB_PASSWORD:?DLAP_BACKUP_DB_PASSWORD must be set in .env.pilot (gen-db-passwords.sh)}
+    # Same settings as the quickstart except log_statement: "all" writes every statement, with its
+    # literals, to the container log. Slow statements and connections are still logged.
+    command: !override
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "effective_cache_size=1536MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "work_mem=8MB"
+      - "-c"
+      - "log_min_duration_statement=1000"
+      - "-c"
+      - "log_connections=on"
+      - "-c"
+      - "log_disconnections=on"
+      - "-c"
+      - "log_statement=none"
+    deploy:
+      resources:
+        limits:
+          memory: 1536m
+    logging: *pilot-logging
+
+  keycloak:
+    ports: !override
+      - "127.0.0.1:8180:8080"
+    environment:
+      - JAVA_OPTS_KC_HEAP=-Xms256m -Xmx768m
+      # The realm file reads the dlap-backend client secret from this variable when it is imported
+      # (dlap-realm.json, "secret"). The quickstart never passes it to this container, so the services
+      # could be given a new secret while the realm kept the published default. Passing it here keeps
+      # the two in step.
+      - DLAP_BACKEND_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET}
+      # The same for the dlap-mcp-gateway client (Q-458); up.sh refuses the published default.
+      - DLAP_MCP_GATEWAY_CLIENT_SECRET=${DLAP_MCP_GATEWAY_CLIENT_SECRET}
+    deploy:
+      resources:
+        limits:
+          memory: 1280m
+    logging: *pilot-logging
+
+  kafka:
+    ports: !override
+      - "127.0.0.1:9092:9092"
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
+    logging: *pilot-logging
+
+  # --- Optional infrastructure, already behind compose profiles in the quickstart ---------------
+
+  prometheus:
+    ports: !override
+      - "127.0.0.1:9090:9090"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    logging: *pilot-logging
+
+  grafana:
+    ports: !override
+      - "127.0.0.1:3001:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+    logging: *pilot-logging
+
+  localstack:
+    ports: !override
+      - "127.0.0.1:4566:4566"
+
+  unitycatalog:
+    ports: !override
+      - "127.0.0.1:18080:8080"
+
+  # Ollama is only for the optional LLM labelling provider. The pilot labels with the rules
+  # provider (ADR-0052), so it is off unless the llm profile is on.
+  ollama:
+    profiles: ["llm"]
+    ports: !override
+      - "127.0.0.1:11434:11434"
+
+  ollama-model-pull:
+    profiles: ["llm"]
+
+  # --- Front door -------------------------------------------------------------------------------
+
+  new-ui:
+    ports: !override
+      - "127.0.0.1:3000:3000"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx256m -XX:+ExitOnOutOfMemoryError
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    logging: *pilot-logging
+
+  gateway:
+    ports: !override
+      - "127.0.0.1:8081:8081"
+    volumes: !override
+      - ../pilot/gateway/nginx.pilot.conf:/etc/nginx/nginx.conf:ro
+    # The quickstart waits for every routed service. The archive and delete services are optional
+    # here, and the pilot nginx.conf resolves them lazily, so they are not in this list.
+    depends_on: !override
+      new-ui:
+        condition: service_started
+      da-catalog:
+        condition: service_started
+      da-policyengine:
+        condition: service_started
+      da-reporting:
+        condition: service_started
+      da-discovery:
+        condition: service_started
+      da-autolabel:
+        condition: service_started
+      da-autocompliance:
+        condition: service_started
+      da-admin-service:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+    logging: *pilot-logging
+
+  # --- Lifecycle services: prod profile, validate, memory limit, -Xmx ---------------------------
+  #
+  # SPRING_JPA_HIBERNATE_DDL_AUTO is Spring's own relaxed name for spring.jpa.hibernate.ddl-auto, so
+  # it wins over every properties file whatever variable that file reads (JPA_DDL_AUTO, ...).
+
+  da-discovery:
+    ports: !override
+      - "127.0.0.1:8091:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, ADR-0137, Q-919): the boot guard refuses a prod start while the issuer or the audience
+      # check is off, so the base overlay turns both on itself, not only the TLS overlay. The issuer is the one the
+      # Keycloak overlay fixes (KC_HOSTNAME = DLAP_PILOT_ID_URL); the audience is the one its realm writes into the
+      # tokens (PILOT_JWT_AUDIENCE). The TLS overlay replaces the issuer with the public origin and the TLS
+      # Keycloak name.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx640m -XX:+ExitOnOutOfMemoryError
+      # The prod profile of da-discovery reads these (deployment/PRODUCTION.md, section 8).
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KAFKA_ADMIN_REPLICATION_FACTOR=1
+      - KAFKA_ADMIN_PARTITIONS=3
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GOOGLE_CLOUD_PROJECT=${GCP_PROJECT_ID}
+      # Vestigial: bootstrap-prod.yml fails the context when it is unset. DLAP runs no JHipster registry.
+      - JHIPSTER_REGISTRY_PASSWORD=${JHIPSTER_REGISTRY_PASSWORD:-not-used}
+      # application-prod.yml of da-discovery switches the Prometheus export off, so under prod the
+      # /actuator/prometheus endpoint does not exist and the monitoring profile's scrape target is down
+      # (Q-518 rehearsal: da-discovery:9091 was the one target not up). The variable wins over the file.
+      # The endpoint stays behind a token on the application port; only the management port serves it open.
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  da-catalog:
+    ports: !override
+      - "127.0.0.1:8082:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx448m -XX:+ExitOnOutOfMemoryError
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  da-policyengine:
+    ports: !override
+      - "127.0.0.1:8083:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      # The audit log route (Q-690): approval decisions, withdrawals and policy changes are appended to
+      # dlap_common as da_policyengine_user, the writer of govern.approval and govern.policy, and fail
+      # closed (503 audit-unavailable) without it. Stated here instead of derived from the service's own
+      # URL, so the route is visible; the TLS overlay replaces it with its verify-full URL.
+      - DLAP_AUDIT_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/dlap_common
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx448m -XX:+ExitOnOutOfMemoryError
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  da-reporting:
+    ports: !override
+      - "127.0.0.1:8084:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+ExitOnOutOfMemoryError
+      # The mail health check dials smtp.gmail.com with placeholder credentials and would hold the
+      # aggregate health DOWN for ever. No mail is sent in the pilot.
+      - MANAGEMENT_HEALTH_MAIL_ENABLED=false
+    deploy:
+      resources:
+        limits:
+          memory: 640m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  da-autolabel:
+    ports: !override
+      - "127.0.0.1:8085:8080"
+    # No Ollama in the pilot, so the quickstart's wait on it is dropped.
+    depends_on: !override
+      postgresql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+ExitOnOutOfMemoryError
+      # SPRING_APPLICATION_JSON outranks plain environment variables, so the whole value is replaced:
+      # the rules provider (ADR-0052) in place of the quickstart's mock, and no mock fallback.
+      - 'SPRING_APPLICATION_JSON={"da-catalog.service.url":"http://da-catalog:8080","dlap.service-auth.enabled":"true","dlap.service-auth.token-uri":"http://keycloak:8080/realms/dlap/protocol/openid-connect/token","dlap.service-auth.client-id":"dlap-backend","dlap.service-auth.client-secret":"${DLAP_BACKEND_CLIENT_SECRET}","dlap.autolabel.llm-provider":"rules","dlap.autolabel.allow-mock":"false"}'
+    deploy:
+      resources:
+        limits:
+          memory: 640m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  da-autocompliance:
+    ports: !override
+      - "127.0.0.1:8088:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms96m -Xmx320m -XX:+ExitOnOutOfMemoryError
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  da-admin-service:
+    ports: !override
+      - "127.0.0.1:8089:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+ExitOnOutOfMemoryError
+    deploy:
+      resources:
+        limits:
+          memory: 640m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  da-logingest:
+    ports: !override
+      - "127.0.0.1:8090:8090"
+    environment:
+      # prod also loads the GCP and CloudTrail log sources; each still needs its own enable flag.
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx448m -XX:+ExitOnOutOfMemoryError
+      - DLAP_LOGINGEST_DEMO_SEED_ENABLED=false
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  # --- Actions: off unless the "actions" compose profile is switched on -------------------------
+  #
+  # A read-only pilot does not archive or delete. If an operator enables them anyway
+  # (COMPOSE_PROFILES=actions), deletes stay dry runs and archival is mocked, so a cloud call needs
+  # a deliberate edit of this file, not a missing variable.
+
+  da-autoarchival:
+    profiles: ["actions"]
+    ports: !override
+      - "127.0.0.1:8086:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+ExitOnOutOfMemoryError
+      - DLAP_AUTOARCHIVAL_GCS_MOCK_MODE=true
+      - DLAP_AUTOARCHIVAL_AZURE_MOCK_MODE=true
+    deploy:
+      resources:
+        limits:
+          memory: 640m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging
+
+  da-autodelete:
+    profiles: ["actions"]
+    ports: !override
+      - "127.0.0.1:8087:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Token checks (SEC-12, Q-919): see da-discovery above.
+      - DLAP_SECURITY_JWT_VALIDATE_ISSUER=true
+      - DLAP_SECURITY_JWT_EXPECTED_ISSUER=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap
+      - DLAP_SECURITY_JWT_VALIDATE_AUDIENCE=true
+      - DLAP_SECURITY_JWT_EXPECTED_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+ExitOnOutOfMemoryError
+      # A literal, not ${...:-true}: an environment file cannot turn real deletion on.
+      - DLAP_AUTODELETE_DRY_RUN_CLOUD_DELETE=true
+    deploy:
+      resources:
+        limits:
+          memory: 640m
+    security_opt:
+      - no-new-privileges:true
+    logging: *pilot-logging

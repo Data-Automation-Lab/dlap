@@ -1,0 +1,193 @@
+# ===================================================================
+# Spring Boot configuration for the "prod" profile.
+#
+# This configuration overrides the application.yml file.
+#
+# Required environment (the context fails fast, naming the variable, when one is missing):
+#   SPRING_DATASOURCE_URL           jdbc URL of the da_discovery database
+#   SPRING_KAFKA_BOOTSTRAP_SERVERS  Kafka bootstrap list (not KAFKA_BOOTSTRAP_SERVERS, which
+#                                   this service does not read)
+#   JHIPSTER_REGISTRY_PASSWORD      vestigial: any value (see the jhipster.registry block below)
+#   GCP_PROJECT_ID                  GCP project id (see the gcp block below)
+# The full table, including the optional variables, is in deployment/PRODUCTION.md,
+# section "Environment under the prod profile". DEP-01 starts this profile in
+# ProdProfileContextTest on every build.
+#
+# More information on profiles: https://www.jhipster.tech/profiles/
+# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+# ===================================================================
+# Standard Spring Boot properties.
+# Full reference is available at:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+# ===================================================================
+
+logging:
+  level:
+    ROOT: INFO
+    tech.jhipster: INFO
+    com.dlap.discovery: INFO
+
+management:
+  prometheus:
+    metrics:
+      export:
+        enabled: false
+  tracing:
+    # Spring Boot 4 moved management.zipkin.tracing.endpoint here (BOOT-01). Only read when a Zipkin
+    # exporter is on the classpath, which this build does not ship.
+    export:
+      zipkin:
+        endpoint: http://localhost:9411/api/v2/spans
+    sampling:
+      probability: 1.0 # report 100% of traces
+
+spring:
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+  cloud:
+    gcp:
+      # application.yml already switches off the Cloud SQL and core auto-configurations. Secret Manager
+      # is on by default and demands a CredentialsProvider bean that the disabled core never creates,
+      # so under prod the context failed with "required a bean of type CredentialsProvider". The dev
+      # profile has always switched it off. DLAP reads cloud secrets through its own credential store
+      # (ADR-0036), not through this starter.
+      secretmanager:
+        enabled: false
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    # No default: a wrong database name is the classic boot failure (ADR-0037). Use the exact
+    # per-service name da_discovery. Username and password come from application.properties
+    # (SPRING_DATASOURCE_USERNAME and SPRING_DATASOURCE_PASSWORD), the same as every other service.
+    url: ${SPRING_DATASOURCE_URL}
+    hikari:
+      poolName: HikariProd
+      auto-commit: false
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+  jpa:
+    database-platform: org.postgresql.dialect.PostgreSQLDialect
+    show-sql: false
+    hibernate:
+      # CLAUDE.md section 6: validate in production. Flyway owns the schema.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  thymeleaf:
+    cache: true
+  # Kafka (Q-334). The bootstrap servers are Spring Boot's own setting, with no default: the context
+  # fails fast, naming SPRING_KAFKA_BOOTSTRAP_SERVERS, when the variable is missing
+  # (deployment/PRODUCTION.md). This line overrides the quickstart default of application.properties, so
+  # a deploy cannot fall back to kafka:29092.
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    # Producer tuning of the former kafka.producer block, which no client ever read. Idempotence and
+    # acks=all come from the shared factory builder (ADR-0071); five in-flight requests is the most an
+    # idempotent producer allows. lz4 ships with kafka-clients (KafkaProfileConfigurationTest).
+    producer:
+      retries: 5
+      batch-size: 32768
+      buffer-memory: 67108864
+      compression-type: lz4
+      properties:
+        linger.ms: 20
+        max.in.flight.requests.per.connection: 5
+
+# ===================================================================
+# TLS is terminated in front of the service (deployment/PRODUCTION.md, section 6). To terminate it
+# in the JVM instead, activate the "tls" profile next to "prod" and supply DLAP_TLS_KEYSTORE_PATH and
+# DLAP_TLS_KEYSTORE_PASSWORD (application-tls.yml). No keystore is shipped with DLAP; generate or
+# issue your own and mount it. The service refuses to start under "tls" without both variables.
+# ===================================================================
+server:
+  # Same internal port as every other service (the gateway and the compose files address 8080).
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
+    min-response-size: 1024
+
+# ===================================================================
+# JHipster specific properties
+#
+# Full reference is available at: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+jhipster:
+  http:
+    cache: # Used by the CachingHttpHeadersFilter
+      timeToLiveInDays: 1461
+  cache: # Cache configuration
+    ehcache: # Ehcache configuration
+      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
+      max-entries: 1000 # Number of objects in each cache entry
+  registry:
+    # Vestigial. DLAP runs no JHipster registry (Eureka and the Config Server are disabled in
+    # application.yml and bootstrap.yml), but bootstrap-prod.yml binds the config-server URI to
+    # jhipster.registry.password and fails the whole context when the variable is unset. Set any
+    # value. Deleting bootstrap-prod.yml would remove the requirement (Q-173).
+    password: ${JHIPSTER_REGISTRY_PASSWORD}
+  logging:
+    use-json-format: false # By default, logs are not in Json format
+    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+      enabled: false
+      host: localhost
+      port: 5000
+      ring-buffer-size: 512
+# ===================================================================
+# Application specific properties
+# Add your own application properties here, see the ApplicationProperties class
+# to have type-safe configuration, like in the JHipsterProperties above
+#
+# More documentation is available at:
+# https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+discovery:
+  job:
+    executor:
+      # DEFAULT runs crawls in-process, which is what every shipped image can do. SPARK and NIFI need
+      # their executor enabled (discovery.job.executor.spark.enabled or .nifi.enabled) and an
+      # external cluster; select one with DLAP_DISCOVERY_JOB_EXECUTOR_MODE together with that flag.
+      # Before DEP-01 this said SPARK without enabling it, so the context never started under prod.
+      mode: ${DLAP_DISCOVERY_JOB_EXECUTOR_MODE:DEFAULT}
+
+# GCP project the GCP crawlers and log analyzers run against. The clients only need an id to be
+# constructed, so a deployment that never scans GCP can set any value (the compose files use
+# dlap-demo-project). No default: the context fails fast naming GCP_PROJECT_ID. The dev profile
+# supplies "development-project-id" here.
+gcp:
+  project:
+    id: ${GCP_PROJECT_ID}
+
+# Kafka (Q-334). Sizing of the topics that KafkaTopicsConfiguration provisions, the same as the admin
+# block below.
+dlap:
+  kafka:
+    topic-partitions: ${KAFKA_ADMIN_PARTITIONS:6}
+    topic-replication-factor: ${KAFKA_ADMIN_REPLICATION_FACTOR:3}
+
+# Application keys read by @Value, as in application.yml.
+kafka:
+  topics:
+    resource-events: ${KAFKA_TOPIC_RESOURCE_EVENTS:discovery-resource-events}
+    log-events: ${KAFKA_TOPIC_LOG_EVENTS:discovery-log-events}
+  group:
+    catalog-updater: ${KAFKA_GROUP_CATALOG_UPDATER:discovery-catalog-updater}
+  admin:
+    # Three brokers is the production default (deployment/PRODUCTION.md, section 6). A single-broker
+    # install such as the pilot VM sets KAFKA_ADMIN_REPLICATION_FACTOR=1, or topic creation fails.
+    replication-factor: ${KAFKA_ADMIN_REPLICATION_FACTOR:3}
+    partitions: ${KAFKA_ADMIN_PARTITIONS:6}

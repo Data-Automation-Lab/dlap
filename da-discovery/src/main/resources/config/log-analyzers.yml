@@ -1,0 +1,40 @@
+# Log Analyzer Configuration
+#
+# Cloud-neutral operation-to-change-type mapping. Applies to every
+# ILogAnalyzer implementation (AWS CloudTrail, GCP Audit, Azure
+# Activity, Oracle Audit). Renamed from the `gcp.log-analyzer` prefix
+# in R-P1-7 (finding N18) to reflect that this config drives all
+# providers, not just GCP.
+
+dlap:
+  log-analyzer:
+    operation-mappings:
+      # CREATE operations
+      - operation: 'create'
+        change-type: 'CREATE'
+      - operation: 'insert'
+        change-type: 'CREATE'
+
+      # UPDATE operations
+      - operation: 'update'
+        change-type: 'UPDATE'
+      - operation: 'patch'
+        change-type: 'UPDATE'
+
+      # DELETE operations
+      - operation: 'delete'
+        change-type: 'DELETE'
+
+      # ACCESS operations
+      - operation: 'read'
+        change-type: 'ACCESS'
+      - operation: 'get'
+        change-type: 'ACCESS'
+      - operation: 'list'
+        change-type: 'ACCESS'
+
+      # PERMISSION operations
+      - operation: 'iam'
+        change-type: 'PERMISSION'
+      - operation: 'setiam'
+        change-type: 'PERMISSION'

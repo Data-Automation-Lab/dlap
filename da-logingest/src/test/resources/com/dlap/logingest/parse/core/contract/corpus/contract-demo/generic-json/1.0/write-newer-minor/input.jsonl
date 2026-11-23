@@ -1,0 +1,2 @@
+{"v":"1.7","id":"evt-0002","at":"2026-02-01T11:00:00Z","svc":"store","op":"PutObject","who":{"type":"IAMUser","name":"user-7"},"object":"s3://bucket-a/reports/q2.csv","checks":[{"granted":true}]}
+{"v":"1.7","id":"evt-0003","receivedAt":"2026-02-01T11:05:00Z","svc":"store","op":"PutObject","who":{"type":"IAMUser","name":"user-7"},"object":"s3://bucket-a/reports/q3.csv","checks":[{"granted":false}]}

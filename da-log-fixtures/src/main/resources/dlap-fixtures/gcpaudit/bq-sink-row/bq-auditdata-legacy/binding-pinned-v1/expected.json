@@ -1,0 +1,3 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:06:00.676890Z|r1-pin-1","eventCategory":"EVENT_CATEGORY_DATA_READ","targetResource":{"canonicalUri":"bq://proj-0d1a0001/sales/orders"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"}
+]}

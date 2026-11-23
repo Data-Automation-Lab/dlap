@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SELECT
+variant_ids:
+  - read.script-child
+  - read.referenced-tables-fanout
+expected_outcome: PARSED
+anonymised: false
+notes: "A child job of a script (parent_job_id set) emits its own reads."

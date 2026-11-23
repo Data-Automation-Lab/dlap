@@ -1,0 +1,29 @@
+# EU marketing data, aggregate analytics under consent (enforcement-contract.md §4).
+# Permits PRACTITIONER-tier / DATA_ANALYST agents to read or query EU-resident
+# assets ONLY for campaign analytics with active consent, and masks PII columns
+# on the way out. Evaluated by the AuthZEN PDP (ADR-0040) at consumption time,
+# not on a schedule.
+apiVersion: dlap/v1
+kind: AccessPolicy
+metadata:
+  id: access-eu-marketing-aggregate
+  name: "EU marketing data: aggregate analytics under consent"
+  owner: "cdo-office@example.com"
+  enabled: true
+spec:
+  subjects:
+    tiers: [PRACTITIONER]        # ADR-0032 persona tiers …
+    roles: [DATA_ANALYST]        # … OR realm roles; either clause alone suffices
+  actions: [read, query]
+  match:                         # same asset-selector clause set as LifecyclePolicy
+    labels:
+      anyOf: [EU_RESIDENT]
+      noneOf: [LEGAL_HOLD]
+  condition:                     # request-context clauses; all present must hold
+    purpose:
+      anyOf: [campaign-analytics]
+    consent: true
+  effect: allow
+  obligations:
+    - type: mask
+      labels: [PII]

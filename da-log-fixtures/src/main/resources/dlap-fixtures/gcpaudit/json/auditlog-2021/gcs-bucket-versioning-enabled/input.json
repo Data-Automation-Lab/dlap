@@ -1,0 +1,77 @@
+{
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "status": {},
+    "authenticationInfo": {
+      "principalEmail": "sa-a7fffaee@proj-26c20188.iam.gserviceaccount.com",
+      "serviceAccountKeyName": "//iam.googleapis.com/projects/proj-26c20188/serviceAccounts/sa-a7fffaee@proj-26c20188.iam.gserviceaccount.com/keys/5a5a5a5a1ebd8fdfad580ff261c75c42ef9aea76"
+    },
+    "requestMetadata": {
+      "callerIp": "2001:db8:e0b8:4cb8:3879:06d7:d9bc:3ddf",
+      "callerSuppliedUserAgent": "apitools Python/3.6.8 gsutil/4.61 (darwin) analytics/enabled interactive/True command/versioning google-cloud-sdk/339.0.0,gzip(gfe)",
+      "requestAttributes": {
+        "time": "2021-08-19T17:51:31.844550548Z",
+        "auth": {}
+      },
+      "destinationAttributes": {}
+    },
+    "serviceName": "storage.googleapis.com",
+    "methodName": "storage.buckets.update",
+    "authorizationInfo": [
+      {
+        "resource": "projects/_/buckets/s3.anon.net",
+        "permission": "storage.buckets.update",
+        "granted": true,
+        "resourceAttributes": {}
+      }
+    ],
+    "resourceName": "projects/_/buckets/s3.anon.net",
+    "request": {
+      "bucket": "s3.anon.net",
+      "metadata": {
+        "versioning": {
+          "enabled": true
+        },
+        "name": "s3.anon.net",
+        "id": "s3.anon.net"
+      },
+      "projection": "NO_ACL"
+    },
+    "response": {
+      "etag": "CAM=",
+      "metageneration": "3",
+      "storageClass": "STANDARD",
+      "updated": "2021-08-19T17:51:31.954Z",
+      "timeCreated": "2018-07-20T00:46:43.093Z",
+      "id": "s3.anon.net",
+      "versioning": {
+        "enabled": true
+      },
+      "iamConfiguration": {
+        "uniformBucketLevelAccess": {}
+      },
+      "projectNumber": "999983291213",
+      "name": "s3.anon.net",
+      "locationType": "multi-region",
+      "location": "US"
+    },
+    "resourceLocation": {
+      "currentLocations": [
+        "us"
+      ]
+    }
+  },
+  "insertId": "slfn9ddc3sc",
+  "resource": {
+    "type": "gcs_bucket",
+    "labels": {
+      "location": "us",
+      "bucket_name": "s3.anon.net",
+      "project_id": "proj-2bd86309"
+    }
+  },
+  "timestamp": "2021-08-19T17:51:31.834523489Z",
+  "severity": "NOTICE",
+  "logName": "projects/proj-2bd86309/logs/cloudaudit.googleapis.com%2Factivity",
+  "receiveTimestamp": "2021-08-19T17:51:32.286951460Z"
+}

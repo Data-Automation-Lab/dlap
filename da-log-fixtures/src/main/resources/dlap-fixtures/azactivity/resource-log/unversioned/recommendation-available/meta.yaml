@@ -1,0 +1,15 @@
+origin: public-dataset
+repo: open-telemetry/opentelemetry-collector-contrib
+commit: "f9fdf9e8059dfd81c1aca3b4d4a9797d4182a09d"
+source_url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/f9fdf9e8059dfd81c1aca3b4d4a9797d4182a09d/extension/encoding/azureencodingextension/internal/unmarshaler/logs/testdata/activitylogs/recommendation-log.json
+doc_date: 2026-10-19
+license: Apache-2.0
+covers:
+  - microsoft.advisor:microsoft.advisor/recommendations/available/action
+variant_ids:
+  - envelope.records-object
+  - category.recommendation
+  - result.active
+expected_outcome: PARSED
+anonymised: true
+notes: "Anonymised excerpt of open-telemetry/opentelemetry-collector-contrib at f9fdf9e8059d: activitylogs/recommendation-log.json, whole file. Changed from the source: identifiers anonymised by com.dlap.fixtures.anon.Anonymiser, records wrapped in the provider's delivery envelope, JSON re-indented. Test data of the OpenTelemetry azureencodingextension, one diagnostic export per Activity Log category. Each file has an independent expected output (<name>_expected.yaml) in the same directory."

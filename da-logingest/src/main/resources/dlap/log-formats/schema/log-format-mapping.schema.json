@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dlap:log-format-mapping:1",
+  "$comment": "Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. The ASF licenses this file to you under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0). Contract: docs/specs/log-parser-contract.md, ADR-0054. The service enforces this schema without a schema library: MappingSpecValidator applies every rule here plus the semantic rules a JSON Schema cannot express.",
+  "title": "DLAP log-format mapping, contract version 1",
+  "description": "One log family's declarative parser mapping: dlap/log-formats/<family>/mapping.yaml.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec-version", "family", "source-kind", "source-provider", "envelopes"],
+  "properties": {
+    "spec-version": { "const": 1, "description": "Version of this mapping contract." },
+    "family": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "not": { "const": "schema" },
+      "description": "Lower kebab case family id; must equal the directory name."
+    },
+    "source-kind": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$",
+      "description": "Open-string source kind, upper snake case (ADR-0045 decision 8)."
+    },
+    "source-provider": {
+      "enum": ["GCP", "AWS", "AZURE", "OCI", "UNITY", "DATABRICKS", "SNOWFLAKE"],
+      "description": "SourceProvider name that enters every event_id of the family."
+    },
+    "description": { "$ref": "#/$defs/text" },
+    "settings": { "$ref": "#/$defs/settings" },
+    "envelopes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/envelope" }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Family-specific settings, validated by the family's own code."
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "pointer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(/([^~/]|~[01])*)+$",
+      "description": "RFC 6901 JSON pointer; a segment that is exactly * selects every array element or member value."
+    },
+    "pointers": { "type": "array", "items": { "$ref": "#/$defs/pointer" } },
+    "duration": {
+      "type": "string",
+      "pattern": "^P(?!$)([0-9]+D)?(T(?=[0-9])([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]{1,9})?S)?)?$",
+      "description": "Positive ISO-8601 duration such as PT20M."
+    },
+    "version-id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "canonical-field": {
+      "enum": [
+        "event-time", "observed-time", "service", "operation",
+        "principal.id", "principal.type", "principal.display-name", "principal.account-id",
+        "target.kind", "target.id", "target.name", "target.project", "target.region", "target.resource-path",
+        "request.caller-ip", "request.user-agent", "request.request-id", "request.trace-id",
+        "shared-event-id", "supersedes-native-key"
+      ]
+    },
+    "scalar": { "type": ["string", "number", "boolean"] },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer"],
+      "properties": {
+        "pointer": { "$ref": "#/$defs/pointer" },
+        "present": { "type": "boolean" },
+        "equals": { "$ref": "#/$defs/scalar" },
+        "not-equals": { "$ref": "#/$defs/scalar" },
+        "in": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scalar" } }
+      },
+      "oneOf": [
+        { "required": ["present"] },
+        { "required": ["equals"] },
+        { "required": ["not-equals"] },
+        { "required": ["in"] }
+      ]
+    },
+    "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
+    "nonempty-conditions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } },
+    "field-source": {
+      "oneOf": [
+        { "$ref": "#/$defs/pointer" },
+        { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/pointer" } },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["const"],
+          "properties": { "const": { "$ref": "#/$defs/text" } }
+        }
+      ]
+    },
+    "fields": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/canonical-field" },
+      "additionalProperties": { "$ref": "#/$defs/field-source" }
+    },
+    "field-list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/canonical-field" }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "on-mismatch": { "enum": ["QUARANTINE", "PARSE_WITH_PIN", "PARSE_WITH_DETECTED"] },
+        "persist-raw": { "enum": ["ALL", "QUARANTINE_ONLY", "SAMPLED"] },
+        "persist-raw-sample-one-in": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+        "max-record-bytes": { "type": "integer", "minimum": 1, "maximum": 16777216 },
+        "overlap": { "$ref": "#/$defs/duration" },
+        "poll-interval": { "$ref": "#/$defs/duration" }
+      }
+    },
+    "version-detection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scheme"],
+      "properties": {
+        "scheme": { "enum": ["major-minor", "named"] },
+        "pointer": { "$ref": "#/$defs/pointer" },
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["version", "when"],
+            "properties": {
+              "version": { "$ref": "#/$defs/version-id" },
+              "when": { "$ref": "#/$defs/nonempty-conditions" }
+            }
+          }
+        }
+      },
+      "if": { "properties": { "scheme": { "const": "major-minor" } } },
+      "then": { "required": ["pointer"], "not": { "required": ["rules"] } },
+      "else": { "required": ["rules"], "not": { "required": ["pointer"] } }
+    },
+    "native-key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parts"],
+      "properties": {
+        "namespaced": { "type": "boolean" },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pointer"],
+            "properties": {
+              "pointer": { "$ref": "#/$defs/pointer" },
+              "as": { "enum": ["text", "instant"] }
+            }
+          }
+        }
+      }
+    },
+    "classification-rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["service", "change-type", "category"],
+      "properties": {
+        "service": { "$ref": "#/$defs/text" },
+        "operation": { "$ref": "#/$defs/text" },
+        "operation-prefix": { "$ref": "#/$defs/text" },
+        "change-type": { "enum": ["CREATE", "UPDATE", "DELETE", "ACCESS", "PERMISSION", "ARCHIVE"] },
+        "category": { "enum": ["MANAGEMENT", "DATA_READ", "DATA_WRITE", "PERMISSION", "DATA_READ_OBSERVED"] },
+        "asset-kind": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+        "extractor": { "type": "string", "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$" }
+      },
+      "oneOf": [
+        { "required": ["operation"] },
+        { "required": ["operation-prefix"] }
+      ]
+    },
+    "version": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/version-id" },
+        "description": { "$ref": "#/$defs/text" },
+        "fields": { "$ref": "#/$defs/fields" },
+        "required": { "$ref": "#/$defs/field-list" },
+        "known-paths": { "$ref": "#/$defs/pointers" }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version-detection", "native-key", "fields", "versions"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "description": { "$ref": "#/$defs/text" },
+        "framing": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["record", "json-lines", "json-array", "json-object-array"] }
+        },
+        "records-pointer": { "$ref": "#/$defs/pointer" },
+        "version-detection": { "$ref": "#/$defs/version-detection" },
+        "native-key": { "$ref": "#/$defs/native-key" },
+        "fields": {
+          "allOf": [
+            { "$ref": "#/$defs/fields" },
+            { "required": ["event-time", "operation"] }
+          ]
+        },
+        "required": { "$ref": "#/$defs/field-list" },
+        "time-fallback": { "$ref": "#/$defs/pointers" },
+        "known-paths": { "$ref": "#/$defs/pointers" },
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "failure-when": { "$ref": "#/$defs/conditions" },
+            "pending-when": { "$ref": "#/$defs/conditions" }
+          }
+        },
+        "skip-when": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reason", "when"],
+            "properties": {
+              "reason": { "enum": ["NOT_AN_EVENT", "FILTERED_BY_BINDING"] },
+              "when": { "$ref": "#/$defs/nonempty-conditions" }
+            }
+          }
+        },
+        "principal-types": {
+          "type": "object",
+          "propertyNames": { "pattern": "[A-Za-z0-9]" },
+          "additionalProperties": { "enum": ["USER", "SERVICE_ACCOUNT", "GROUP", "ROLE", "SYSTEM"] }
+        },
+        "classification": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "rules": { "type": "array", "items": { "$ref": "#/$defs/classification-rule" } }
+          }
+        },
+        "versions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/version" }
+        }
+      },
+      "dependentSchemas": {
+        "records-pointer": {
+          "required": ["framing"],
+          "properties": { "framing": { "contains": { "const": "json-object-array" } } }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["framing"],
+            "properties": { "framing": { "contains": { "const": "json-object-array" } } }
+          },
+          "then": { "required": ["records-pointer"] }
+        },
+        {
+          "if": {
+            "required": ["version-detection"],
+            "properties": {
+              "version-detection": {
+                "required": ["scheme"],
+                "properties": { "scheme": { "const": "major-minor" } }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "versions": {
+                "items": { "properties": { "id": { "pattern": "^[0-9]{1,6}(\\.[0-9]{1,6})?$" } } }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# /etc/systemd/system/dlap-keycloak-realm-backup.service (DR-03, Q-751). The timer of the same name starts it.
+# Install and enable: docs/guides/backup-and-restore.md section 8.7. Adjust the path of the repository.
+[Unit]
+Description=DLAP Keycloak realm backup (quickstart stack)
+Documentation=file:///opt/dlap/docs/guides/backup-and-restore.md
+Wants=docker.service
+After=docker.service
+ConditionPathExists=/etc/dlap/keycloak-realm-backup.env
+# Name a unit of your own that tells a person (mail, chat) to be told of a failed run.
+#OnFailure=dlap-notify@%n.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/dlap/deployment/dr/keycloak-realm-backup.sh run --env-file /etc/dlap/keycloak-realm-backup.env
+StateDirectory=dlap-keycloak-backup
+Environment=DLAP_KC_STATE_DIR=/var/lib/dlap-keycloak-backup
+UMask=0077
+PrivateTmp=true
+NoNewPrivileges=true
+Nice=10
+TimeoutStartSec=2h

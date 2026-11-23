@@ -1,0 +1,11 @@
+# Mounted into Linux containers or read by POSIX shell: keep LF on Windows checkouts (see the root .gitattributes).
+*.conf text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+Caddyfile text eol=lf
+.env.demo* text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+*.json text eol=lf

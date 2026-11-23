@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:jobservice.jobcompleted
+variant_ids:
+  - bq1.mixed-with-v2
+  - envelope.bq-json-string-columns
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. During the migration overlap one sink table holds both formats for one job: the v1 row (servicedata_v1_bigquery) and the v2 row (metadataJson) each parse under their own detected version, and the two reads of the job and table share the job name, so usage counts one."

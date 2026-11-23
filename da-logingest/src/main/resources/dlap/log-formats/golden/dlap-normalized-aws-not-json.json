@@ -1,0 +1,9 @@
+{
+  "id": "dlap-normalized-aws-not-json",
+  "binding": { "id": "dlap-selftest", "sourceKind": "DLAP_NORMALIZED_AWS", "envelope": "ingest-dto" },
+  "recordText": "this is not json",
+  "expect": {
+    "outcome": "QUARANTINED:INVALID_JSON",
+    "events": 0
+  }
+}

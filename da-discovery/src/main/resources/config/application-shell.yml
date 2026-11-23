@@ -1,0 +1,26 @@
+# ===================================================================
+# Spring Boot configuration for the "shell" profile.
+# This profile is used when running the application in shell mode.
+# ===================================================================
+
+spring:
+  shell:
+    interactive:
+      enabled: true
+    history:
+      enabled: true
+      file:
+        name: ~/.da-discovery-shell-history
+  # Don't exclude any Spring Shell auto-configurations
+  autoconfigure:
+    exclude: []
+  # No Kafka listeners in shell mode. The key was kafka.listener.auto-startup, which nothing read
+  # (Q-334); the listener container factories read spring.kafka.listener.auto-startup.
+  kafka:
+    listener:
+      auto-startup: false
+
+# Disable Eureka client when running in shell mode
+eureka:
+  client:
+    enabled: false

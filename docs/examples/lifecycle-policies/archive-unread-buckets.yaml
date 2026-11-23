@@ -1,0 +1,30 @@
+# Archive GCS buckets nobody has read in 180 days (POL-01 schedule trigger).
+# The sweep runs at 02:00 UTC against the catalog activity report. Because the action is
+# destructive, a recorded last read proves staleness only under readCoverage FULL: a bucket
+# with PARTIAL, NONE or unknown read coverage, or with no recorded read, is UNKNOWN and is
+# never archived (docs/specs/policy-dsl.md, "Read coverage and destructive actions").
+apiVersion: dlap/v1
+kind: Policy
+metadata:
+  id: archive-unread-buckets
+  name: "Archive GCS buckets unread for 180 days"
+  owner: "data-governance@example.com"
+  enabled: true
+spec:
+  triggers:
+    - type: schedule
+      cron: "0 0 2 * * ?"        # 02:00 UTC daily
+  match:
+    cloudProvider: GCP
+    assetType: GCS_BUCKET
+    labels:
+      noneOf: [LEGAL_HOLD]
+    lastAccessedAt:
+      olderThan: P180D
+  action:
+    type: archive
+    dryRun: true                 # read the fires first; clear it deliberately
+    requireApproval: true
+    parameters:
+      targetStorageClass: ARCHIVE
+      auditNote: "Bucket unread for 180 days under full read coverage."

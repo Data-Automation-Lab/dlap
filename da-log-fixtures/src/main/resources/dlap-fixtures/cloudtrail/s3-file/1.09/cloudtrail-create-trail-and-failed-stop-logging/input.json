@@ -1,0 +1,88 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.09",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE0SRG9UFWUT",
+        "arn": "arn:aws:iam::999945223994:user/user-c39c05",
+        "accountId": "999945223994",
+        "accessKeyId": "AKIAEXAMPLE8QEANFZNK",
+        "userName": "user-c39c05"
+      },
+      "eventTime": "2023-07-10T12:00:31Z",
+      "eventSource": "cloudtrail.amazonaws.com",
+      "eventName": "CreateTrail",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.168.10.20",
+      "userAgent": "APN/1.0 HashiCorp/1.0 Terraform/1.1.2 (+https://www.terraform.io) terraform-provider-aws/3.76.1 (+https://registry.terraform.io/providers/hashicorp/aws) aws-sdk-go/1.44.157 (go1.19.3; linux; amd64) stratus-red-team_4990da05-9399-449e-b49f-82996a764ec9 HashiCorp-terraform-exec/0.17.3",
+      "requestParameters": {
+        "name": "stratus-red-team-ctlr-trail-zqfsvooxqj",
+        "s3BucketName": "stratus-red-team-ctlr-bucket-zqfsvooxqj",
+        "includeGlobalServiceEvents": true,
+        "tagsList": [
+          {
+            "key": "StratusRedTeam",
+            "value": "true"
+          }
+        ]
+      },
+      "responseElements": {
+        "name": "stratus-red-team-ctlr-trail-zqfsvooxqj",
+        "s3BucketName": "stratus-red-team-ctlr-bucket-zqfsvooxqj",
+        "includeGlobalServiceEvents": true,
+        "isMultiRegionTrail": false,
+        "trailARN": "arn:aws:cloudtrail:us-east-1:999945223994:trail/stratus-red-team-ctlr-trail-zqfsvooxqj",
+        "logFileValidationEnabled": false,
+        "isOrganizationTrail": false
+      },
+      "requestID": "4edf7a39-124f-4a63-aa7c-fd7c2e392909",
+      "eventID": "3a1acb39-c13b-4e73-a0e3-dcd8ce5c1a3a",
+      "readOnly": false,
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "cloudtrail.us-east-1.amazonaws.com"
+      }
+    },
+    {
+      "eventVersion": "1.09",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE0SRG9UFWUT",
+        "arn": "arn:aws:iam::999945223994:user/user-c39c05",
+        "accountId": "999945223994",
+        "accessKeyId": "AKIAEXAMPLE8QEANFZNK",
+        "userName": "user-c39c05"
+      },
+      "eventTime": "2023-07-10T12:01:27Z",
+      "eventSource": "cloudtrail.amazonaws.com",
+      "eventName": "StopLogging",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.168.10.20",
+      "userAgent": "stratus-red-team_e27c7b82-502b-4432-a99a-be984762c413",
+      "errorCode": "TrailNotFoundException",
+      "errorMessage": "Unknown trail: arn:aws:cloudtrail:us-east-1:999945223994:trail/stratus-red-team-ct-stop-trail-qzbgnfqisx for the user: 999945223994",
+      "requestParameters": {
+        "name": "stratus-red-team-ct-stop-trail-qzbgnfqisx"
+      },
+      "responseElements": null,
+      "requestID": "028c8f71-8342-435b-a295-ada7ea8b9f0f",
+      "eventID": "f6e10706-705c-47f2-94d4-112a9527ab8b",
+      "readOnly": false,
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "cloudtrail.us-east-1.amazonaws.com"
+      }
+    }
+  ]
+}

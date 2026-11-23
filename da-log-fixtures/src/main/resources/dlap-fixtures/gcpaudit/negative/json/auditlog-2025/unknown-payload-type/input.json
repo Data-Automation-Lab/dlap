@@ -1,0 +1,14 @@
+{
+  "insertId": "a25-neg-2",
+  "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+  "timestamp": "2026-09-02T11:00:01.5Z",
+  "resource": {"type": "gcs_bucket", "labels": {"bucket_name": "dlap-fixture-bucket", "project_id": "proj-0d1a0001"}},
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLogV9",
+    "serviceName": "storage.googleapis.com",
+    "methodName": "storage.objects.get",
+    "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+    "authorizationInfo": [{"permission": "storage.objects.get", "granted": true, "permissionType": "DATA_READ"}]
+  },
+  "receiveTimestamp": "2026-09-02T11:00:02Z"
+}

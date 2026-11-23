@@ -1,0 +1,67 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE0SRG9UFWUT",
+        "arn": "arn:aws:iam::999945223994:user/user-c39c05",
+        "accountId": "999945223994",
+        "accessKeyId": "AKIAEXAMPLE8QEANFZNK",
+        "userName": "user-c39c05"
+      },
+      "eventTime": "2023-07-10T12:00:35Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "PutBucketLifecycle",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.168.10.20",
+      "userAgent": "[stratus-red-team_4990da05-9399-449e-b49f-82996a764ec9]",
+      "requestParameters": {
+        "lifecycle": "",
+        "bucketName": "stratus-red-team-ctlr-bucket-zqfsvooxqj",
+        "LifecycleConfiguration": {
+          "xmlns": "http://s3.amazonaws.com/doc/2006-03-01/",
+          "Rule": {
+            "Status": "Enabled",
+            "Filter": {
+              "Prefix": "*"
+            },
+            "Expiration": {
+              "Days": 1
+            },
+            "ID": "nuke-cloudtrail-logs-after-1-day"
+          }
+        },
+        "Host": "stratus-red-team-ctlr-bucket-zqfsvooxqj.s3.us-east-1.amazonaws.com"
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "bytesTransferredIn": 249,
+        "AuthenticationMethod": "AuthHeader",
+        "x-amz-id-2": "WLiCIIDMGhCCUp11YIClXMXz0UgUy/yxG2IjL8hJBz1omJBNImuBTSA6VSh6R7ygeDM0zBAH1b4=",
+        "bytesTransferredOut": 0
+      },
+      "requestID": "3WDNJTQG33KXSTM8",
+      "eventID": "7823c70d-f7f9-4a04-b4c0-baa8fbe09ea3",
+      "readOnly": false,
+      "resources": [
+        {
+          "accountId": "999945223994",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::stratus-red-team-ctlr-bucket-zqfsvooxqj"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "stratus-red-team-ctlr-bucket-zqfsvooxqj.s3.us-east-1.amazonaws.com"
+      }
+    }
+  ]
+}

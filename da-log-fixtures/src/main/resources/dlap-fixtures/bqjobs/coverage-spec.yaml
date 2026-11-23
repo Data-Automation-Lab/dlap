@@ -1,0 +1,226 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# INDEPENDENT COVERAGE SPEC. READ-ONLY FOR PARSER PACKAGES.
+#
+# This file is the denominator of the bqjobs coverage score (com.dlap.fixtures.CoverageSpec).
+# It was written from the BigQuery documentation by a package that does not build the parser
+# (SPEC-01). Parser and fixture packages use these ids in meta.yaml and never edit this file. A
+# change goes in its own commit, with no parser code and no fixture case in it;
+# scripts/ci-guards/post-test/coverage-spec-lock.sh fails any other commit.
+
+spec: dlap-coverage-spec/1
+family: bqjobs
+title: BigQuery INFORMATION_SCHEMA.JOBS (JOBS_BY_PROJECT) rows as read and write history
+source_kind: GCP_BQ_JOBS_VIEW
+written_by: SPEC-01
+written_on: "2026-10-19"
+research:
+  - "Hardening research, GCP log sources report (2026-10-18): section 4 (JOBS) and section 7 (parser contract, JOBS row)"
+  - "BigQuery JOBS view page and the Job REST reference (statementType values, page updated 2026-10-02), opened 2026-10-19"
+  - "docs/specs/log-event.md (LOG-01 contract): native key GCP_BQ_JOBS_VIEW|project|location|job_id, fan-out keys"
+operation_id_rule: "<job_type>:<statement_type>, taken from the row's columns as the view spells them; NULL stands for a null column (job_type is null for background jobs, statement_type for jobs that are not queries)."
+version_rule: >-
+  The view has no version field. A version is the documented column set: the parser records a column-set hash
+  per run and quarantines on drift (GCP-02). jobs-2026-10 is the column set on the JOBS page as opened
+  2026-10-19 (research read it 2026-10-13). A new documented column set is a new version in this spec.
+notes: >-
+  The JOBS view complements audit logs: Storage Read API reads are not jobs and never appear here (GCP report
+  section 4, an inference), so job-history read coverage is "job reads only" (critic item 2, COV-01). Query text
+  is in the row but is never stored (GCP-02 acceptance).
+
+envelopes:
+  - id: jobs-view-row
+    title: One row of region-qualified INFORMATION_SCHEMA.JOBS or JOBS_BY_PROJECT as a JSON object keyed by column name
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    versions: [jobs-2026-10]
+
+versions:
+  - id: jobs-2026-10
+    title: JOBS view column set as documented in October 2026 (including edition, continuous and principal_subject)
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    detect: Column presence; the required columns below are present and the column-set hash matches the binding's recorded hash
+    required_fields: [job_id, project_id, creation_time, end_time, user_email, job_type, state, referenced_tables]
+    optional_fields: [statement_type, cache_hit, parent_job_id, destination_table, total_bytes_billed, total_bytes_processed, principal_subject, labels, error_result, dml_statistics, referenced_logical_views, session_info, transaction_id, query, edition, continuous]
+
+operations:
+  - id: QUERY:SELECT
+    expected_category: DATA_READ
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: GCP-02 acceptance, one DATA_READ per referenced table
+  - id: QUERY:INSERT
+    expected_category: DATA_WRITE
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: GCP-02 acceptance, DATA_WRITE for DML; referenced tables are reads
+  - id: QUERY:UPDATE
+    expected_category: DATA_WRITE
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: GCP-02 acceptance, DML
+  - id: QUERY:DELETE
+    expected_category: DATA_WRITE
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: GCP-02 acceptance, DML
+  - id: QUERY:MERGE
+    expected_category: DATA_WRITE
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: GCP-02 acceptance, DML
+  - id: QUERY:TRUNCATE_TABLE
+    expected_category: DATA_WRITE
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: Job REST reference statementType list
+  - id: QUERY:CREATE_TABLE_AS_SELECT
+    expected_category: DATA_WRITE
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: Job REST reference statementType list; destination table written, referenced tables read
+  - id: QUERY:CREATE_TABLE
+    expected_category: MANAGEMENT
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: Job REST reference statementType list
+  - id: QUERY:DROP_TABLE
+    expected_category: MANAGEMENT
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: Job REST reference statementType list
+  - id: QUERY:ALTER_TABLE
+    expected_category: MANAGEMENT
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: Job REST reference statementType list
+  - id: QUERY:CREATE_VIEW
+    expected_category: MANAGEMENT
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: Job REST reference statementType list
+  - id: QUERY:EXPORT_DATA
+    expected_category: DATA_READ
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: Job REST reference statementType list; the exported tables are read
+  - id: QUERY:LOAD_DATA
+    expected_category: DATA_WRITE
+    doc_url: https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/Job
+    research: Job REST reference statementType list
+  - id: QUERY:SCRIPT
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 4 (cache_hit is NULL for the parent of a multi-statement job); GCP-02 acceptance (script parents excluded)
+  - id: LOAD:NULL
+    expected_category: DATA_WRITE
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: JOBS page job_type values (QUERY, LOAD, EXTRACT, COPY, NULL); the write target is destination_table
+  - id: COPY:NULL
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: JOBS page job_type values; referenced_tables is populated for query jobs only, so the copy source is not a recorded read here
+  - id: EXTRACT:NULL
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: JOBS page job_type values; referenced_tables is populated for query jobs only
+
+variants:
+  - id: row.invalid-json
+    title: A row that is not valid JSON is quarantined, never dropped silently
+    negative: true
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: Log layer design B3
+  - id: row.state-done
+    title: Only rows with state DONE emit events
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP-02 acceptance (each DONE query); JOBS page state values PENDING, RUNNING, DONE
+  - id: row.state-not-done
+    title: PENDING and RUNNING rows emit nothing and are picked up on a later poll
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: JOBS page state values; the view shows running jobs too
+  - id: row.background-job
+    title: job_type NULL (a background job) emits nothing
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: JOBS page, job_type NULL indicates a background job
+  - id: row.error-result
+    title: error_result set, so the job is FAILURE and moves no business field
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 4 columns; log-event.md section 4.3 (only SUCCESS moves business fields)
+  - id: row.end-time-is-event-time
+    title: Event time is end_time, never the poll time
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP-02 acceptance; plan rule R6
+  - id: row.repeated-poll-dedup
+    title: The same job seen on two polls in the overlap window gives one event per table (native key GCP_BQ_JOBS_VIEW|project|location|job_id)
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP-02 acceptance (overlap window); log-event.md sections 5.2 and 5.3
+  - id: row.query-text-never-stored
+    title: The query column is present but never stored in raw_event or any field
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 4 (exposes every user's query text); GCP-02 acceptance
+  - id: row.new-columns
+    title: New columns (for example edition, continuous) are ignored for parsing and change the recorded column-set hash
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 7, JOBS row
+  - id: row.missing-required-column
+    title: A required column missing from the result set quarantines the run as column drift
+    negative: true
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 7; GCP-02 acceptance (column-set hash quarantines on drift)
+  - id: row.row-level-policy-blanking
+    title: total_bytes_* and job_stages empty for tables with row-level access policies; the row still parses
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report sections 4 and 7
+  - id: row.labels
+    title: labels column present (optional)
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 7, optional fields
+  - id: read.referenced-tables-fanout
+    title: One DATA_READ per referenced_tables entry {project_id, dataset_id, table_id} with a bq:// target
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 4; GCP-02 acceptance
+  - id: read.referenced-logical-views
+    title: referenced_logical_views present next to referenced_tables
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 4 columns
+  - id: read.cache-hit-no-read
+    title: cache_hit true with an empty referenced_tables, so no read is recorded
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report sections 4 and 7; GCP-02 acceptance
+  - id: read.script-parent-excluded
+    title: A SCRIPT parent (cache_hit NULL) emits nothing; its children carry the reads
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 4; GCP-02 acceptance
+  - id: read.script-child
+    title: A child job with parent_job_id set emits its own reads
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 4 columns
+  - id: write.destination-table
+    title: destination_table set, so a DATA_WRITE for the destination table
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP-02 acceptance
+  - id: write.dml-statistics
+    title: dml_statistics with inserted, deleted and updated row counts on a DML query
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: JOBS page column description
+  - id: actor.user-email
+    title: Actor from user_email
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP-02 acceptance
+  - id: actor.service-account
+    title: user_email is a service account
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: JOBS page, user_email is the email address or service account
+  - id: actor.principal-subject
+    title: Actor from principal_subject when user_email does not identify the caller
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP-02 acceptance (user_email or principal_subject)
+  - id: binding.backfill-180-days
+    title: Backfill never asks for more than the 180 days the view retains
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+    research: GCP report section 4 (retention); GCP-02 acceptance
+  - id: binding.region-mismatch
+    title: The query location must match the region qualifier; a mismatch is reported as a binding error
+    negative: true
+    doc_url: https://docs.cloud.google.com/bigquery/docs/information-schema-intro
+    research: GCP report sections 4 and 7

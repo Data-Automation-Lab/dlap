@@ -1,0 +1,30 @@
+# GDPR data residency: flag PII assets stored outside the EU.
+# Detect -> stamps compliance:gdpr:violation (enforcement is enforce-violations.yaml).
+apiVersion: dlap/v1
+kind: Policy
+metadata:
+  id: gdpr-residency-pii-non-eu
+  name: "GDPR residency - PII outside the EU"
+  owner: "data-governance@example.com"
+  enabled: true
+spec:
+  triggers:
+    - type: event
+      topic: dlap.catalog.asset.upserted
+    - type: schedule
+      cron: "0 0 3 * * ?"        # 03:00 daily sweep
+  match:
+    labels:
+      allOf: ["data-class:pii"]
+      noneOf: ["compliance:gdpr:violation"]   # don't re-flag
+    region:
+      noneOf:
+        - europe-west1
+        - europe-west4
+        - eu-west-1
+        - eu-central-1
+  action:
+    type: addLabel
+    parameters:
+      labelName: "compliance:gdpr:violation"
+      auditNote: "PII asset stored outside the EU residency boundary."

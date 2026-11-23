@@ -1,0 +1,18 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "8ec435c9-76d1-47d1-8eae-8a8864e3dff5",
+      "eventTime": "2023-07-10T12:07:49Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "DeleteBucketLifecycle",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::999945223994:user/user-c39c05"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    }
+  ]
+}

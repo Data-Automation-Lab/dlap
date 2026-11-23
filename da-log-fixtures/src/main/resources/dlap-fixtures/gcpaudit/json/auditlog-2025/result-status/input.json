@@ -1,0 +1,213 @@
+[
+  {
+    "insertId": "a25-status-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-02T10:00:11.123456800Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {
+        "code": 7,
+        "message": "PERMISSION_DENIED"
+      },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.get",
+          "granted": false,
+          "resourceAttributes": { },
+          "permissionType": "DATA_READ"
+        }
+      ]
+    },
+    "receiveTimestamp": "2026-09-02T10:00:11.823456800Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a25-status-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-02T10:00:12.123456801Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.get",
+          "granted": false,
+          "resourceAttributes": { },
+          "permissionType": "DATA_READ"
+        }
+      ]
+    },
+    "receiveTimestamp": "2026-09-02T10:00:12.823456801Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a25-status-3",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fpolicy",
+    "timestamp": "2026-09-02T10:00:13.123456802Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-new-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {
+        "code": 9,
+        "message": "FAILED_PRECONDITION"
+      },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.buckets.create",
+      "resourceName": "projects/_/buckets/dlap-fixture-new-bucket",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-new-bucket",
+          "permission": "storage.buckets.create",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "ADMIN_WRITE"
+        }
+      ],
+      "policyViolationInfo": {
+        "orgPolicyViolationInfo": {
+          "resourceType": "storage.googleapis.com/Bucket",
+          "violationInfo": [
+            {
+              "constraint": "constraints/gcp.resourceLocations",
+              "errorMessage": "Location us-central1 violates constraint constraints/gcp.resourceLocations",
+              "checkedValue": "us-central1",
+              "policyType": "LIST_CONSTRAINT"
+            }
+          ]
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-02T10:00:13.823456802Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a25-status-4",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fpolicy",
+    "timestamp": "2026-09-02T10:00:14.123456803Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {
+        "code": 7,
+        "message": "PERMISSION_DENIED"
+      },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket/objects/exports/2026/09/orders.csv",
+          "permission": "storage.objects.get",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "DATA_READ"
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.VpcServiceControlAuditMetadata",
+        "violationReason": "NO_MATCHING_ACCESS_LEVEL",
+        "resourceNames": [
+          "projects/proj-0d1a0001"
+        ],
+        "securityPolicyInfo": {
+          "servicePerimeterName": "accessPolicies/999900000003/servicePerimeters/dlap_fixture_perimeter",
+          "organizationId": "999900000001"
+        },
+        "ingressViolations": [
+          {
+            "servicePerimeter": "accessPolicies/999900000003/servicePerimeters/dlap_fixture_perimeter",
+            "targetResource": "projects/proj-0d1a0001",
+            "source": {
+              "accessLevel": "accessPolicies/999900000003/accessLevels/corp_network"
+            }
+          }
+        ],
+        "egressViolations": [
+          {
+            "servicePerimeter": "accessPolicies/999900000003/servicePerimeters/dlap_fixture_perimeter",
+            "targetResource": "projects/999900000004",
+            "sourceType": "Resource"
+          }
+        ],
+        "vpcServiceControlsUniqueId": "dlapFixtureVpcScId0001",
+        "deviceState": { }
+      }
+    },
+    "receiveTimestamp": "2026-09-02T10:00:14.823456803Z",
+    "severity": "INFO"
+  }
+]

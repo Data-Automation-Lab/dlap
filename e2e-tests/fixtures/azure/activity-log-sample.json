@@ -1,0 +1,120 @@
+{
+  "records": [
+    {
+      "time": "2026-07-05T09:00:00.1234567Z",
+      "resourceId": "/subscriptions/11111111-2222-3333-4444-555566667777/resourceGroups/rg-dlap-e2e/providers/Microsoft.Storage/storageAccounts/dlapazuree2e",
+      "operationName": "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+      "category": "Administrative",
+      "resultType": "Success",
+      "resultSignature": "Succeeded.OK",
+      "durationMs": 84,
+      "callerIpAddress": "20.51.10.100",
+      "correlationId": "c1a2b3d4-0001-4a5b-8c9d-e0f102030405",
+      "identity": {
+        "authorization": {
+          "scope": "/subscriptions/11111111-2222-3333-4444-555566667777/resourceGroups/rg-dlap-e2e/providers/Microsoft.Storage/storageAccounts/dlapazuree2e/blobServices/default/containers/analytics",
+          "action": "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+          "evidence": {
+            "role": "Storage Blob Data Contributor",
+            "roleAssignmentScope": "/subscriptions/11111111-2222-3333-4444-555566667777",
+            "principalId": "8f4a2c1e9b3d4e5fa1b2c3d4e5f6a7b8",
+            "principalType": "User"
+          }
+        },
+        "claims": {
+          "name": "alice@dlapazure.onmicrosoft.com",
+          "http://schemas.microsoft.com/identity/claims/objectidentifier": "8f4a2c1e-9b3d-4e5f-a1b2-c3d4e5f6a7b8",
+          "http://schemas.microsoft.com/identity/claims/tenantid": "11111111-2222-3333-4444-555566667777"
+        }
+      },
+      "level": "Informational",
+      "location": "eastus",
+      "properties": {
+        "eventCategory": "Administrative",
+        "entity": "/subscriptions/11111111-2222-3333-4444-555566667777/resourceGroups/rg-dlap-e2e/providers/Microsoft.Storage/storageAccounts/dlapazuree2e/blobServices/default/containers/analytics",
+        "message": "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+        "hierarchy": "11111111-2222-3333-4444-555566667777/rg-dlap-e2e"
+      },
+      "eventProperties": {
+        "eventTimestamp": "2026-07-05T09:00:00.1234567Z",
+        "operationName": {
+          "value": "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+          "localizedValue": "Create/Update Blob Container"
+        },
+        "resourceId": "/subscriptions/11111111-2222-3333-4444-555566667777/resourceGroups/rg-dlap-e2e/providers/Microsoft.Storage/storageAccounts/dlapazuree2e",
+        "resourceType": {
+          "value": "Microsoft.Storage/storageAccounts",
+          "localizedValue": "Microsoft.Storage/storageAccounts"
+        },
+        "resourceGroupName": "rg-dlap-e2e",
+        "subscriptionId": "11111111-2222-3333-4444-555566667777",
+        "caller": "alice@dlapazure.onmicrosoft.com",
+        "status": {
+          "value": "Succeeded",
+          "localizedValue": "Succeeded"
+        },
+        "level": "Informational",
+        "eventDataId": "b6f4d0e2-1a2b-4c3d-9e8f-aa11bb22cc33",
+        "correlationId": "c1a2b3d4-0001-4a5b-8c9d-e0f102030405"
+      }
+    },
+    {
+      "time": "2026-07-05T11:00:00.7654321Z",
+      "resourceId": "/subscriptions/11111111-2222-3333-4444-555566667777/resourceGroups/rg-dlap-e2e/providers/Microsoft.Storage/storageAccounts/dlapazuree2e",
+      "operationName": "Microsoft.Authorization/roleAssignments/write",
+      "category": "Administrative",
+      "resultType": "Success",
+      "resultSignature": "Succeeded.Created",
+      "durationMs": 132,
+      "callerIpAddress": "52.168.30.77",
+      "correlationId": "c1a2b3d4-0006-4a5b-8c9d-e0f10203040a",
+      "identity": {
+        "authorization": {
+          "scope": "/subscriptions/11111111-2222-3333-4444-555566667777/resourceGroups/rg-dlap-e2e/providers/Microsoft.Storage/storageAccounts/dlapazuree2e/blobServices/default/containers/analytics",
+          "action": "Microsoft.Authorization/roleAssignments/write",
+          "evidence": {
+            "role": "Owner",
+            "roleAssignmentScope": "/subscriptions/11111111-2222-3333-4444-555566667777",
+            "principalId": "0a1b2c3d4e5f6a7b8c9de0f102030405",
+            "principalType": "User"
+          }
+        },
+        "claims": {
+          "name": "carol@dlapazure.onmicrosoft.com",
+          "http://schemas.microsoft.com/identity/claims/objectidentifier": "0a1b2c3d-4e5f-6a7b-8c9d-e0f102030405",
+          "http://schemas.microsoft.com/identity/claims/tenantid": "11111111-2222-3333-4444-555566667777"
+        }
+      },
+      "level": "Informational",
+      "location": "eastus",
+      "properties": {
+        "eventCategory": "Administrative",
+        "entity": "/subscriptions/11111111-2222-3333-4444-555566667777/resourceGroups/rg-dlap-e2e/providers/Microsoft.Storage/storageAccounts/dlapazuree2e/blobServices/default/containers/analytics/providers/Microsoft.Authorization/roleAssignments/aa11bb22-cc33-dd44-ee55-ff6677889900",
+        "message": "Microsoft.Authorization/roleAssignments/write",
+        "hierarchy": "11111111-2222-3333-4444-555566667777/rg-dlap-e2e"
+      },
+      "eventProperties": {
+        "eventTimestamp": "2026-07-05T11:00:00.7654321Z",
+        "operationName": {
+          "value": "Microsoft.Authorization/roleAssignments/write",
+          "localizedValue": "Create role assignment"
+        },
+        "resourceId": "/subscriptions/11111111-2222-3333-4444-555566667777/resourceGroups/rg-dlap-e2e/providers/Microsoft.Storage/storageAccounts/dlapazuree2e",
+        "resourceType": {
+          "value": "Microsoft.Authorization/roleAssignments",
+          "localizedValue": "Microsoft.Authorization/roleAssignments"
+        },
+        "resourceGroupName": "rg-dlap-e2e",
+        "subscriptionId": "11111111-2222-3333-4444-555566667777",
+        "caller": "carol@dlapazure.onmicrosoft.com",
+        "status": {
+          "value": "Succeeded",
+          "localizedValue": "Succeeded"
+        },
+        "level": "Informational",
+        "eventDataId": "d8e9f0a1-2b3c-4d5e-8f90-bb22cc33dd44",
+        "correlationId": "c1a2b3d4-0006-4a5b-8c9d-e0f10203040a"
+      }
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP Microservice Configuration Template
+# Copy this configuration to your microservice's application.yml
+
+spring:
+  application:
+    name: da-[SERVICE_NAME]  # Replace with actual service name
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/da_[SERVICE_NAME]
+    username: da_[SERVICE_NAME]_user
+    password: ${DB_PASS:da_[SERVICE_NAME]_pass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Use 'update' for development, 'validate' for production
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: da_[SERVICE_NAME]_schema
+        jdbc:
+          time_zone: UTC
+        format_sql: true
+    show-sql: false  # Set to true for development debugging
+  
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "com.dlap.*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
+      acks: all
+    template:
+      default-topic: dlap.${spring.application.name}.events
+  
+  # Redis Configuration (if needed)
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  
+  # Security Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/dlap
+          jwk-set-uri: http://localhost:8180/realms/dlap/protocol/openid-connect/certs
+  
+  # Actuator Configuration
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,prometheus
+    endpoint:
+      health:
+        show-details: when-authorized
+    metrics:
+      export:
+        prometheus:
+          enabled: true
+
+# Server Configuration
+server:
+  port: 808[X]  # Replace X with service-specific port number
+  servlet:
+    context-path: /api/v1/[service-name]
+
+# Logging Configuration
+logging:
+  level:
+    com.dlap: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n"
+
+# DLAP Specific Configuration
+dlap:
+  # Common entities database connection
+  common-db:
+    url: jdbc:postgresql://localhost:5432/dlap_common
+    username: da_[SERVICE_NAME]_user
+    password: ${DB_PASS:da_[SERVICE_NAME]_pass}
+  
+  # Service-specific configuration
+  service:
+    name: "[SERVICE_DISPLAY_NAME]"
+    version: "1.0.0"
+    description: "[SERVICE_DESCRIPTION]"
+  
+  # Kafka topics
+  kafka:
+    topics:
+      asset-change-event: dlap.asset.change.event
+      asset-discovered: dlap.assets.discovered
+      asset-labeled: dlap.assets.labeled
+      policy-evaluations: dlap.policies.evaluations
+      policy-actions: dlap.policies.actions
+  
+  # Security configuration
+  security:
+    allowed-origins: "http://localhost:3000,http://localhost:4200"
+    jwt:
+      claims:
+        user-id: sub
+        username: preferred_username
+        roles: realm_access.roles
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  
+  logging:
+    level:
+      com.dlap: DEBUG
+      org.springframework.web: DEBUG
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  
+  logging:
+    level:
+      com.dlap: INFO
+      root: WARN
+
+---
+# Test Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect 

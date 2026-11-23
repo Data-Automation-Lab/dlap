@@ -1,0 +1,63 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Documented operations and variants of the Amazon S3 server access log family (PARSE-02).
+#
+# Sources (opened 2026-11-01): the CloudWatch Logs record format
+# (https://docs.aws.amazon.com/AmazonS3/latest/userguide/sal-cw-log-format.html), the text format's
+# operation list (https://docs.aws.amazon.com/AmazonS3/latest/userguide/LogFormat.html) and the
+# lifecycle operation table (https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-and-other-bucket-config.html).
+# There is no independent coverage spec for this family yet, so this file is also its denominator
+# (self-graded). Operation ids are "s3.amazonaws.com:<operation>". Nothing is claimed: supported: false.
+family: s3accesslog
+description: "Amazon S3 server access log records as structured JSON (CloudWatch Logs delivery)."
+envelopes:
+  - id: cwl-json
+    versions:
+      - id: "V_1_0"
+        supported: false
+        operations:
+          - "s3.amazonaws.com:S3.EXPIRE.OBJECT"
+          - "s3.amazonaws.com:S3.CREATE.DELETEMARKER"
+          - "s3.amazonaws.com:S3.TRANSITION_SIA.OBJECT"
+          - "s3.amazonaws.com:S3.TRANSITION_ZIA.OBJECT"
+          - "s3.amazonaws.com:S3.TRANSITION_INT.OBJECT"
+          - "s3.amazonaws.com:S3.TRANSITION_GIR.OBJECT"
+          - "s3.amazonaws.com:S3.TRANSITION.OBJECT"
+          - "s3.amazonaws.com:S3.TRANSITION_GDA.OBJECT"
+          - "s3.amazonaws.com:S3.DELETE.UPLOAD"
+          - "s3.amazonaws.com:S3.COMPUTE.OBJECT.CHECKSUM"
+          - "s3.amazonaws.com:REST.GET.OBJECT"
+          - "s3.amazonaws.com:REST.PUT.OBJECT"
+          - "s3.amazonaws.com:REST.DELETE.OBJECT"
+          - "s3.amazonaws.com:REST.COPY.OBJECT_GET"
+          - "s3.amazonaws.com:BATCH.DELETE.OBJECT"
+          - "s3.amazonaws.com:REST.GET.VERSIONING"
+        variants:
+          - "lifecycle.expire"
+          - "lifecycle.delete-marker"
+          - "lifecycle.noncurrent-expire"
+          - "lifecycle.transition"
+          - "lifecycle.abort-upload"
+          - "request.version-id"
+          - "requester.role-arn"
+          - "requester.user-arn"
+          - "requester.null"
+          - "result.error-code"
+          - "field.json-nulls"
+          - "target.bucket-only"
+          - "record.missing-required"

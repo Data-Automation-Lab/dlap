@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:ALTER_TABLE
+variant_ids:
+  - write.destination-table
+expected_outcome: PARSED
+anonymised: false
+notes: "ALTER TABLE: MANAGEMENT, change type UPDATE."

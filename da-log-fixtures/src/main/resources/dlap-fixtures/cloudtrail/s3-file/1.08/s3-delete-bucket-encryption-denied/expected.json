@@ -1,0 +1,18 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "12345678-1234-1234-1234-111111111111",
+      "eventTime": "2024-01-15T10:45:23Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "DeleteBucketEncryption",
+      "resultStatus": "FAILURE",
+      "principal": {
+        "id": "arn:aws:iam::111111111111:user/user-4c0729"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    }
+  ]
+}

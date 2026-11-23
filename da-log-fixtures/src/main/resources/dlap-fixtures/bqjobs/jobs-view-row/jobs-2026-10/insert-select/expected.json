@@ -1,0 +1,55 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "GCP_BQ_JOBS_VIEW|proj-5e7a0c11|US|bquxjob_5a1c0008",
+      "eventTime": "2026-09-14T12:00:05Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "INSERT",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "kind": "bigquery_table",
+        "name": "landing_orders",
+        "project": "proj-5e7a0c11",
+        "canonicalUri": "bq://proj-5e7a0c11/staging/landing_orders"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "GCP_BQ_JOBS_VIEW/jobs-view-row",
+      "sourceSchemaVersion": "jobs-2026-10",
+      "requestMetadata": {
+        "requestId": "bquxjob_5a1c0008"
+      }
+    },
+    {
+      "nativeEventId": "GCP_BQ_JOBS_VIEW|proj-5e7a0c11|US|bquxjob_5a1c0008#bq://proj-5e7a0c11/sales/orders",
+      "eventTime": "2026-09-14T12:00:05Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "INSERT",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "kind": "bigquery_table",
+        "name": "orders",
+        "project": "proj-5e7a0c11",
+        "canonicalUri": "bq://proj-5e7a0c11/sales/orders"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sourceFormat": "GCP_BQ_JOBS_VIEW/jobs-view-row",
+      "sourceSchemaVersion": "jobs-2026-10",
+      "requestMetadata": {
+        "requestId": "bquxjob_5a1c0008"
+      }
+    }
+  ]
+}

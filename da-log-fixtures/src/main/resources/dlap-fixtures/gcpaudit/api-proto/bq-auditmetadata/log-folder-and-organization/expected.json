@@ -1,0 +1,45 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "folders/999900000002/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:38.123456827Z|bq2-log-names-1",
+      "eventTime": "2026-09-03T10:00:38.123456827Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sharedEventId": "projects/proj-0d1a0001/jobs/bquxjob_base_1"
+    },
+    {
+      "nativeEventId": "organizations/999900000001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-03T10:00:39.123456828Z|bq2-log-names-2",
+      "eventTime": "2026-09-03T10:00:39.123456828Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "canonicalUri": "bq://proj-0d1a0001/sales/orders"
+      },
+      "sourceFormat": "GCP_CLOUD_AUDIT/api-proto",
+      "sourceSchemaVersion": "bq-auditmetadata",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sharedEventId": "projects/proj-0d1a0001/jobs/bquxjob_base_2"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - EXTRACT:NULL
+variant_ids: []
+expected_outcome: SKIPPED:NOT_AN_EVENT
+anonymised: false
+notes: "An extract job names no table in the view (referenced_tables is for query jobs), so no event."

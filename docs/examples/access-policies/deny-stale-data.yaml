@@ -1,0 +1,18 @@
+# Deny agent reads of data nobody has read in a year (POL-01 three-valued evaluation).
+# A deny AccessPolicy applies when its match is TRUE or UNKNOWN, so an asset whose last
+# read is unknown, or recorded under PARTIAL, NONE or unknown read coverage, is denied too.
+apiVersion: dlap/v1
+kind: AccessPolicy
+metadata:
+  id: access-deny-stale-data
+  name: "Deny agent reads of data unread for a year"
+  owner: "privacy-office@example.com"
+  enabled: true
+spec:
+  subjects:
+    tiers: [PRACTITIONER]
+  actions: [read, query, export]
+  match:
+    lastAccessedAt:
+      olderThan: P365D
+  effect: deny

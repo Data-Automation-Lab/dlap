@@ -1,0 +1,23 @@
+{
+  "outcome": "PARSED_WITH_WARNINGS",
+  "events": [
+    {
+      "nativeEventId": "evt-0002",
+      "eventTime": "2026-02-01T11:00:00Z",
+      "sourceSchemaVersion": "1.7",
+      "changeType": "UPDATE",
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "resultStatus": "SUCCESS",
+      "parseStatus": "PARSE_STATUS_WARNINGS",
+      "parseWarnings": ["PARSE_WARNING_NEWER_MINOR"]
+    },
+    {
+      "nativeEventId": "evt-0003",
+      "eventTime": "2026-02-01T11:05:00Z",
+      "observedTime": "2026-02-01T11:05:00Z",
+      "resultStatus": "FAILURE",
+      "parseStatus": "PARSE_STATUS_WARNINGS",
+      "parseWarnings": ["PARSE_WARNING_NEWER_MINOR", "PARSE_WARNING_EVENT_TIME_FALLBACK"]
+    }
+  ]
+}

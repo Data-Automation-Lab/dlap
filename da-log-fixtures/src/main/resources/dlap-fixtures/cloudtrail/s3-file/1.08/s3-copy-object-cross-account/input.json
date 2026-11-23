@@ -1,0 +1,45 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "AAAAAAAAAAAAAAAAAAAAA:attacker",
+        "arn": "arn:aws:sts::111111111111:assumed-role/sample-role-elastic-rhodes/sample-role-brave-yalow-role-jolly-banzai-role-intelligent-brahmagupta-role-admiring-cori-role-beautiful-keldysh-role-hopeful-chaplygin",
+        "accountId": "111111111111",
+        "accessKeyId": "ASIA-MOCKACCESSKEYID-1"
+      },
+      "eventTime": "2024-01-15T10:45:23Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "CopyObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.19.145.94",
+      "userAgent": "aws-cli/2.13.0 Python/3.11.4",
+      "requestParameters": {
+        "bucketName": "victim-data-bucket",
+        "key": "important-file.txt",
+        "x-amz-copy-source": "victim-data-bucket/important-file.txt",
+        "x-amz-server-side-encryption": "aws:kms",
+        "x-amz-server-side-encryption-aws-kms-key-id": "arn:aws:kms:us-east-1:999999999999:key/attacker-key-id"
+      },
+      "responseElements": null,
+      "requestID": "ABC123DEF456",
+      "eventID": "12345678-1234-1234-1234-111111111111",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::sample-bucket-quizzical-yalow/important-file.txt"
+        },
+        {
+          "accountId": "999999999999",
+          "type": "AWS::KMS::Key",
+          "ARN": "arn:aws:kms:us-east-1:999999999999:key/attacker-key-id"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": false,
+      "recipientAccountId": "111111111111"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+origin: synthetic-from-doc
+source_url: https://www.rfc-editor.org/rfc/rfc8259
+doc_date: 2017-12-01
+license: synthetic
+covers: [store:GetObject]
+variant_ids: [demo-object-array]
+expected_outcome: PARSED
+anonymised: false
+notes: "Two records inside a records array (json-object-array framing)."

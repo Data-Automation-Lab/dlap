@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "etag": "BwYQproject",
+  "bindings": [
+    { "role": "roles/owner", "members": ["user:owner@example.com"] }
+  ]
+}

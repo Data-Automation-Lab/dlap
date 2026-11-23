@@ -1,0 +1,97 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Seed import manifest (FIX-02). Every case below is regenerated from a public repository at a pinned
+# commit by com.dlap.fixtures.anon.SeedImporter and checked byte for byte by its `check` command
+# (SeedCorpusTest runs the offline half of that check on every build). Do not edit the generated
+# input.*, expected.json or meta.yaml files by hand; change this file and re-run the import.
+#
+#   SeedImporter import --corpus <dlap-fixtures> --source <id>=<checkout at the pinned commit> ...
+#
+# The Azure Activity Log has no documented schema version, so every case is filed under "unversioned".
+spec: dlap-seed-manifest/1
+family: azactivity
+sources:
+  otel:
+    repo: open-telemetry/opentelemetry-collector-contrib
+    commit: "f9fdf9e8059dfd81c1aca3b4d4a9797d4182a09d"
+    commit_date: "2026-10-19"
+    license: Apache-2.0
+    kind: otel-records
+    root: extension/encoding/azureencodingextension/internal/unmarshaler/logs/testdata
+    url: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/f9fdf9e8059dfd81c1aca3b4d4a9797d4182a09d/extension/encoding/azureencodingextension/internal/unmarshaler/logs/testdata
+    retrieved: "2026-10-19"
+    note: "Test data of the OpenTelemetry azureencodingextension, one diagnostic export per Activity Log category. Each file has an independent expected output (<name>_expected.yaml) in the same directory."
+  panther:
+    repo: panther-labs/panther-analysis
+    commit: "4d78f77d545e474064f9921924d54e1e368ceffd"
+    commit_date: "2026-10-09"
+    license: Apache-2.0
+    kind: panther-rule
+    root: rules
+    url: https://github.com/panther-labs/panther-analysis/blob/4d78f77d545e474064f9921924d54e1e368ceffd/rules
+    retrieved: "2026-10-19"
+    note: "DERIVED: a detection rule test sample, hand-trimmed by the rule author. It shows plausible field shapes; it is not independent proof of what Azure delivers."
+cases:
+  # ---- OpenTelemetry testdata: one file per Activity Log category ----
+  - name: administrative-diagnostic-setting-write
+    source: otel
+    file: activitylogs/administrative-log.json
+  - name: alert-rule-resolved
+    source: otel
+    file: activitylogs/alert-log.json
+  - name: autoscale-scale-down
+    source: otel
+    file: activitylogs/autoscale-log.json
+  # activitylogs/pim-log.json is not imported: its operation names are Entra directory events with spaces
+  # ("Add member to role completed (PIM activation)"), not ARM operations, and have no service:operation id.
+  - name: policy-audit-action
+    source: otel
+    file: activitylogs/policy-log.json
+  - name: recommendation-available
+    source: otel
+    file: activitylogs/recommendation-log.json
+  - name: resource-health-activated
+    source: otel
+    file: activitylogs/resourcehealth-log.json
+  - name: security-alert-activated
+    source: otel
+    file: activitylogs/security-log.json
+  - name: service-health-maintenance
+    source: otel
+    file: activitylogs/servicehealth-log.json
+  # ---- Panther samples (derived): storage and governance operations ----
+  - name: storage-account-delete-upper-case
+    source: panther
+    file: azure_activity_rules/azure_event_hub_deleted.yml
+    select: { indices: [2] }
+  - name: storage-account-write-upper-case
+    source: panther
+    file: azure_activity_rules/azure_policy_violation.yml
+    select: { indices: [3] }
+  - name: storage-account-read-upper-case
+    source: panther
+    file: azure_activity_rules/azure_network_ip_discovery.yml
+    select: { indices: [4] }
+  - name: role-assignment-write
+    source: panther
+    file: azure_activity_rules/azure_role_assignment_privileged_or_elevated.yml
+    select: { indices: [0] }
+  - name: resource-lock-delete-success-and-failed
+    source: panther
+    file: azure_activity_rules/azure_resource_lock_deleted.yml
+    select: { indices: [0, 3] }

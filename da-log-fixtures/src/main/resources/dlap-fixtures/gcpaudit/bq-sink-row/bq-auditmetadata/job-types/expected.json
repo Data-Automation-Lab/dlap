@@ -1,0 +1,5 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:02:00.151515Z|r2-types-1","changeType":"UPDATE","eventCategory":"EVENT_CATEGORY_MANAGEMENT","targetResource":{"canonicalUri":"bqjob://proj-0d1a0001/bquxjob_row_copy"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:02:01.262626Z|r2-types-2","changeType":"UPDATE","eventCategory":"EVENT_CATEGORY_MANAGEMENT","targetResource":{"canonicalUri":"bqjob://proj-0d1a0001/bquxjob_row_load"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-13T10:02:02.373737Z|r2-types-3","changeType":"UPDATE","eventCategory":"EVENT_CATEGORY_MANAGEMENT","targetResource":{"canonicalUri":"bqjob://proj-0d1a0001/bquxjob_row_extract"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditmetadata"}
+]}

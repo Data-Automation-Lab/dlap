@@ -1,0 +1,53 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Documented operations and variants for the cell the seed corpus fills (FIX-02).
+#
+# The Azure Activity Log has no documented schema version, so there is one cell, "unversioned". The
+# lists come from the hardening research on Azure logs (section 2, Activity Log): the storage account
+# and container operations that show lifecycle changes, the nine categories, the start and end events of
+# one operation, upper-case operation names in real exports, and the extra top-level keys. Operation ids
+# are "<provider>:<operationName>" in lower case. There is no independent coverage spec for this family
+# yet, so this file is also its denominator. Nothing is claimed: supported: false.
+family: azactivity
+description: "Azure Activity Log records of a diagnostic export, {\"records\": [...]}."
+envelopes:
+  - id: resource-log
+    versions:
+      - id: "unversioned"
+        supported: false
+        operations:
+          - "microsoft.storage:microsoft.storage/storageaccounts/write"
+          - "microsoft.storage:microsoft.storage/storageaccounts/delete"
+          - "microsoft.storage:microsoft.storage/storageaccounts/blobservices/containers/write"
+          - "microsoft.storage:microsoft.storage/storageaccounts/blobservices/containers/delete"
+        variants:
+          - "envelope.records-object"
+          - "category.administrative"
+          - "category.alert"
+          - "category.autoscale"
+          - "category.policy"
+          - "category.recommendation"
+          - "category.resourcehealth"
+          - "category.security"
+          - "category.servicehealth"
+          - "result.start"
+          - "result.succeeded"
+          - "result.failed"
+          - "case.operation-name-upper"
+          - "case.operation-name-lower"
+          - "extra.top-level-keys"

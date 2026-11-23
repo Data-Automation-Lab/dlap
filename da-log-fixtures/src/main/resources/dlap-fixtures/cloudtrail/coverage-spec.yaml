@@ -1,0 +1,721 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# INDEPENDENT COVERAGE SPEC. READ-ONLY FOR PARSER PACKAGES.
+#
+# This file is the denominator of the cloudtrail coverage score (com.dlap.fixtures.CoverageSpec).
+# It was written from the AWS documentation by a package that does not build the parser (SPEC-01).
+# Parser and fixture packages use these ids in meta.yaml and never edit this file. A change goes in
+# its own commit, with no parser code and no fixture case in it;
+# scripts/ci-guards/post-test/coverage-spec-lock.sh fails any other commit.
+#
+# CT-01 claims 1.08 to 1.11 (score at least 0.99). Older minors are listed for the s3-file envelope
+# so replayed archives have a denominator; nobody claims them yet.
+
+spec: dlap-coverage-spec/1
+family: cloudtrail
+title: AWS CloudTrail records (management and data events), as trail files, LookupEvents results and EventBridge events
+source_kind: AWS_CLOUDTRAIL
+written_by: SPEC-01
+written_on: "2026-10-19"
+research:
+  - "Hardening research, AWS log sources report (2026-10-18): sections 3 to 6, 10 and 14 (parser contract)"
+  - "Hardening research, log layer design (2026-10-18): B1 envelopes, B7 required coverage"
+  - "docs/specs/log-event.md (LOG-01 contract): native key eventID, sharedEventID usage dedup, supersedes_event_id"
+operation_id_rule: "<eventSource>:<eventName>, exactly as the record spells them (log-event.md section 4.1, field 7)."
+version_rule: >-
+  eventVersion is a major.minor string. Major 1 is accepted with any minor; a newer minor parses as the highest
+  known minor with a NEWER_MINOR warning; any other major is quarantined. Fields have been added without a bump
+  and AWS's own samples mismatch version and fields, so parse by field presence (research section 0).
+notes: >-
+  Not scored here: CloudWatch Logs delivery (whether a message is the bare record is unverified), CloudTrail Lake
+  (closed to new customers 2026-05-31, legacy connector only), S3 server access logs, S3 Inventory and S3
+  Metadata (separate families). Insight, NetworkActivity, Aggregated and Digest records are routed away from the
+  standard parser; they appear below only as negative routing variants.
+
+envelopes:
+  - id: s3-file
+    title: Trail file in S3, gzip JSON {"Records":[...]} under AWSLogs/<account>/CloudTrail/<region>/YYYY/MM/DD/
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-examples.html
+    versions: ["1.0", "1.01", "1.02", "1.03", "1.04", "1.05", "1.06", "1.07", "1.08", "1.09", "1.10", "1.11"]
+  - id: lookup-events
+    title: LookupEvents result, an SDK Event whose CloudTrailEvent string is the record; management and Insights events only, 90 days
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html
+    versions: ["1.08", "1.09", "1.10", "1.11"]
+  - id: eventbridge-detail
+    title: EventBridge event (version "0") whose detail is the record; detail-type AWS API Call via CloudTrail and others
+    doc_url: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event-cloudtrail.html
+    versions: ["1.08", "1.09", "1.10", "1.11"]
+  - id: cloudwatch-line
+    title: CloudWatch Logs message, one record per log event in stream <account>_CloudTrail_<region>
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html
+    versions: ["1.08", "1.09", "1.10", "1.11"]
+    status: unverified
+    reason: Whether a message holds the bare record with no Records wrapper is unconfirmed (AWS report section 15, item 5); confirm with a capture (LIVE-02)
+
+versions:
+  - id: "1.0"
+    title: Base fields (eventTime, eventVersion, userIdentity, eventSource, eventName, awsRegion, sourceIPAddress)
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.0"
+    required_fields: [eventTime, eventVersion, userIdentity, eventSource, eventName, awsRegion, sourceIPAddress]
+  - id: "1.01"
+    title: Adds requestID, eventID, readOnly, resources[] and apiVersion
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.01"
+    required_fields: [eventTime, eventVersion, userIdentity, eventSource, eventName, awsRegion, sourceIPAddress, eventID]
+  - id: "1.02"
+    title: Adds eventType and recipientAccountId
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.02"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity]
+  - id: "1.03"
+    title: Adds sharedEventID
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.03"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity]
+  - id: "1.04"
+    title: Adds vpcEndpointId
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.04"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity]
+  - id: "1.05"
+    title: Adds serviceEventDetails; records capped at 256 KB from this version
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.05"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity]
+  - id: "1.06"
+    title: Adds managementEvent
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.06"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity]
+  - id: "1.07"
+    title: Adds eventCategory (Management, Data, NetworkActivity)
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.07"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity, eventCategory]
+  - id: "1.08"
+    title: Adds addendum, sessionCredentialFromConsole, edgeDeviceDetails and tlsDetails
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.08"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity, eventCategory]
+  - id: "1.09"
+    title: Adds vpcEndpointAccountId
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.09"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity, eventCategory]
+  - id: "1.10"
+    title: Announced 2024-03-26 in the document history; no record field carries Since 1.10
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-document-history.html
+    detect: eventVersion "1.10"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity, eventCategory]
+  - id: "1.11"
+    title: Current version; adds eventContext (event data stores only) and userIdentity.inScopeOf
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    detect: eventVersion "1.11"
+    required_fields: [eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity, eventCategory]
+
+operations:
+  # ---------------------------------------------------------------- S3 data events (AWS::S3::Object); never in LookupEvents
+  - id: s3.amazonaws.com:GetObject
+    expected_category: DATA_READ
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3 (content read)
+  - id: s3.amazonaws.com:SelectObjectContent
+    expected_category: DATA_READ
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3 (content read)
+  - id: s3.amazonaws.com:GetObjectAttributes
+    expected_category: DATA_READ
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3 (content read)
+  - id: s3.amazonaws.com:HeadObject
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3, HeadObject as a content read is a policy choice
+  - id: s3.amazonaws.com:GetObjectAcl
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (metadata read)
+  - id: s3.amazonaws.com:GetObjectTagging
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (metadata read)
+  - id: s3.amazonaws.com:GetObjectLegalHold
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (metadata read)
+  - id: s3.amazonaws.com:GetObjectRetention
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (metadata read)
+  - id: s3.amazonaws.com:ListObjects
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3 (metadata read)
+  - id: s3.amazonaws.com:ListObjectVersions
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3 (metadata read)
+  - id: s3.amazonaws.com:ListParts
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3 (metadata read)
+  - id: s3.amazonaws.com:HeadBucket
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3 (metadata read)
+  - id: s3.amazonaws.com:ListObjectsV2
+    expected_category: MANAGEMENT
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html
+    status: unverified
+    reason: Listed only for S3 Express, Access Points and Outposts; whether a general purpose bucket logs it is unconfirmed (AWS report section 15, item 1; LIVE-02)
+  - id: s3.amazonaws.com:PutObject
+    expected_category: DATA_WRITE
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (write, creation proxy)
+  - id: s3.amazonaws.com:CopyObject
+    expected_category: DATA_WRITE
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (write, destination side)
+  - id: s3.amazonaws.com:CompleteMultipartUpload
+    expected_category: DATA_WRITE
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (write; the object becomes visible here)
+  - id: s3.amazonaws.com:CreateMultipartUpload
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (intermediate multipart)
+  - id: s3.amazonaws.com:UploadPart
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (intermediate multipart)
+  - id: s3.amazonaws.com:UploadPartCopy
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (intermediate multipart)
+  - id: s3.amazonaws.com:AbortMultipartUpload
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.1 (write list)
+  - id: s3.amazonaws.com:DeleteObject
+    expected_category: DATA_WRITE
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (delete)
+  - id: s3.amazonaws.com:DeleteObjects
+    expected_category: DATA_WRITE
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (delete); fan-out since 2025-06-11
+  - id: s3.amazonaws.com:PutObjectAcl
+    expected_category: PERMISSION
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (permission or tag write)
+  - id: s3.amazonaws.com:PutObjectTagging
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3 (permission or tag write)
+  - id: s3.amazonaws.com:RestoreObject
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3 (the old verb heuristic mapped it to UPDATE)
+
+  # ---------------------------------------------------------------- S3 bucket management events (default logging)
+  - id: s3.amazonaws.com:CreateBucket
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.1; log layer design B7
+  - id: s3.amazonaws.com:DeleteBucket
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: Log layer design B7
+  - id: s3.amazonaws.com:PutBucketPolicy
+    expected_category: PERMISSION
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report sections 4.1 and 4.3
+  - id: s3.amazonaws.com:PutBucketAcl
+    expected_category: PERMISSION
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: Log layer design B7; AWS report section 4.3 (and similar)
+  - id: s3.amazonaws.com:GetBucketPolicy
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.1 (default logging)
+  - id: s3.amazonaws.com:ListBuckets
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.1 (default logging)
+
+  # ---------------------------------------------------------------- other data stores (management events)
+  - id: glue.amazonaws.com:GetTable
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue reads (responseElements null)
+  - id: glue.amazonaws.com:GetTables
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue reads
+  - id: glue.amazonaws.com:GetPartitions
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue reads
+  - id: glue.amazonaws.com:GetPartition
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue reads
+  - id: glue.amazonaws.com:BatchGetPartition
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue reads
+  - id: glue.amazonaws.com:GetDatabase
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue reads
+  - id: glue.amazonaws.com:CreateTable
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue writes
+  - id: glue.amazonaws.com:UpdateTable
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue writes
+  - id: glue.amazonaws.com:DeleteTable
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue writes
+  - id: glue.amazonaws.com:CreateDatabase
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/glue/latest/dg/monitor-cloudtrail.html
+    research: AWS report section 5, Glue writes
+  - id: athena.amazonaws.com:StartQueryExecution
+    doc_url: https://docs.aws.amazon.com/athena/latest/ug/monitor-with-cloudtrail.html
+    research: AWS report section 5; queryString is ***OMITTED***, no per-table reads
+  - id: athena.amazonaws.com:GetQueryExecution
+    expected_category: MANAGEMENT
+    doc_url: https://docs.aws.amazon.com/athena/latest/ug/monitor-with-cloudtrail.html
+    research: AWS report section 5 (recovers the query of responseElements.queryExecutionId)
+  - id: lakeformation.amazonaws.com:GetDataAccess
+    doc_url: https://docs.aws.amazon.com/lake-formation/latest/dg/logging-using-cloudtrail.html
+    research: AWS report section 5; additionalEventData requesterService, lakeFormationPrincipal
+  - id: redshift-data.amazonaws.com:ExecuteStatement
+    doc_url: https://docs.aws.amazon.com/redshift/latest/mgmt/logging-with-cloudtrail.html
+    research: AWS report section 5; sql is ***OMITTED***
+
+  # ---------------------------------------------------------------- RDS Data API (data events, AWS::RDS::DBCluster)
+  - id: rdsdataapi.amazonaws.com:ExecuteStatement
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/logging-using-cloudtrail-data-api.html
+    research: AWS report section 5; eventType "Rds Data Service", database, schema and sql masked
+  - id: rdsdata.amazonaws.com:ExecuteStatement
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html
+    status: unverified
+    reason: This source string appears only in an exclusion-selector example; the Data API sample shows rdsdataapi.amazonaws.com. Test both once a capture settles it (LIVE-02)
+
+variants:
+  # ---------------------------------------------------------------- record and version
+  - id: record.invalid-json
+    title: Input that is not valid JSON is quarantined, never dropped silently
+    negative: true
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: Log layer design B3
+  - id: record.missing-required
+    title: A record missing a required field (eventTime, eventSource, eventName, awsRegion, eventID, eventType, userIdentity) is quarantined
+    negative: true
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report sections 0 and 14
+  - id: record.unknown-fields
+    title: Unknown fields are ignored and counted, never a rejection
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report sections 0 and 12
+  - id: version.unknown-major
+    title: eventVersion with a major other than 1 (for example 2.0) is quarantined as UNKNOWN_MAJOR_VERSION
+    negative: true
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 0; CT-01 acceptance
+  - id: version.newer-minor
+    title: An eventVersion minor above 1.11 parses as 1.11 with a NEWER_MINOR warning
+    versions: ["1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 0; log layer design B1
+  - id: version.fields-ahead-of-version
+    title: A record carries fields newer than its eventVersion (AWS's S3 sample is 1.03 with tlsDetails); parse by field presence
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-understanding-s3-entries.html
+    research: AWS report sections 0 and 14
+  - id: version.fields-added-without-bump
+    title: userIdentity.signInSessionArn, invokedByDelegate, BuilderIdUser and tlsDetails.keyExchange appear without a version bump
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-document-history.html
+    research: AWS report section 0
+  - id: field.read-only-management-absent
+    title: readOnly and managementEvent absent (pre-1.06 or non-API events); neither is required
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: field.event-category-absent
+    title: A pre-1.07 record has no eventCategory; the category comes from the classification table
+    versions: ["1.0", "1.01", "1.02", "1.03", "1.04", "1.05", "1.06"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: field.request-parameters-omitted
+    title: requestParameters omitted (above 100 KB) and responseElements null (read-only APIs); the record still parses
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report sections 3.1 and 14
+  - id: field.additional-event-data-omitted
+    title: additionalEventData omitted above 28 KB
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: field.truncated-strings
+    title: userAgent, errorCode and errorMessage truncated at 1 KB
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: field.record-size-cap
+    title: A record truncated at the 256 KB cap
+    versions: ["1.05", "1.06", "1.07", "1.08", "1.09", "1.10", "1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report sections 3.1 and 14
+  - id: field.non-array-resources
+    title: resources present but not an array
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 14, CloudTrail record row
+  - id: field.tls-details
+    title: tlsDetails present (since 1.08)
+    versions: ["1.08", "1.09", "1.10", "1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: field.session-credential-from-console
+    title: sessionCredentialFromConsole present when true and absent when false
+    versions: ["1.08", "1.09", "1.10", "1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: field.vpc-endpoint
+    title: vpcEndpointId present, and vpcEndpointAccountId from 1.09
+    versions: ["1.04", "1.05", "1.06", "1.07", "1.08", "1.09", "1.10", "1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: field.service-event-details
+    title: An AwsServiceEvent with serviceEventDetails
+    versions: ["1.05", "1.06", "1.07", "1.08", "1.09", "1.10", "1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: addendum.updated-data
+    title: An addendum record (reason UPDATED_DATA) with originalEventID supersedes the original event (supersedes_event_id), not counted twice
+    versions: ["1.08", "1.09", "1.10", "1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1; log-event.md field 24
+  - id: addendum.delivery-delay-or-outage
+    title: Addendum reasons DELIVERY_DELAY and SERVICE_OUTAGE reconcile with the original, not double counted
+    versions: ["1.08", "1.09", "1.10", "1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 3.1
+  - id: result.error-code-failure
+    title: errorCode present maps to FAILURE; an AccessDenied GetObject never counts as a read
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report sections 3.1 and 4.3; CT-01 acceptance
+
+  # ---------------------------------------------------------------- userIdentity
+  - id: uid.iam-user
+    title: userIdentity type IAMUser (userName, arn, principalId, accessKeyId); actor id is the ARN, never the access key
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.assumed-role
+    title: type AssumedRole with no userName; stable actor is sessionContext.sessionIssuer.arn, session name kept as an attribute
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2; log-event.md field 9
+  - id: uid.root
+    title: type Root (userName is the account alias when set)
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.federated-user
+    title: type FederatedUser with the session issuer in sessionContext
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.role
+    title: type Role with a user-defined userName
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.directory
+    title: type Directory (userName may be an alias or an email)
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.aws-account
+    title: type AWSAccount with only principalId and the other account's accountId
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.aws-service
+    title: type AWSService with invokedBy only; no actor account
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report sections 3.2 and 10
+  - id: uid.identity-center-user
+    title: type IdentityCenterUser with onBehalfOf.userId, identityStoreArn and credentialId, no userName
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.builder-id-user
+    title: type BuilderIdUser with onBehalfOf only and no accountId
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.saml-user
+    title: type SAMLUser with identityProvider, userName (subject) and principalId
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.web-identity-user
+    title: type WebIdentityUser with identityProvider, userName and principalId
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.unknown
+    title: type Unknown, userName possibly present
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.invoked-by
+    title: invokedBy set (a service made the call), tlsDetails absent
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.invoked-by-delegate
+    title: invokedByDelegate.accountId (a product provider called on the customer's behalf)
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.in-scope-of
+    title: inScopeOf with sourceArn, sourceAccount, issuerType and credentialsIssuedTo
+    versions: ["1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2 (since 1.11)
+  - id: uid.session-context-extras
+    title: sessionContext with sourceIdentity, webIdFederationData, assumedRoot, ec2RoleDelivery or signInSessionArn
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.hidden-user-name
+    title: userName HIDDEN_DUE_TO_SECURITY_REASONS on a console sign-in failure
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+    research: AWS report section 3.2
+  - id: uid.anonymous-s3
+    title: Anonymous S3 request with userIdentity.accountId anonymous
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-request-identification.html
+    research: AWS report sections 3.2 and 14
+
+  # ---------------------------------------------------------------- account id
+  - id: account.recipient-account-id
+    title: recipientAccountId is the account that received the event
+    versions: ["1.02", "1.03", "1.04", "1.05", "1.06", "1.07", "1.08", "1.09", "1.10", "1.11"]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 10
+  - id: account.never-the-region
+    title: awsRegion never lands in an account field (the CloudTrailLogSource bug)
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+    research: AWS report section 10; CT-01 acceptance
+  - id: account.bucket-owner-from-resources
+    title: The asset's account comes from the AWS::S3::Bucket entry of resources[], else the bucket ARN
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 10
+  - id: account.org-trail-path
+    title: Organization trail path AWSLogs/<org-id>/<account>/CloudTrail/... takes the account from the second segment
+    envelopes: [s3-file]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-find-log-files.html
+    research: AWS report sections 6 and 10
+  - id: account.lookup-events-no-account
+    title: The LookupEvents Event has no account field; the account comes from recipientAccountId in CloudTrailEvent
+    envelopes: [lookup-events]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html
+    research: AWS report sections 10 and 14
+  - id: account.eventbridge-envelope-account
+    title: The EventBridge envelope account field
+    envelopes: [eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event-cloudtrail.html
+    research: AWS report section 10
+
+  # ---------------------------------------------------------------- S3 specifics
+  - id: s3.object-and-bucket-resources
+    title: resources[] holds an AWS::S3::Object and an AWS::S3::Bucket entry; the object is the target, the bucket a related resource
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.2
+  - id: s3.request-parameters-bucket-key
+    title: requestParameters.bucketName and requestParameters.key name the object
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-request-identification.html
+    research: AWS report section 4.2
+  - id: s3.host-header-forms
+    title: requestParameters host as an array and Host as a string
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-understanding-s3-entries.html
+    research: AWS report section 4.2 (key-case variants inside AWS's own samples)
+  - id: s3.additional-event-data-key-case
+    title: SignatureVersion SigV4 and Sigv4, CipherSuite and cipherSuite, x-amz-id-2 and xAmzId2 read case-insensitively
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-understanding-s3-entries.html
+    research: AWS report section 4.2
+  - id: s3.directory-bucket
+    title: S3 Express directory bucket record (s3express.amazonaws.com) with AWS::S3Express::Object ARNPrefix and AWS::S3Express::DirectoryBucket
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-log-files.html
+    research: AWS report sections 4.2 and 14
+  - id: s3.lifecycle-source
+    title: Lifecycle expiry or transition from s3lifecycle.amazonaws.com (AWSService, invokedBy lifecycle.s3.amazonaws.com) is system-initiated
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/filtering-data-events.html
+    research: AWS report sections 4.2 and 4.3
+  - id: s3.authn-errors-source
+    title: s3-authn-errors.amazonaws.com events (AuthenticateSignatureDoesNotMatch and similar) are failures, not reads
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/filtering-data-events.html
+    research: AWS report section 4.2
+  - id: s3.deleteobjects-fanout
+    title: DeleteObjects logs one DeleteObjects event plus one DeleteObject per key (since 2025-06-11); deduplicated per key
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://aws.amazon.com/about-aws/whats-new/2025/06/aws-cloudtrail-logging-amazon-s3-deleteobjects-api
+    research: AWS report section 4.2; CT-01 acceptance
+  - id: s3.deleteobjects-per-key-event-type
+    title: The per-key DeleteObject events of a DeleteObjects call carry eventType AwsServiceEvent
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/filtering-data-events.html
+    status: unverified
+    reason: Implied by the filtering page example only (AWS report section 15, item 4; LIVE-02)
+  - id: s3.cross-account-shared-event
+    title: Requester and bucket-owner copies share sharedEventID with different eventID and recipientAccountId; one read per object
+    versions: ["1.03", "1.04", "1.05", "1.06", "1.07", "1.08", "1.09", "1.10", "1.11"]
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.2; log-event.md section 5.4
+  - id: s3.access-denied-owner-account-omitted
+    title: Cross-account AccessDenied omits the bucket-owner accountId from resources[] (since 2022-03-02)
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-document-history.html
+    research: AWS report sections 4.2 and 10
+  - id: s3.putobject-overwrite-not-create
+    title: PutObject on an existing key is a write, not a CREATE
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3; CT-01 acceptance
+  - id: s3.multipart-visibility
+    title: CreateMultipartUpload and UploadPart do not create the object; CompleteMultipartUpload does
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html
+    research: AWS report section 4.3
+  - id: s3.own-reads-of-trail-files
+    title: DLAP's own GetObject of trail files appears as a data event and is excluded by role (recursion)
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/filtering-data-events.html
+    research: AWS report section 4.2
+  - id: s3.lake-formation-source-identity
+    title: S3 GetObject made through Lake Formation carries sessionContext.sourceIdentity (V2.<account>.AROA...)
+    envelopes: [s3-file, eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/lake-formation/latest/dg/logging-using-cloudtrail.html
+    research: AWS report section 5 (from February 2026, needs SET_SOURCE_IDENTITY)
+
+  # ---------------------------------------------------------------- file container and routing (s3-file)
+  - id: file.gzip-records
+    title: A gzip file holding {"Records":[...]} yields one event per record
+    envelopes: [s3-file]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-examples.html
+    research: AWS report section 6
+  - id: file.gzip-truncated
+    title: A truncated gzip file is quarantined, never partly counted
+    envelopes: [s3-file]
+    negative: true
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-examples.html
+    research: AWS report section 14, file container row
+  - id: file.duplicate-delivery
+    title: The same file or the same eventID delivered twice gives one event
+    envelopes: [s3-file]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-examples.html
+    research: AWS report sections 3.1 and 14
+  - id: file.unordered-late-records
+    title: Records in a file are unordered and may be older than the file; the watermark is the object key or LastModified, never eventTime
+    envelopes: [s3-file]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-examples.html
+    research: AWS report section 3.1
+  - id: route.insight-record
+    title: An Insight record (eventType AwsCloudTrailInsight, eventCategory Insight, no userIdentity) is routed away from the standard parser
+    negative: true
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-examples.html
+    research: AWS report sections 6 and 14
+  - id: route.network-activity-record
+    title: A network activity record (eventType AwsVpceEvents, eventCategory NetworkActivity) is routed away from the standard parser
+    negative: true
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-examples.html
+    research: AWS report section 6
+  - id: route.aggregated-record
+    title: An Aggregated record (eventType AwsAggregatedEvent, eventVersion 1.0, timeWindow, summary) is a count, never per-object events
+    negative: true
+    envelopes: [s3-file]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-aggregated-events.html
+    research: AWS report sections 6 and 14
+  - id: route.digest-file
+    title: A digest file (CloudTrail-Digest prefix, logFiles[], digestSignatureAlgorithm) is never parsed as events
+    negative: true
+    envelopes: [s3-file]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-validation-digest-file-structure.html
+    research: AWS report sections 6 and 14
+
+  # ---------------------------------------------------------------- LookupEvents
+  - id: lookup.cloudtrail-event-string
+    title: The record is parsed from the CloudTrailEvent JSON string; the typed Event lacks userIdentity and eventVersion
+    envelopes: [lookup-events]
+    doc_url: https://docs.aws.amazon.com/java/api/latest/software/amazon/awssdk/services/cloudtrail/model/Event.html
+    research: AWS report sections 6 and 12
+  - id: lookup.read-only-string
+    title: ReadOnly is a string, not a boolean
+    envelopes: [lookup-events]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html
+    research: AWS report section 14, LookupEvents row
+  - id: lookup.newest-first
+    title: Results arrive newest first and are processed oldest first; the cursor never passes a failed event
+    envelopes: [lookup-events]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html
+    research: AWS report section 0; CT-00 acceptance
+  - id: lookup.same-event-id-as-file
+    title: One event_id for the LookupEvents copy and the trail-file copy of an event
+    envelopes: [lookup-events]
+    doc_url: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html
+    research: CT-01 acceptance; log-event.md section 5.1
+
+  # ---------------------------------------------------------------- EventBridge
+  - id: eb.api-call-detail-type
+    title: detail-type AWS API Call via CloudTrail; source is the service (for example aws.ec2), not aws.cloudtrail
+    envelopes: [eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event-cloudtrail.html
+    research: AWS report section 6
+  - id: eb.other-detail-types
+    title: Console Signin, Service Event, Insight and Network Activity detail types
+    envelopes: [eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event-cloudtrail.html
+    research: AWS report section 14, EventBridge row
+  - id: eb.empty-resources
+    title: An empty envelope resources[]
+    envelopes: [eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event-cloudtrail.html
+    research: AWS report section 14, EventBridge row
+  - id: eb.replay-name
+    title: replay-name present on a replayed event
+    envelopes: [eventbridge-detail]
+    doc_url: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event-cloudtrail.html
+    research: AWS report section 14, EventBridge row

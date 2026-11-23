@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:lifecycle-state:openlineage-lifecycle-facet:0.1",
+  "$comment": "Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. The ASF licenses this file to you under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0). Normative text: docs/specs/lifecycle-state.md, section 'OpenLineage dataset facet'. The facet carries one Lifecycle State object. With _producer, _schemaURL and _deleted removed, the facet MUST be valid against urn:lifecycle-state:schema:0.1 (docs/specs/schemas/lifecycle-state-0.1.json), which holds the cross-field rules this facet schema does not repeat.",
+  "$defs": {
+    "LifecycleDatasetFacet": {
+      "allOf": [
+        {
+          "$ref": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/DatasetFacet"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "specVersion": {
+              "description": "Version of the Lifecycle State specification.",
+              "type": "string",
+              "enum": ["0.1"]
+            },
+            "asset": {
+              "description": "Canonical asset URI. It can differ from the OpenLineage dataset namespace and name.",
+              "type": "string"
+            },
+            "platform": {
+              "description": "Provider and asset kind.",
+              "type": "object",
+              "properties": {
+                "provider": { "type": "string" },
+                "kind": { "type": "string" }
+              },
+              "required": ["provider", "kind"]
+            },
+            "asOf": {
+              "description": "Evaluation instant.",
+              "type": "string",
+              "format": "date-time"
+            },
+            "createdAt": {
+              "description": "Provider creation time. Null is unknown.",
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastReadAt": {
+              "description": "Latest recorded read. Null is unknown, never 'never read'.",
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "lastWrittenAt": {
+              "description": "Latest recorded write. Null is unknown.",
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "readCoverage": {
+              "description": "How complete the read history is. Null is unknown.",
+              "enum": ["FULL", "PARTIAL", "NONE", null]
+            },
+            "readCoverageReasons": {
+              "description": "Gaps, or evidence for FULL.",
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "readCoverageSince": {
+              "description": "Start of the current run of FULL coverage.",
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "sizeBytes": {
+              "description": "Latest observed size. Null is unknown.",
+              "type": ["integer", "null"]
+            },
+            "sizeObservedAt": {
+              "description": "When the size was observed.",
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "retention": {
+              "description": "Retention evaluation result.",
+              "type": "object",
+              "properties": {
+                "status": { "enum": ["UNKNOWN", "NO_POLICY", "RETAINED", "DUE", "ON_HOLD"] },
+                "basis": { "enum": ["CREATED", "LAST_MODIFIED", "LAST_ACCESSED", "FIXED_DATE", null] },
+                "days": { "type": ["integer", "null"] },
+                "fixedDate": { "type": ["string", "null"], "format": "date-time" },
+                "expiresAt": { "type": ["string", "null"], "format": "date-time" },
+                "source": { "type": ["string", "null"] }
+              },
+              "required": ["status", "basis", "days", "fixedDate", "expiresAt", "source"]
+            },
+            "legalHold": {
+              "description": "True when the asset is held.",
+              "type": "boolean"
+            },
+            "disposition": {
+              "description": "Executed archive or delete with its evidence. Null when none is known.",
+              "type": ["object", "null"],
+              "properties": {
+                "action": { "enum": ["archive", "delete"] },
+                "executedAt": { "type": "string", "format": "date-time" },
+                "executedBy": { "enum": ["native-rule", "engine"] },
+                "evidence": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["action", "executedAt", "executedBy", "evidence"]
+            },
+            "provenance": {
+              "description": "Log bindings and event ids behind each field.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": { "type": "string" },
+                  "channel": { "type": ["string", "null"] },
+                  "bindingIds": { "type": "array", "items": { "type": "string" } },
+                  "eventIds": { "type": "array", "items": { "type": "string" } }
+                },
+                "required": ["field", "channel", "bindingIds", "eventIds"]
+              }
+            }
+          },
+          "required": [
+            "specVersion",
+            "asset",
+            "platform",
+            "asOf",
+            "createdAt",
+            "lastReadAt",
+            "lastWrittenAt",
+            "readCoverage",
+            "readCoverageReasons",
+            "readCoverageSince",
+            "sizeBytes",
+            "sizeObservedAt",
+            "retention",
+            "legalHold",
+            "disposition",
+            "provenance"
+          ]
+        }
+      ],
+      "type": "object"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "lifecycle": {
+      "$ref": "#/$defs/LifecycleDatasetFacet"
+    }
+  }
+}

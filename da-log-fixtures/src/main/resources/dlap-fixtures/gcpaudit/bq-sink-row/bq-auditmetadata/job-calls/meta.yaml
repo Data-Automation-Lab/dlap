@@ -1,0 +1,17 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.Query
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.CancelJob
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.DeleteJob
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.GetQueryResults
+variant_ids:
+  - bq2.event.job-insertion
+  - bq2.event.job-deletion
+  - bq2.read.get-query-results
+  - bq2.resource-type
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. A jobs.query insertion, a successful cancel of a job that ends cancelled, a job deletion, and a GetQueryResults read of the anonymous result table (no data asset)."

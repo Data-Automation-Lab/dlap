@@ -1,0 +1,255 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# GCP Cloud Audit Logs (GCP-01): LogEntry records whose protoPayload is a google.cloud.audit.AuditLog,
+# including Cloud Storage and BigQuery entries in both BigQuery formats.
+#
+# Code: com.dlap.logingest.parse.gcpaudit (GcpAuditParser reads this file for fields, required fields,
+# the time fallback, the failure conditions and the classification table, and adds the BigQuery event
+# logic). Contract: docs/specs/log-parser-contract.md; native key and raw_event: docs/specs/log-event.md
+# sections 5.2 and 6. Sources: GCP log sources report (2026-10-18) section 7; googleapis audit_log.proto,
+# bigquery_audit_metadata.proto and logging/v1/audit_data.proto at ba591f1d.
+#
+# Envelopes. api-proto and json are declared here and detected by the rules below. The third envelope,
+# bq-sink-row (a row of a BigQuery Log Router sink table), has a code detector (BqSinkRowDetector),
+# because the BigQuery v2 type sits inside the metadataJson string column; its rows are turned into
+# the LogEntry JSON view (BqSinkRows) and parsed with the json envelope's mapping, so binding
+# field-overrides of every envelope point into the LogEntry JSON shape.
+#
+# Versions are structural: an audit entry carries no version field. auditlog-2021 and auditlog-2025
+# are fixture profiles of auditlog (authorizationInfo[].permissionType absent or present); records are
+# always detected and published as auditlog, so pin auditlog, bq-auditmetadata or bq-auditdata-legacy.
+spec-version: 1
+family: gcpaudit
+source-kind: GCP_CLOUD_AUDIT
+source-provider: GCP
+description: GCP Cloud Audit Logs (Admin Activity, Data Access, System Event, Policy Denied), with Cloud Storage and BigQuery v1 and v2 entries.
+settings:
+  on-mismatch: PARSE_WITH_DETECTED
+  # Cloud Logging entries are at most 256 KiB; a split entry is several records.
+  max-record-bytes: 1048576
+  # Re-read window of the time-cursored transports (LOGGING_API, BQ_SINK). entries.list allows 60
+  # requests per minute per project, so keep the overlap short (Q-049).
+  overlap: PT10M
+  poll-interval: PT5M
+envelopes:
+  - id: api-proto
+    description: The LogEntry from the Cloud Logging API client, printed to JSON by LoggingApiTransport (log-event spec section 6); legacy serviceData is {typeUrl, base64}.
+    framing: [record, json-lines, json-array]
+    version-detection:
+      scheme: named
+      rules:
+        - version: bq-auditmetadata
+          when:
+            - pointer: /protoPayload/metadata/@type
+              equals: type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata
+        - version: bq-auditdata-legacy
+          when:
+            - pointer: /protoPayload/serviceData/typeUrl
+              equals: type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData
+        - version: bq-auditdata-legacy
+          when:
+            - pointer: /protoPayload/serviceData/@type
+              equals: type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData
+        - version: auditlog
+          when:
+            - pointer: /protoPayload/@type
+              equals: type.googleapis.com/google.cloud.audit.AuditLog
+        # The google-cloudevents sample carries no @type on protoPayload; never require it.
+        - version: auditlog
+          when:
+            - pointer: /protoPayload/@type
+              present: false
+            - pointer: /protoPayload/serviceName
+              present: true
+    native-key: &gcp-native-key
+      # logName|timestamp|insertId (LogEventIds.gcpAuditNativeKey). The parser uses receiveTimestamp
+      # in place of timestamp when it falls back to it.
+      parts:
+        - pointer: /logName
+        - pointer: /timestamp
+          as: instant
+        - pointer: /insertId
+    fields: &gcp-fields
+      event-time: /timestamp
+      observed-time: /receiveTimestamp
+      service: /protoPayload/serviceName
+      operation: /protoPayload/methodName
+      # Actor order of the GCP report section 7.
+      principal.id:
+        - /protoPayload/authenticationInfo/principalEmail
+        - /protoPayload/authenticationInfo/principalSubject
+        - /protoPayload/authenticationInfo/serviceAccountDelegationInfo/0/firstPartyPrincipal/principalEmail
+        - /protoPayload/authenticationInfo/serviceAccountDelegationInfo/0/principalSubject
+      target.id: /protoPayload/resourceName
+      target.kind: /resource/type
+      target.project: /resource/labels/project_id
+      target.region:
+        - /resource/labels/location
+        - /protoPayload/resourceLocation/currentLocations/0
+      request.caller-ip: /protoPayload/requestMetadata/callerIp
+      request.user-agent: /protoPayload/requestMetadata/callerSuppliedUserAgent
+      # The two entries of a long-running operation (operation.first, operation.last) share the id.
+      request.request-id: /operation/id
+      request.trace-id: /trace
+    required: &gcp-required [service, target.id, target.kind]
+    time-fallback: &gcp-time-fallback [/receiveTimestamp]
+    known-paths: &gcp-known-paths
+      - /logName
+      - /resource
+      - /receiveTimestamp
+      - /severity
+      - /insertId
+      - /labels
+      - /operation
+      - /trace
+      - /spanId
+      - /traceSampled
+      - /split
+      - /httpRequest
+      - /sourceLocation
+      - /errorGroups
+      - /protoPayload/@type
+      - /protoPayload/serviceName
+      - /protoPayload/methodName
+      - /protoPayload/resourceName
+      - /protoPayload/resourceLocation
+      - /protoPayload/resourceOriginalState
+      - /protoPayload/numResponseItems
+      - /protoPayload/status
+      - /protoPayload/authenticationInfo
+      - /protoPayload/authorizationInfo
+      - /protoPayload/policyViolationInfo
+      - /protoPayload/requestMetadata
+      - /protoPayload/request
+      - /protoPayload/response
+      - /protoPayload/metadata
+      - /protoPayload/serviceData
+    result: &gcp-result
+      # Any of these is FAILURE. The parser adds: an authorizationInfo check without granted
+      # (proto3 JSON leaves a false bool out), every entry of the Policy Denied log
+      # (cloudaudit.googleapis.com%2Fpolicy) and a BigQuery job that ended with an error.
+      failure-when:
+        - pointer: /protoPayload/status/code
+          not-equals: 0
+        - pointer: /protoPayload/authorizationInfo/*/granted
+          equals: false
+        - pointer: /protoPayload/policyViolationInfo
+          present: true
+        - pointer: /protoPayload/metadata/@type
+          equals: type.googleapis.com/google.cloud.audit.VpcServiceControlAuditMetadata
+    classification: &gcp-classification
+      rules:
+        # Cloud Storage (GCP report section 2; coverage spec expected categories). A listing is a
+        # metadata read (log-event spec section 4.3), so it never moves last_accessed_at.
+        - { service: storage.googleapis.com, operation: storage.objects.get, change-type: ACCESS, category: DATA_READ, asset-kind: GCS_OBJECT }
+        - { service: storage.googleapis.com, operation: storage.objects.list, change-type: ACCESS, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: storage.objects.create, change-type: CREATE, category: DATA_WRITE, asset-kind: GCS_OBJECT }
+        - { service: storage.googleapis.com, operation: storage.objects.delete, change-type: DELETE, category: DATA_WRITE, asset-kind: GCS_OBJECT }
+        - { service: storage.googleapis.com, operation: storage.objects.move, change-type: UPDATE, category: DATA_WRITE, asset-kind: GCS_OBJECT }
+        - { service: storage.googleapis.com, operation: storage.objects.update, change-type: UPDATE, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: storage.objects.patch, change-type: UPDATE, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: storage.setIamPermissions, change-type: PERMISSION, category: PERMISSION }
+        - { service: storage.googleapis.com, operation: storage.getIamPermissions, change-type: ACCESS, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: storage.buckets.create, change-type: CREATE, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: storage.buckets.update, change-type: UPDATE, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: storage.buckets.delete, change-type: DELETE, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: storage.buckets.get, change-type: ACCESS, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: storage.buckets.list, change-type: ACCESS, category: MANAGEMENT }
+        # Cloud Storage methods in the google.storage.* spelling that VPC Service Controls denials carry
+        # (the GoogleCloudPlatform/professional-services VPC SC sample shows google.storage.buckets.get).
+        - { service: storage.googleapis.com, operation: google.storage.buckets.get, change-type: ACCESS, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: google.storage.buckets.list, change-type: ACCESS, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: google.storage.buckets.create, change-type: CREATE, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: google.storage.buckets.update, change-type: UPDATE, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: google.storage.buckets.delete, change-type: DELETE, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: google.storage.buckets.getIamPolicy, change-type: ACCESS, category: MANAGEMENT }
+        - { service: storage.googleapis.com, operation: google.storage.buckets.setIamPolicy, change-type: PERMISSION, category: PERMISSION }
+        - { service: storage.googleapis.com, operation: google.storage.objects.list, change-type: ACCESS, category: MANAGEMENT }
+        # BigQuery v1 (AuditData): reads come from jobservice.jobcompleted and tabledataservice.list in code.
+        - { service: bigquery.googleapis.com, operation: jobservice.insert, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: jobservice.query, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: jobservice.getqueryresults, change-type: ACCESS, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: jobservice.cancel, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: tabledataservice.list, change-type: ACCESS, category: DATA_READ }
+        - { service: bigquery.googleapis.com, operation: tableservice.insert, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: tableservice.update, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: tableservice.patch, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: tableservice.delete, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: datasetservice.insert, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: datasetservice.update, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: datasetservice.patch, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: datasetservice.delete, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: datasetservice.setiampolicy, change-type: PERMISSION, category: PERMISSION }
+        # BigQuery v2 (BigQueryAuditMetadata): the metadata event decides in code; these rows serve a
+        # v2 method when the binding pins another version.
+        - { service: bigquery.googleapis.com, operation: google.iam.v1.IAMPolicy.SetIamPolicy, change-type: PERMISSION, category: PERMISSION }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.JobService.InsertJob, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.JobService.Query, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.JobService.GetQueryResults, change-type: ACCESS, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.JobService.CancelJob, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.JobService.DeleteJob, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.TableDataService.List, change-type: ACCESS, category: DATA_READ }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.TableService.InsertTable, change-type: CREATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.TableService.PatchTable, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.TableService.UpdateTable, change-type: UPDATE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: google.cloud.bigquery.v2.TableService.DeleteTable, change-type: DELETE, category: MANAGEMENT }
+        - { service: bigquery.googleapis.com, operation: InternalTableExpired, change-type: DELETE, category: MANAGEMENT }
+    versions: &gcp-versions
+      - id: auditlog
+        description: A plain AuditLog entry (Cloud Storage and every service without BigQuery metadata); fixture profiles auditlog-2021 and auditlog-2025.
+      - id: bq-auditmetadata
+        description: BigQuery v2, BigQueryAuditMetadata in protoPayload.metadata (written since 2019-01-22).
+      - id: bq-auditdata-legacy
+        description: BigQuery v1, the legacy AuditData in protoPayload.serviceData.
+
+  - id: json
+    description: LogEntry JSON in REST field naming, as entries.list over HTTPS returns it and as Cloud Storage sink shards (_Sn and _An, a JSON array or newline-delimited) hold it.
+    framing: [record, json-lines, json-array]
+    version-detection:
+      scheme: named
+      rules:
+        - version: bq-auditmetadata
+          when:
+            - pointer: /protoPayload/metadata/@type
+              equals: type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata
+        - version: bq-auditdata-legacy
+          when:
+            - pointer: /protoPayload/serviceData/@type
+              equals: type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData
+        - version: bq-auditdata-legacy
+          when:
+            - pointer: /protoPayload/serviceData/typeUrl
+              equals: type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData
+        - version: auditlog
+          when:
+            - pointer: /protoPayload/@type
+              equals: type.googleapis.com/google.cloud.audit.AuditLog
+        - version: auditlog
+          when:
+            - pointer: /protoPayload/@type
+              present: false
+            - pointer: /protoPayload/serviceName
+              present: true
+    native-key: *gcp-native-key
+    fields: *gcp-fields
+    required: *gcp-required
+    time-fallback: *gcp-time-fallback
+    known-paths: *gcp-known-paths
+    result: *gcp-result
+    classification: *gcp-classification
+    versions: *gcp-versions

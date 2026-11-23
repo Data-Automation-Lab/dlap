@@ -1,0 +1,52 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "AROAEXAMPLE8D59AGRAMW:aws-go-sdk-1688990082523310002",
+        "arn": "arn:aws:sts::999945223994:assumed-role/stratus-red-team-ec2-get-password-data-role/aws-go-sdk-1688990082523310002",
+        "accountId": "999945223994",
+        "accessKeyId": "ASIAEXAMPLE0AK3CTN5F",
+        "sessionContext": {
+          "sessionIssuer": {
+            "type": "Role",
+            "principalId": "AROAEXAMPLE8D59AGRAMW",
+            "arn": "arn:aws:iam::999945223994:role/stratus-red-team-ec2-get-password-data-role",
+            "accountId": "999945223994",
+            "userName": "stratus-red-team-ec2-get-password-data-role"
+          },
+          "webIdFederationData": {},
+          "attributes": {
+            "creationDate": "2023-07-10T11:54:47Z",
+            "mfaAuthenticated": "false"
+          }
+        }
+      },
+      "eventTime": "2023-07-10T11:54:48Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "GetPasswordData",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.168.10.20",
+      "userAgent": "stratus-red-team_39f95f43-cd2f-4beb-b69e-be60b6fe1f57",
+      "errorCode": "Client.UnauthorizedOperation",
+      "errorMessage": "You are not authorized to perform this operation. Encoded authorization failure message: 1Qju1r-MUd3Ls-t7y4w4lpDtgZ-SW3htXqO4UWyYc3RRm71l29ME4w3IIewWhVC8ebqeZswLhkaNtKJcthIjmcqywqV1VgZqs4N-GL8hiyqyOvRy9rmG-ngQIz_Kcpi0mGOOCMd6TWGim0j6xYTiUVvdWURwLDOA5tPeD3lbCq13-0U29FMpt9V4D3RP_gUQ0gWAED4heCGuWygNHtwkM7kapWT0U_reDDIrpM6BANEpBV8hUZ0DM3Pd8arpnHnzQ93N0PZ8Agcw049fARhceT4yM1xMJw8T_iDnU2sgAJvj22MhubJf0Ni0jkEG3OyumbfAa-P7dlqGXT6Qj5FxVSnNOXfmowCbAgQWd9iJuNNpBt6HuYcUhNVhBOGaqNdsFLSqontKFUCCJoOQnBnV4xnIfVEXOUNUZyp8vg6tKI7ieoB71iiIjvLBB7SlSr9raQxnVLu8iPNDEpfLNlDBcFqlZ2PByaW21xKcLRqBFYJchBVhImo_ICrk8-Y_hisEL1L7IAiZASUYyRp5Xsm_uVY6GDIBaQfaegL7ZTOpMvs3OMd3oHW9uJkkp5ButArvKh4TNHwtW2OVkg",
+      "requestParameters": {
+        "instanceId": "i-durz4ux740gjqvcm"
+      },
+      "responseElements": null,
+      "requestID": "466cd3e7-0a68-4487-851f-d41c9145180f",
+      "eventID": "fbd91225-39aa-4c00-822c-9f0b96e7758f",
+      "readOnly": true,
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "ec2.us-east-1.amazonaws.com"
+      }
+    }
+  ]
+}

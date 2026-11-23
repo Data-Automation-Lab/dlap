@@ -1,0 +1,4 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"folders/999900000002/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-11T13:04:00.101010Z|r21-org-1","operation":"storage.objects.get","eventCategory":"EVENT_CATEGORY_DATA_READ","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"auditlog"},
+ {"nativeEventId":"organizations/999900000001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-11T13:04:01.202020Z|r21-org-2","operation":"storage.objects.get","eventCategory":"EVENT_CATEGORY_DATA_READ","sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"auditlog"}
+]}

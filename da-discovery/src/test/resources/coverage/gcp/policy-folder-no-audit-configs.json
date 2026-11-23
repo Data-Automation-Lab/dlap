@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "etag": "BwYQfolder",
+  "bindings": [
+    { "role": "roles/resourcemanager.folderViewer", "members": ["group:platform@example.com"] }
+  ]
+}

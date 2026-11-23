@@ -1,0 +1,45 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Compose override of the full-stack restore drill (DR-02, stack-drill.sh). It is applied LAST, after the
+# quickstart pair (deployment/environments/dev), the backup overlay of the pilot, and the e2e override
+# (fixture replay, dry-run delete, mock archival), under the project name the harness lock derived, so it
+# never touches a stack that belongs to someone else.
+#   - the "off-host" store is an external named volume that survives the loss of the stack: stack A ships
+#     to DR_STACK_REMOTE, a restored stack ships to a store of its own and reads the survivor read-only at
+#     /source (the restore commands in docs/guides/backup-and-restore.md read from there),
+#   - the agent copies WAL every 30 seconds instead of every 5 minutes, so the drill measures the RPO of a
+#     short cycle (the guide states the arithmetic for the 300 s default).
+# Variables: DR_STACK_REMOTE (this stack's off-host volume, mounted at /remote), DR_STACK_SOURCE (the lost
+# stack's off-host volume, mounted read-only at /source). The drill exports both.
+
+services:
+  dlap-backup:
+    environment:
+      - DLAP_WAL_CYCLE_SECONDS=30
+      - DLAP_BACKUP_RETRY_SECONDS=5
+    volumes:
+      - drill-remote:/remote
+      - drill-source:/source:ro
+
+volumes:
+  drill-remote:
+    external: true
+    name: ${DR_STACK_REMOTE}
+  drill-source:
+    external: true
+    name: ${DR_STACK_SOURCE}

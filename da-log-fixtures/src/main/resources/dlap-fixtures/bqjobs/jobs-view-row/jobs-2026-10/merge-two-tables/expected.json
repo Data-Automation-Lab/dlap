@@ -1,0 +1,55 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "GCP_BQ_JOBS_VIEW|proj-5e7a0c11|US|bquxjob_5a1c0011",
+      "eventTime": "2026-09-14T12:30:00Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "MERGE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SERVICE_ACCOUNT",
+        "id": "sa-4c1d9e02@proj-5e7a0c11.iam.gserviceaccount.com"
+      },
+      "targetResource": {
+        "kind": "bigquery_table",
+        "name": "daily_orders",
+        "project": "proj-5e7a0c11",
+        "canonicalUri": "bq://proj-5e7a0c11/analytics/daily_orders"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "GCP_BQ_JOBS_VIEW/jobs-view-row",
+      "sourceSchemaVersion": "jobs-2026-10",
+      "requestMetadata": {
+        "requestId": "bquxjob_5a1c0011"
+      }
+    },
+    {
+      "nativeEventId": "GCP_BQ_JOBS_VIEW|proj-5e7a0c11|US|bquxjob_5a1c0011#bq://proj-5e7a0c11/staging/new_rows",
+      "eventTime": "2026-09-14T12:30:00Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "MERGE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SERVICE_ACCOUNT",
+        "id": "sa-4c1d9e02@proj-5e7a0c11.iam.gserviceaccount.com"
+      },
+      "targetResource": {
+        "kind": "bigquery_table",
+        "name": "new_rows",
+        "project": "proj-5e7a0c11",
+        "canonicalUri": "bq://proj-5e7a0c11/staging/new_rows"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "sourceFormat": "GCP_BQ_JOBS_VIEW/jobs-view-row",
+      "sourceSchemaVersion": "jobs-2026-10",
+      "requestMetadata": {
+        "requestId": "bquxjob_5a1c0011"
+      }
+    }
+  ]
+}

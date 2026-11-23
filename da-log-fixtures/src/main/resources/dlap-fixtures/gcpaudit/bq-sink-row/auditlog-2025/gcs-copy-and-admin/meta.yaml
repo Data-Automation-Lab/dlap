@@ -1,0 +1,18 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - storage.googleapis.com:storage.objects.get
+  - storage.googleapis.com:storage.objects.create
+  - storage.googleapis.com:storage.buckets.create
+  - storage.googleapis.com:storage.buckets.update
+  - storage.googleapis.com:storage.setIamPermissions
+variant_ids:
+  - gcs.copy-compose-two-entries
+  - log.admin-activity
+  - gcs.admin-activity-servicedata
+  - gcs.setiam-servicedata-policy-delta
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. A copy as a read row and a write row; then Admin Activity rows: a bucket create with requestJson and the initial IAM policy delta in servicedata_v1_iam, a retention policy update, and an IAM change removing public read. The last row's timestamp ends in three zeros, so its native key prints the time with three fraction digits."

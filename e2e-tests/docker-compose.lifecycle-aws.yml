@@ -1,0 +1,85 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# ---------------------------------------------------------------------------
+# Retire phase of `cloud-lifecycle-e2e.sh aws` (RET-08, Q-714, decision D38).
+#
+# Layered on top of the dev compose pair and docker-compose.e2e.yml only for the
+# retire phase, after the policy gates passed. It adds LocalStack S3 on the stack
+# network (no host port, no fixed container name) and recreates three services:
+#
+#   da-autodelete  applies for real (dry run off) to LocalStack through the
+#                  TEST-ONLY endpoint dlap.autodelete.test-endpoint.s3 (Q-713,
+#                  path-style), with a short rule maximum age and fast sweeps.
+#   da-autoarchival  reaches the same LocalStack through the same scheme,
+#                  dlap.autoarchival.test-endpoint.s3 (EXEC-01, Q-740; the RET-03
+#                  names are deprecated aliases and are not used here).
+#   da-logingest   reads CloudTrail trail files from a LocalStack bucket through
+#                  the S3_TRAIL_FILES transport (AWS-01, registry pipeline), so a
+#                  provider lifecycle delete proves the applied rule.
+#
+# Nothing here can reach a real AWS account: the only S3 endpoint any of these services
+# is given is LocalStack's, and the keys are LocalStack's test pair.
+# ---------------------------------------------------------------------------
+services:
+  e2e-localstack:
+    image: localstack/localstack:3.4
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - SKIP_SSL_CERT_DOWNLOAD=1
+    networks:
+      - dlap-network
+
+  da-autodelete:
+    environment:
+      - DLAP_AUTODELETE_DRY_RUN_CLOUD_DELETE=false
+      - DLAP_AUTODELETE_TEST_ENDPOINT_S3=http://e2e-localstack:4566
+      - DLAP_AUTODELETE_TEST_ENDPOINT_S3_PATH_STYLE=true
+      - DLAP_AUTODELETE_RULE_IN_FORCE_MAX_AGE=${DLAP_E2E_RULE_MAX_AGE:-PT4M}
+      - DLAP_AUTODELETE_RULE_IN_FORCE_INTERVAL=PT15S
+      - DLAP_AUTODELETE_RULE_IN_FORCE_INITIAL_DELAY=PT15S
+      - DLAP_AUTODELETE_SWEEP_INTERVAL=PT10S
+      - DLAP_AUTODELETE_SWEEP_INITIAL_DELAY=PT10S
+      - DLAP_AUTODELETE_SWEEP_APPROVALPOLLINTERVAL=PT15S
+      - DLAP_AUTODELETE_SWEEP_RETRYBACKOFF=PT30S
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - AWS_EC2_METADATA_DISABLED=true
+
+  da-autoarchival:
+    environment:
+      - DLAP_AUTOARCHIVAL_TEST_ENDPOINT_S3=http://e2e-localstack:4566
+      - DLAP_AUTOARCHIVAL_TEST_ENDPOINT_S3_PATH_STYLE=true
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - AWS_EC2_METADATA_DISABLED=true
+
+  da-logingest:
+    environment:
+      - DLAP_LOGINGEST_PIPELINE=registry
+      - DLAP_LOGINGEST_REPLAY_ENABLED=false
+      - DLAP_LOGINGEST_TRANSPORTS_AWS_ENABLED=true
+      - DLAP_LOGINGEST_SOURCES_FILE=/e2e-aws/lifecycle-log-sources.yml
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - AWS_EC2_METADATA_DISABLED=true
+    volumes:
+      - ${DLAP_E2E_AWS_FIXTURES_DIR}:/e2e-aws:ro

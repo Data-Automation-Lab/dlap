@@ -1,0 +1,45 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Seed import manifest (FIX-02). Every case below is regenerated from a public repository at a pinned
+# commit by com.dlap.fixtures.anon.SeedImporter and checked byte for byte by its `check` command
+# (SeedCorpusTest runs the offline half of that check on every build). Do not edit the generated
+# input.*, expected.json or meta.yaml files by hand; change this file and re-run the import.
+#
+#   SeedImporter import --corpus <dlap-fixtures> --source <id>=<checkout at the pinned commit> ...
+#
+# Only one open Databricks sample carries the fields a delivered record has (version, requestId and
+# an integer timestamp). The other 161 Panther samples are abbreviated (no requestId, mostly no version) and
+# are not imported; real Databricks cases need the LIVE-03 capture.
+spec: dlap-seed-manifest/1
+family: dbxaudit
+sources:
+  panther:
+    repo: panther-labs/panther-analysis
+    commit: "4d78f77d545e474064f9921924d54e1e368ceffd"
+    commit_date: "2026-10-09"
+    license: Apache-2.0
+    kind: panther-rule
+    root: rules
+    url: https://github.com/panther-labs/panther-analysis/blob/4d78f77d545e474064f9921924d54e1e368ceffd/rules
+    retrieved: "2026-10-19"
+    note: "DERIVED: a detection rule test sample written by hand with placeholder identifiers. It shows the delivered field names; it is not independent proof of what Databricks delivers."
+cases:
+  - name: accounts-login-workspace-level
+    source: panther
+    file: databricks_rules/databricks_employee_logon.yml
+    select: { indices: [0] }

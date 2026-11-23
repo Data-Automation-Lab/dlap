@@ -1,0 +1,17 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2025-01-27T14:23:00Z",
+      "sourceProvider": "AZURE",
+      "operation": "MICROSOFT.AUTHORIZATION/LOCKS/DELETE",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    },
+    {
+      "eventTime": "2025-01-27T17:00:00Z",
+      "sourceProvider": "AZURE",
+      "operation": "MICROSOFT.AUTHORIZATION/LOCKS/DELETE",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

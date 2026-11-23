@@ -1,0 +1,31 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "0a5e0c11-1fe0-4e00-8000-000000000321",
+      "eventTime": "2026-11-03T04:00:00Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "DeleteObject",
+      "changeType": "DELETE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "s3.amazonaws.com",
+        "type": "SYSTEM"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e-replica/raw/2026/09/orders.parquet",
+        "project": "123456789012",
+        "region": "us-east-1"
+      },
+      "requestMetadata": {
+        "callerIp": "s3.amazonaws.com",
+        "requestId": "PARSE03CTS000001"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11"
+    }
+  ]
+}

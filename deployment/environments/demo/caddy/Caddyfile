@@ -1,0 +1,203 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP hosted-demo edge (DEMO-01): TLS for two hostnames, in front of the nginx gateway and Keycloak.
+#
+#   {$DEMO_APP_HOST}  the SPA and the API, through the nginx gateway (gateway/nginx.demo.conf)
+#   {$DEMO_ID_HOST}   Keycloak, limited to what a browser needs: the realm endpoints and the static
+#                     resources. The admin console, the admin REST API, the master realm, metrics and
+#                     health are never proxied. Reach the admin console through an SSH or IAP tunnel to
+#                     the loopback port of the keycloak container (README, "Administration").
+#
+# Environment (docker-compose.demo.yml passes these to the caddy container from .env.demo):
+#   DEMO_APP_HOST          default demo.localhost
+#   DEMO_ID_HOST           default id.localhost
+#   DEMO_ID_PORT_SUFFIX    empty (default, port 443); ":18444" when a rehearsal publishes HTTPS on another
+#                          port, so the content security policy names the right Keycloak origin
+#   DEMO_TLS               auto (default): public certificates from Let's Encrypt (needs public DNS and
+#                          ports 80, 443); internal: Caddy's own CA, for a rehearsal on a workstation
+#   DEMO_ACME_CA           ACME directory (default: Let's Encrypt production; use the staging URL while
+#                          testing the certificates)
+#   DEMO_CSP_STYLE_EXTRA,  extra sources for the content security policy, empty by default. The UI hotlinks
+#   DEMO_CSP_IMG_EXTRA,    Google Fonts, Unsplash and Cloudinary; by default the browser blocks them
+#   DEMO_CSP_FONT_EXTRA    (README, "Third-party assets of the UI")
+#   DEMO_APP_HTTP_ADDRESS  :65080 (default, a port nothing publishes): HTTP only redirects to HTTPS. For a
+#                          local check, for example http://localhost, the app is also served over plain
+#                          HTTP at that address. Never set it on the public host.
+#
+# Maintenance. nightly-reset.sh creates the file /srv/flags/maintenance (the host folder
+# state/flags) while it restores the golden data. While it exists the app host answers 503: a static
+# page for browsers, a JSON body for /api and /access. The Keycloak host keeps answering. The same page
+# is shown when the gateway itself is down.
+#
+# Only TCP 80 and 443 are published, so HTTP/3 (UDP 443) is off. The admin API of Caddy listens on
+# the loopback of its own container, and the container healthcheck reads it; those requests are not logged.
+{
+	servers {
+		protocols h1 h2
+	}
+	acme_ca {$DEMO_ACME_CA:https://acme-v02.api.letsencrypt.org/directory}
+	log {
+		exclude admin.api
+	}
+}
+
+# TLS mode, chosen by DEMO_TLS: "auto" (default) lets Caddy obtain public certificates, "internal"
+# uses its own CA. The directive has no empty form, hence one snippet per mode.
+(tls_auto) {
+	# Automatic HTTPS with the ACME CA named above.
+}
+
+(tls_internal) {
+	tls internal
+}
+
+# The ">" prefix sets a header at the last moment, after reverse_proxy has copied the upstream's own
+# values in. Without it the browser would get both nginx's value and this one. Caddy has the last word.
+(security_headers) {
+	header {
+		>Strict-Transport-Security "max-age=31536000"
+		>X-Content-Type-Options "nosniff"
+		>Referrer-Policy "strict-origin-when-cross-origin"
+		>Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+	}
+}
+
+# ---------------------------------------------------------------------------------------------
+# The app: SPA and API
+# ---------------------------------------------------------------------------------------------
+(app_routes) {
+	import security_headers
+
+	header {
+		>X-Frame-Options "DENY"
+		# The exact origin of Keycloak is known here and not in nginx. Styles may be inline (the page
+		# shell and the UI library use them); scripts may not. frame-src: Keycloak's session check and
+		# the app's own silent sign-in page.
+		>Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' {$DEMO_CSP_STYLE_EXTRA:}; img-src 'self' data: {$DEMO_CSP_IMG_EXTRA:}; font-src 'self' data: {$DEMO_CSP_FONT_EXTRA:}; connect-src 'self' https://{$DEMO_ID_HOST:id.localhost}{$DEMO_ID_PORT_SUFFIX:}; frame-src 'self' https://{$DEMO_ID_HOST:id.localhost}{$DEMO_ID_PORT_SUFFIX:}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+	}
+
+	# keycloak-js loads this tiny static page in a hidden iframe of the app itself; its one inline
+	# script posts the redirect URL to the parent. Allow exactly that and nothing else on this path.
+	@silent_sso path /silent-check-sso.html
+	header @silent_sso {
+		>X-Frame-Options "SAMEORIGIN"
+		>Content-Security-Policy "default-src 'none'; script-src 'unsafe-inline'; frame-ancestors 'self'"
+	}
+
+	request_body {
+		max_size 256KB
+	}
+
+	@api path /api/* /access/*
+	@maintenance file {
+		root /srv/flags
+		try_files maintenance
+	}
+
+	handle @maintenance {
+		header Retry-After "600"
+		header Cache-Control "no-store"
+		handle @api {
+			header Content-Type "application/json"
+			respond `{"error":"maintenance","detail":"The demo resets every night and is back in a few minutes."}` 503
+		}
+		handle {
+			root * /srv/maintenance
+			rewrite * /index.html
+			file_server {
+				status 503
+			}
+		}
+	}
+
+	handle {
+		reverse_proxy gateway:8081 {
+			header_down -Server
+			transport http {
+				dial_timeout 5s
+				response_header_timeout 130s
+			}
+		}
+	}
+
+	# The gateway is down or restarting: the same page, with the same 503.
+	handle_errors {
+		@upstream expression {http.error.status_code} in [502, 503, 504]
+		handle @upstream {
+			header Retry-After "60"
+			header Cache-Control "no-store"
+			handle @api {
+				header Content-Type "application/json"
+				respond `{"error":"unavailable","detail":"The demo is starting or restarting. Try again in a minute."}` 503
+			}
+			handle {
+				root * /srv/maintenance
+				rewrite * /index.html
+				file_server {
+					status 503
+				}
+			}
+		}
+	}
+}
+
+{$DEMO_APP_HOST:demo.localhost} {
+	import tls_{$DEMO_TLS:auto}
+	import app_routes
+}
+
+# Local check mode only (DEMO_APP_HTTP_ADDRESS, see above). The default is a port that nothing
+# publishes, so the public host has no plain-HTTP route to the app.
+{$DEMO_APP_HTTP_ADDRESS::65080} {
+	import app_routes
+}
+
+# ---------------------------------------------------------------------------------------------
+# Keycloak: realm endpoints and static resources only
+# ---------------------------------------------------------------------------------------------
+{$DEMO_ID_HOST:id.localhost} {
+	import tls_{$DEMO_TLS:auto}
+	import security_headers
+
+	request_body {
+		max_size 64KB
+	}
+
+	# Never proxied: the admin console and admin REST API, the master realm, metrics, health, and the
+	# Quarkus development endpoints. Matched on the decoded path, case-insensitively.
+	# handle blocks, because a bare respond would run before reverse_proxy whatever the file order.
+	@denied path_regexp denied (?i)^/+(admin|metrics|health|q|management)(/|$)|^/+realms/+master(/|$)
+	handle @denied {
+		respond 404
+	}
+
+	@allowed path /realms/* /resources/* /robots.txt
+	handle @allowed {
+		reverse_proxy keycloak:8080 {
+			header_down -Server
+			transport http {
+				dial_timeout 5s
+				response_header_timeout 60s
+			}
+		}
+	}
+
+	handle {
+		respond 404
+	}
+}

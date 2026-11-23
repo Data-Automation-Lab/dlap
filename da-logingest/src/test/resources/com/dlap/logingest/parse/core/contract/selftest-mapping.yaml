@@ -1,0 +1,84 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Sample family mapping (LOG-02a acceptance: "the YAML schema validates a sample family file").
+#
+# It maps the invented "selftest" record shape of the fixture corpus (FIX-01), so the parser
+# contract runs end to end on real corpus files: YAML, declarative detector, MappingDrivenParser,
+# registry, CanonicalEventMapper, wire contract. It is test data: it lives outside
+# dlap/log-formats/, so no running service loads it, and no vendor format is described.
+spec-version: 1
+family: selftest
+source-kind: DLAP_SELFTEST
+# The selftest shape belongs to no cloud; a provider is required because it enters every event id.
+source-provider: AWS
+description: Reference mapping of the invented selftest record shape used to test the parser contract.
+settings:
+  on-mismatch: PARSE_WITH_DETECTED
+  max-record-bytes: 65536
+  overlap: PT10M
+  poll-interval: PT1M
+envelopes:
+  - id: generic-json
+    description: One JSON object per record; a fixture input may hold one record or JSON lines.
+    framing: [record, json-lines]
+    version-detection:
+      scheme: major-minor
+      pointer: /formatVersion
+    native-key:
+      # The shape has no record id, so the key is namespaced and built from what identifies a record.
+      namespaced: true
+      parts:
+        - pointer: /target
+        - pointer: /time
+          as: instant
+        - pointer: /op
+    fields:
+      event-time: /time
+      service:
+        const: demo
+      operation: /op
+      principal.id: /actor
+      target.id: /target
+    required: [principal.id, target.id]
+    known-paths: [/format]
+    result:
+      failure-when:
+        - pointer: /status
+          not-equals: OK
+    skip-when:
+      - reason: NOT_AN_EVENT
+        when:
+          - pointer: /op
+            equals: heartbeat
+    classification:
+      rules:
+        - service: demo
+          operation: read
+          change-type: ACCESS
+          category: DATA_READ
+        - service: demo
+          operation: write
+          change-type: UPDATE
+          category: DATA_WRITE
+        - service: demo
+          operation: delete
+          change-type: DELETE
+          category: DATA_WRITE
+    versions:
+      - id: "1.0"
+        description: The only version a parser claims; the corpus also holds planned version 2 cases.

@@ -1,0 +1,16 @@
+origin: public-dataset
+repo: panther-labs/panther-analysis
+commit: "4d78f77d545e474064f9921924d54e1e368ceffd"
+source_url: https://github.com/panther-labs/panther-analysis/blob/4d78f77d545e474064f9921924d54e1e368ceffd/rules/aws_cloudtrail_rules/aws_root_activity.yml
+doc_date: 2026-10-09
+license: Apache-2.0
+covers:
+  - signin.amazonaws.com:ConsoleLogin
+variant_ids:
+  - uid.root
+  - account.recipient-account-id
+  - field.read-only-management-absent
+  - field.event-category-absent
+expected_outcome: PARSED
+anonymised: true
+notes: "Anonymised excerpt of panther-labs/panther-analysis at 4d78f77d545e: aws_cloudtrail_rules/aws_root_activity.yml, entry index [4]. Changed from the source: identifiers anonymised by com.dlap.fixtures.anon.Anonymiser, records wrapped in the provider's delivery envelope, JSON re-indented. DERIVED: a detection rule test sample, hand-trimmed by the rule author and possibly adapted from AWS documentation. It shows plausible field shapes; it is not independent proof of what AWS delivers."

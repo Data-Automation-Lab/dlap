@@ -1,0 +1,79 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Seed import manifest (FIX-02). Every case below is regenerated from a public repository at a pinned
+# commit by com.dlap.fixtures.anon.SeedImporter and checked byte for byte by its `check` command
+# (SeedCorpusTest runs the offline half of that check on every build). Do not edit the generated
+# input.*, expected.json or meta.yaml files by hand; change this file and re-run the import.
+#
+#   SeedImporter import --corpus <dlap-fixtures> --source <id>=<checkout at the pinned commit> ...
+#
+# Not imported, on purpose: Panther gcp_audit_rules samples. They carry Panther normalisation fields
+# (p_any_*, p_udm, at_sign_type, lower-cased keys), so they are not provider-shaped records.
+spec: dlap-seed-manifest/1
+family: gcpaudit
+sources:
+  pservices:
+    repo: GoogleCloudPlatform/professional-services
+    commit: "d86f53e2dccb7bef1f4755e43bd92d8fd5d2d060"
+    commit_date: "2026-10-05"
+    license: Apache-2.0
+    kind: gcp-example
+    root: examples/audit-log-examples
+    url: https://github.com/GoogleCloudPlatform/professional-services/blob/d86f53e2dccb7bef1f4755e43bd92d8fd5d2d060/examples/audit-log-examples
+    retrieved: "2026-10-19"
+    note: "The example logs were published in 2021 and 2022, so they predate authorizationInfo.permissionType."
+  cloudevents:
+    repo: googleapis/google-cloudevents
+    commit: "5427368e99996f3185f45d6eb444f8f7c1cd6e2d"
+    commit_date: "2026-10-15"
+    license: Apache-2.0
+    kind: json-document
+    root: testdata/google/events/cloud/audit/v1
+    url: https://github.com/googleapis/google-cloudevents/blob/5427368e99996f3185f45d6eb444f8f7c1cd6e2d/testdata/google/events/cloud/audit/v1
+    retrieved: "2026-10-19"
+    note: "Test data of the CloudEvents schema project; the LogEntry is the legacy BigQuery v1 (AuditData) shape."
+cases:
+  - name: gcs-bucket-create-admin-activity
+    source: pservices
+    file: cloud-storage/gcs-admin-activity.log
+  - name: gcs-set-iam-permissions-admin-activity
+    source: pservices
+    file: cloud-storage/gcs-admin-set-iam-permissions.log
+  - name: gcs-object-create-data-access
+    source: pservices
+    file: cloud-storage/gcs-data-access-object-create.log
+  - name: gcs-object-get-data-access
+    source: pservices
+    file: cloud-storage/gcs-data-access-object-get.log
+  - name: gcs-object-list-data-access
+    source: pservices
+    file: cloud-storage/gcs-data-access-object-list.log
+  - name: gcs-bucket-versioning-enabled
+    source: pservices
+    file: cloud-storage/gcs-obj-vers.log
+    select: { indices: [0] }
+  - name: gcs-bucket-versioning-disabled
+    source: pservices
+    file: cloud-storage/gcs-obj-vers.log
+    select: { indices: [1] }
+  - name: vpc-sc-storage-denied-policy-log
+    source: pservices
+    file: vpc-service-controls/vpc-sc-policy-violation.log
+  - name: bigquery-job-completed-v1
+    source: cloudevents
+    file: LogEntryData-bigqueryjobcompleted.json

@@ -1,0 +1,20 @@
+{
+  "outcome": "PARSED_WITH_WARNINGS",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-04T12:00:00.250Z|bq1-unknown-1",
+      "eventTime": "2026-09-04T12:00:00.250Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "ACCESS",
+      "operation": "tabledataservice.list",
+      "resultStatus": "SUCCESS",
+      "principal": {"type": "USER", "id": "analyst@example.com"},
+      "targetResource": {"canonicalUri": "bq://proj-0d1a0001/sales/orders"},
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "bq-auditdata-legacy",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "parseWarnings": ["PARSE_WARNING_UNKNOWN_FIELDS"]
+    }
+  ]
+}

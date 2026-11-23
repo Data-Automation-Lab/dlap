@@ -1,0 +1,156 @@
+[
+  {
+    "insertId": "a25-gcs-admin-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-02T10:00:06.123456795Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-new-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.buckets.create",
+      "resourceName": "projects/_/buckets/dlap-fixture-new-bucket",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-new-bucket",
+          "permission": "storage.buckets.create",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "ADMIN_WRITE"
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.iam.v1.logging.AuditData",
+        "policyDelta": {
+          "bindingDeltas": [
+            {
+              "action": "ADD",
+              "role": "roles/storage.legacyBucketOwner",
+              "member": "projectOwner:proj-0d1a0001"
+            }
+          ]
+        }
+      },
+      "request": {
+        "@type": "type.googleapis.com/storage.buckets.insert",
+        "name": "dlap-fixture-new-bucket"
+      }
+    },
+    "receiveTimestamp": "2026-09-02T10:00:06.823456795Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a25-gcs-admin-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-02T10:00:07.123456796Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.buckets.update",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket",
+          "permission": "storage.buckets.update",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "ADMIN_WRITE"
+        }
+      ],
+      "request": {
+        "@type": "type.googleapis.com/storage.buckets.update",
+        "versioning": {
+          "enabled": true
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-02T10:00:07.823456796Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "a25-gcs-admin-3",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-02T10:00:08.123456797Z",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "bucket_name": "dlap-fixture-bucket",
+        "project_id": "proj-0d1a0001",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.setIamPermissions",
+      "resourceName": "projects/_/buckets/dlap-fixture-bucket",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/_/buckets/dlap-fixture-bucket",
+          "permission": "storage.buckets.setIamPolicy",
+          "granted": true,
+          "resourceAttributes": { },
+          "permissionType": "ADMIN_WRITE"
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.iam.v1.logging.AuditData",
+        "policyDelta": {
+          "bindingDeltas": [
+            {
+              "action": "ADD",
+              "role": "roles/storage.objectViewer",
+              "member": "user:analyst@example.com"
+            }
+          ]
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-02T10:00:08.823456797Z",
+    "severity": "INFO"
+  }
+]

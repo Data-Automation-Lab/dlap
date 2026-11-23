@@ -1,0 +1,30 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "GCP_BQ_JOBS_VIEW|proj-5e7a0c11|US|copy_job_5a1c0021",
+      "eventTime": "2026-09-14T14:30:00Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "changeType": "UPDATE",
+      "operation": "COPY",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "USER",
+        "id": "analyst@example.com"
+      },
+      "targetResource": {
+        "kind": "bigquery_table",
+        "name": "order_summary",
+        "project": "proj-5e7a0c11",
+        "canonicalUri": "bq://proj-5e7a0c11/analytics/order_summary"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "GCP_BQ_JOBS_VIEW/jobs-view-row",
+      "sourceSchemaVersion": "jobs-2026-10",
+      "requestMetadata": {
+        "requestId": "copy_job_5a1c0021"
+      }
+    }
+  ]
+}

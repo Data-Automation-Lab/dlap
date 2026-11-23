@@ -1,0 +1,20 @@
+{
+  "TrailARN": "arn:aws:cloudtrail:us-east-1:111122223333:trail/org-trail",
+  "AdvancedEventSelectors": [
+    {
+      "Name": "Management events",
+      "FieldSelectors": [
+        { "Field": "eventCategory", "Equals": ["Management"] }
+      ]
+    },
+    {
+      "Name": "Reads of finance-raw",
+      "FieldSelectors": [
+        { "Field": "eventCategory", "Equals": ["Data"] },
+        { "Field": "resources.type", "Equals": ["AWS::S3::Object"] },
+        { "Field": "readOnly", "Equals": ["true"] },
+        { "Field": "resources.ARN", "StartsWith": ["arn:aws:s3:::finance-raw/"] }
+      ]
+    }
+  ]
+}

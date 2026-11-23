@@ -1,0 +1,19 @@
+# Hard deny: no agent may export EU-resident personal data outside the region.
+# `effect: deny` overrides any allow (ADR-0040 combining algorithm), so this is
+# a floor no team-level allow can lift - the data-residency guarantee the
+# Frankfurt-CDO scenario needs stated as one rule.
+apiVersion: dlap/v1
+kind: AccessPolicy
+metadata:
+  id: access-deny-eu-export
+  name: "Deny cross-region export of EU personal data"
+  owner: "privacy-office@example.com"
+  enabled: true
+spec:
+  subjects:
+    roles: [DATA_ANALYST, DATA_SCIENTIST, DATA_ENGINEER]
+  actions: [export]
+  match:
+    labels:
+      allOf: [EU_RESIDENT, PII]
+  effect: deny

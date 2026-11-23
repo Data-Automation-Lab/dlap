@@ -1,0 +1,16 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "895dc875-cb08-45a5-b8c2-9158838741c0",
+      "eventTime": "2023-07-10T11:55:23Z",
+      "sourceProvider": "AWS",
+      "sourceService": "ec2.amazonaws.com",
+      "operation": "SharedSnapshotVolumeCreated",
+      "resultStatus": "SUCCESS",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08",
+      "sharedEventId": "b81f7fe5-36b5-49ea-bbc9-6a9007e733c0"
+    }
+  ]
+}

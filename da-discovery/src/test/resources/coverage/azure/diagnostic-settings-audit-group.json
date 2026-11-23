@@ -1,0 +1,15 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/rg-data/providers/Microsoft.Storage/storageAccounts/dlapdemoarchive/blobServices/default/providers/microsoft.insights/diagnosticSettings/audit-only",
+      "name": "audit-only",
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "properties": {
+        "eventHubAuthorizationRuleId": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/rg-ops/providers/Microsoft.EventHub/namespaces/ehns-ops/authorizationrules/RootManageSharedAccessKey",
+        "eventHubName": "storage-logs",
+        "metrics": [],
+        "logs": [ { "category": null, "categoryGroup": "audit", "enabled": true, "retentionPolicy": { "days": 0, "enabled": false } } ]
+      }
+    }
+  ]
+}

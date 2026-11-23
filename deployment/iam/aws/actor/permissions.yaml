@@ -1,0 +1,258 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# AWS Actor roles: the single source of truth (IAM-04). One Actor role per retire executor:
+# executor "delete" is da-autodelete, executor "archive" is da-autoarchival. main.tf reads this
+# file with yamldecode and builds one role for the executor it is given; actor-role.cfn.yaml
+# repeats the lists because CloudFormation cannot read a file. The da-admin-service
+# ActorRoleTraceabilityTest fails when:
+#   - a call site no longer exists, or its line no longer holds the quoted call;
+#   - a permission's executors differ from the modules of its call sites;
+#   - an object action (content read, write, delete or restore) is granted on a scope other than
+#     bucket_objects, or any permission holds a wildcard;
+#   - a never_grant entry is also granted;
+#   - the CloudFormation template grants a different action set, or names any resource other than
+#     the BucketNames parameter;
+#   - a file of da-autodelete or da-autoarchival imports the AWS SDK and is neither cited here nor
+#     listed under no_permission_sources or unreachable_sources.
+# The da-admin-service permission self-check (GET /api/v1/permission-check/aws) reads this file:
+# it simulates every permission and every never_grant entry against the Actor role and reports the
+# missing and the extra ones.
+#
+# runtime_identity (end of file) records the other half: DLAP's own identity holds only
+# sts:AssumeRole on these Actor role ARNs, and each role trusts it with an external id.
+#
+# Scopes (main.tf and actor-role.cfn.yaml build one statement per scope):
+#   bucket          The buckets the operator names, as bucket ARNs. Bucket configuration only.
+#   bucket_objects  The objects of those buckets only (bucket ARN plus "/*"), and only when the
+#                   operator turns object actions on (Terraform object_actions, CloudFormation
+#                   ObjectActions). Needed only for a single-object delete or archive; a bucket or
+#                   prefix uses the native lifecycle rule and needs no object action. Never "*".
+#   account         never_grant only: probed on Resource "*".
+cloud: aws
+permissions:
+  - permission: s3:GetLifecycleConfiguration
+    scopes: [bucket]
+    executors: [delete, archive]
+    purpose: Read the bucket's lifecycle rules (S3 GetBucketLifecycleConfiguration), so the rules the owner wrote are kept when DLAP adds or removes its own.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/S3LifecycleRuleApplier.java
+        line: 220
+        call: s3.getBucketLifecycleConfiguration(
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/aws/S3LifecycleRuleProvider.java
+        line: 305
+        call: s3().getBucketLifecycleConfiguration(
+  - permission: s3:PutLifecycleConfiguration
+    scopes: [bucket]
+    executors: [delete, archive]
+    purpose: Write the merged lifecycle rules (S3 PutBucketLifecycleConfiguration), and remove the configuration when DLAP's rule was the last one (S3 DeleteBucketLifecycle needs the same action).
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/S3LifecycleRuleApplier.java
+        line: 144
+        call: s3.putBucketLifecycleConfiguration(
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/S3LifecycleRuleApplier.java
+        line: 176
+        call: s3.deleteBucketLifecycle(
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/S3LifecycleRuleApplier.java
+        line: 178
+        call: s3.putBucketLifecycleConfiguration(
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/aws/S3LifecycleRuleProvider.java
+        line: 289
+        call: s3().deleteBucketLifecycle(
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/aws/S3LifecycleRuleProvider.java
+        line: 319
+        call: s3().putBucketLifecycleConfiguration(
+  - permission: s3:GetBucketVersioning
+    scopes: [bucket]
+    executors: [delete]
+    purpose: Read the bucket's versioning before a native delete rule (Q-656, Q-697); a versioned bucket is refused.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/S3LifecycleRuleApplier.java
+        line: 202
+        call: s3.getBucketVersioning(
+  - permission: s3:GetBucketLocation
+    scopes: [bucket]
+    executors: [delete]
+    purpose: Read the bucket's region to build a client in that region.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/S3LifecycleRuleApplier.java
+        line: 335
+        call: global.getBucketLocation(
+  - permission: s3:ListBucket
+    scopes: [bucket]
+    executors: [archive]
+    purpose: List the first keys of the archive scope for the plan preview (S3 ListObjectsV2). Names and sizes only, no content.
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/aws/S3LifecycleRuleProvider.java
+        line: 209
+        call: s3().listObjectsV2(
+  - permission: s3:DeleteObject
+    scopes: [bucket_objects]
+    executors: [delete]
+    purpose: Delete one approved object that no lifecycle rule can isolate (the direct engine delete).
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AwsCloudDeletionService.java
+        line: 275
+        call: s3.deleteObject(
+  - permission: s3:GetObject
+    scopes: [bucket_objects]
+    executors: [archive]
+    purpose: Read one object's metadata (S3 HeadObject) and copy it onto itself with the archive storage class (S3 CopyObject reads the source).
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AwsS3StorageService.java
+        line: 131
+        call: s3Client.headObject(
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AwsS3StorageService.java
+        line: 149
+        call: s3Client.copyObject(copyRequest)
+  - permission: s3:PutObject
+    scopes: [bucket_objects]
+    executors: [archive]
+    purpose: Write the object back with the archive storage class (S3 CopyObject writes the target).
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AwsS3StorageService.java
+        line: 149
+        call: s3Client.copyObject(copyRequest)
+  - permission: s3:RestoreObject
+    scopes: [bucket_objects]
+    executors: [archive]
+    purpose: Restore one archived object from a Glacier storage class.
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AwsS3StorageService.java
+        line: 203
+        call: s3Client.restoreObject(request)
+never_grant:
+  - permission: s3:DeleteBucket
+    scopes: [bucket]
+    reason: DLAP deletes objects through lifecycle rules, never a bucket.
+  - permission: s3:PutBucketPolicy
+    scopes: [bucket]
+    reason: A bucket policy write could grant anyone access.
+  - permission: s3:DeleteBucketPolicy
+    scopes: [bucket]
+    reason: Removing the owner's bucket policy is never a retire step.
+  - permission: s3:PutBucketAcl
+    scopes: [bucket]
+    reason: An ACL write could make the bucket public.
+  - permission: s3:PutBucketVersioning
+    scopes: [bucket]
+    reason: Suspending versioning would defeat the versioned-bucket refusal.
+  - permission: s3:PutBucketObjectLockConfiguration
+    scopes: [bucket]
+    reason: Object Lock is the owner's retention control.
+  - permission: s3:PutReplicationConfiguration
+    scopes: [bucket]
+    reason: Replication could copy data out of the bucket.
+  - permission: s3:DeleteObjectVersion
+    scopes: [bucket_objects]
+    reason: A version-qualified delete erases history; DLAP refuses versioned buckets instead.
+  - permission: s3:GetObjectVersion
+    scopes: [bucket_objects]
+    reason: No executor reads an older version.
+  - permission: s3:PutObjectAcl
+    scopes: [bucket_objects]
+    reason: An object ACL write could make data public.
+  - permission: s3:BypassGovernanceRetention
+    scopes: [bucket_objects]
+    reason: Object Lock governance mode must stop a delete.
+  - permission: s3:PutObjectRetention
+    scopes: [bucket_objects]
+    reason: Retention is the owner's control.
+  - permission: s3:PutObjectLegalHold
+    scopes: [bucket_objects]
+    reason: Legal holds are the owner's control.
+  - permission: iam:PassRole
+    scopes: [account]
+    reason: Passing a role is a privilege escalation path.
+  - permission: iam:PutRolePolicy
+    scopes: [account]
+    reason: The Actor must not widen its own role.
+  - permission: iam:AttachRolePolicy
+    scopes: [account]
+    reason: The Actor must not widen its own role.
+  - permission: iam:CreatePolicyVersion
+    scopes: [account]
+    reason: The Actor must not rewrite a policy.
+  - permission: sts:AssumeRole
+    scopes: [account]
+    reason: The Actor assumes no further role; DLAP's runtime identity assumes the Actor.
+tolerated_denials:
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AwsCloudDeletionService.java
+    line: 256
+    call: s3.headObject(
+    permission: s3:GetObject
+    reason: A size probe before the delete. A denied probe is logged and the delete goes on without the size, so the delete Actor never needs to read object content.
+unreachable_calls:
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AwsCloudDeletionService.java
+    line: 293
+    call: rds.deleteDBInstance(
+    reason: DispositionPlanner sends the engine only S3, GCS and Azure Blob objects (DIRECT_KINDS), so the RDS branch of deleteData is never reached by the executor.
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AwsCloudDeletionService.java
+    line: 318
+    call: ddb.deleteTable(
+    reason: Same as the RDS branch; a DynamoDB table never reaches the engine delete.
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AwsCloudDeletionService.java
+    line: 406
+    call: s3.headObject(
+    reason: calculateStorageReclaim; the executor calls deleteData only.
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AwsCloudDeletionService.java
+    line: 485
+    call: s3.headObject(
+    reason: verifyDeletion; the executor calls deleteData only.
+  - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AwsS3StorageService.java
+    line: 254
+    call: s3Client.headObject(
+    reason: getArchivalStatus; nothing calls it.
+  - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AwsS3StorageService.java
+    line: 292
+    call: s3Client.headObject(
+    reason: getRestorationStatus; nothing calls it.
+no_permission_sources:
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/S3ClientFactory.java
+    reason: Client factory interface; makes no AWS call.
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/ActorCredentials.java
+    reason: Builds the credentials provider that assumes the Actor role (EXEC-01); sts:AssumeRole belongs to DLAP's own runtime identity, not to the Actor, and the provider makes no call until a request is signed.
+  - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/aws/ActorCredentials.java
+    reason: Builds the credentials provider that assumes the Actor role (EXEC-01); sts:AssumeRole belongs to DLAP's own runtime identity, not to the Actor, and the provider makes no call until a request is signed.
+unreachable_sources:
+  - source: da-autoarchival/src/main/java/com/dlap/autoarchival/provider/AwsS3GlacierArchivalProvider.java
+    reason: An ICloudArchivalProvider bean that no class injects; the archive executor uses S3LifecycleRuleProvider and AwsS3StorageService.
+# The runtime identity (ADR-0113 point 6, Q-703, Q-722). DLAP's own identity (the IRSA role of the
+# pod or the instance profile role of the pilot VM) holds no Actor permission. It holds only
+# sts:AssumeRole on the named Actor role ARNs, and each Actor role trusts that identity ARN (never
+# an account root) with a per-customer sts:ExternalId. The Actor permissions above are what the
+# assumed role holds, not what the runtime identity holds. ActorRoleTraceabilityTest checks the
+# cited lines, that the resources are role ARNs and never "*", and that Terraform and
+# CloudFormation write this trust.
+runtime_identity:
+  permission: sts:AssumeRole
+  holder: DLAP's runtime identity (IRSA role or instance profile role), never an Actor role
+  resources: "arn:aws:iam::<customer-account>:role/<actor-role-name>, one per Actor role the operator names; never *"
+  trust:
+    principal: the runtime role ARN (trusted_principal_arn, TrustedPrincipalArn), never the account root
+    condition: sts:ExternalId equals the per-customer external id (external_id, ExternalId)
+    max_session_seconds: 3600
+  purpose: Let the executors act as the customer's Actor role with a role ARN and an external id instead of the host's own credentials.
+  calls:
+    - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/ActorCredentials.java
+      line: 175
+      call: StsAssumeRoleCredentialsProvider.builder()
+    - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/ActorCredentials.java
+      line: 191
+      call: AssumeRoleRequest.builder().roleArn(roleArn)
+    - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/aws/ActorCredentials.java
+      line: 193
+      call: r.externalId(externalId)
+    - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/aws/ActorCredentials.java
+      line: 175
+      call: StsAssumeRoleCredentialsProvider.builder()
+    - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/aws/ActorCredentials.java
+      line: 191
+      call: AssumeRoleRequest.builder().roleArn(roleArn)
+    - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/aws/ActorCredentials.java
+      line: 193
+      call: r.externalId(externalId)
+  # The executors assume the Actor role through ActorCredentials (EXEC-01, ADR-0119) when
+  # dlap.<service>.aws.credentials-ref names a role ARN; empty keeps the SDK default chain (IRSA,
+  # instance profile). da-logingest's Reader assume-role call (ADR-0110) is not an Actor call.

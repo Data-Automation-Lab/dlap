@@ -1,0 +1,209 @@
+# Wire contract of da-protos/src/main/proto/dlap/log/v1/log_event.proto (ADR-0045).
+# Read by LogEventProtoContractTest. One line per message, field, enum and enum value.
+# Fields and values are keyed by number. In v1, never edit or delete a line:
+# removals, renumbering, renames and retypes are breaking. Additive changes append
+# lines; the test writes the full current snapshot to build/proto-contract/.
+file dlap/log/v1/log_event.proto | package=dlap.log.v1 syntax=proto3 java_package=com.dlap.proto.log.v1 java_outer_classname=LogEventProto java_multiple_files=true
+message dlap.log.v1.BindingScope |
+field dlap.log.v1.BindingScope#1 | name=scope_type json=scopeType label=optional type=string
+field dlap.log.v1.BindingScope#2 | name=scope_id json=scopeId label=optional type=string
+field dlap.log.v1.BindingScope#3 | name=regions json=regions label=repeated type=string
+enum dlap.log.v1.BindingState |
+value dlap.log.v1.BindingState#0 | name=BINDING_STATE_UNSPECIFIED
+value dlap.log.v1.BindingState#1 | name=BINDING_STATE_ACTIVE
+value dlap.log.v1.BindingState#2 | name=BINDING_STATE_DISABLED
+value dlap.log.v1.BindingState#3 | name=BINDING_STATE_DEGRADED
+value dlap.log.v1.BindingState#4 | name=BINDING_STATE_FAILED
+enum dlap.log.v1.ChangeType |
+value dlap.log.v1.ChangeType#0 | name=CHANGE_TYPE_UNSPECIFIED
+value dlap.log.v1.ChangeType#1 | name=CREATE
+value dlap.log.v1.ChangeType#2 | name=UPDATE
+value dlap.log.v1.ChangeType#3 | name=DELETE
+value dlap.log.v1.ChangeType#4 | name=ACCESS
+value dlap.log.v1.ChangeType#5 | name=PERMISSION
+value dlap.log.v1.ChangeType#6 | name=ARCHIVE
+message dlap.log.v1.DlapLogEvent |
+field dlap.log.v1.DlapLogEvent#1 | name=event_id json=eventId label=optional type=string
+field dlap.log.v1.DlapLogEvent#2 | name=event_time json=eventTime label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.DlapLogEvent#3 | name=ingest_time json=ingestTime label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.DlapLogEvent#4 | name=source_provider json=sourceProvider label=optional type=enum:dlap.log.v1.SourceProvider
+field dlap.log.v1.DlapLogEvent#5 | name=source_service json=sourceService label=optional type=string
+field dlap.log.v1.DlapLogEvent#6 | name=change_type json=changeType label=optional type=enum:dlap.log.v1.ChangeType
+field dlap.log.v1.DlapLogEvent#7 | name=operation json=operation label=optional type=string
+field dlap.log.v1.DlapLogEvent#8 | name=result_status json=resultStatus label=optional type=enum:dlap.log.v1.ResultStatus
+field dlap.log.v1.DlapLogEvent#9 | name=principal json=principal label=optional type=message:dlap.log.v1.Principal
+field dlap.log.v1.DlapLogEvent#10 | name=target_resource json=targetResource label=optional type=message:dlap.log.v1.TargetResource
+field dlap.log.v1.DlapLogEvent#11 | name=request_metadata json=requestMetadata label=optional type=message:dlap.log.v1.RequestMetadata
+field dlap.log.v1.DlapLogEvent#12 | name=raw_event json=rawEvent label=optional type=message:google.protobuf.Struct
+field dlap.log.v1.DlapLogEvent#13 | name=schema_version json=schemaVersion label=optional type=string
+field dlap.log.v1.DlapLogEvent#14 | name=source_format json=sourceFormat label=optional type=string
+field dlap.log.v1.DlapLogEvent#15 | name=source_schema_version json=sourceSchemaVersion label=optional type=string
+field dlap.log.v1.DlapLogEvent#16 | name=parser_version json=parserVersion label=optional type=string
+field dlap.log.v1.DlapLogEvent#17 | name=binding_id json=bindingId label=optional type=string
+field dlap.log.v1.DlapLogEvent#18 | name=native_event_id json=nativeEventId label=optional type=string
+field dlap.log.v1.DlapLogEvent#19 | name=observed_time json=observedTime label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.DlapLogEvent#20 | name=event_category json=eventCategory label=optional type=enum:dlap.log.v1.EventCategory
+field dlap.log.v1.DlapLogEvent#21 | name=origin json=origin label=optional type=enum:dlap.log.v1.Origin
+field dlap.log.v1.DlapLogEvent#22 | name=parse_status json=parseStatus label=optional type=enum:dlap.log.v1.ParseStatus
+field dlap.log.v1.DlapLogEvent#23 | name=related_resources json=relatedResources label=repeated type=message:dlap.log.v1.TargetResource
+field dlap.log.v1.DlapLogEvent#24 | name=supersedes_event_id json=supersedesEventId label=optional type=string
+field dlap.log.v1.DlapLogEvent#25 | name=shared_event_id json=sharedEventId label=optional type=string
+field dlap.log.v1.DlapLogEvent#26 | name=parse_warnings json=parseWarnings label=repeated type=enum:dlap.log.v1.ParseWarning
+enum dlap.log.v1.EventCategory |
+value dlap.log.v1.EventCategory#0 | name=EVENT_CATEGORY_UNSPECIFIED
+value dlap.log.v1.EventCategory#1 | name=EVENT_CATEGORY_MANAGEMENT
+value dlap.log.v1.EventCategory#2 | name=EVENT_CATEGORY_DATA_READ
+value dlap.log.v1.EventCategory#3 | name=EVENT_CATEGORY_DATA_WRITE
+value dlap.log.v1.EventCategory#4 | name=EVENT_CATEGORY_PERMISSION
+value dlap.log.v1.EventCategory#5 | name=EVENT_CATEGORY_DATA_READ_OBSERVED
+message dlap.log.v1.LogBindingStatus |
+field dlap.log.v1.LogBindingStatus#1 | name=binding_id json=bindingId label=optional type=string
+field dlap.log.v1.LogBindingStatus#2 | name=source_provider json=sourceProvider label=optional type=enum:dlap.log.v1.SourceProvider
+field dlap.log.v1.LogBindingStatus#3 | name=source_kind json=sourceKind label=optional type=string
+field dlap.log.v1.LogBindingStatus#4 | name=scope json=scope label=optional type=message:dlap.log.v1.BindingScope
+field dlap.log.v1.LogBindingStatus#5 | name=state json=state label=optional type=enum:dlap.log.v1.BindingState
+field dlap.log.v1.LogBindingStatus#6 | name=state_detail json=stateDetail label=optional type=string
+field dlap.log.v1.LogBindingStatus#7 | name=config_hash json=configHash label=optional type=string
+field dlap.log.v1.LogBindingStatus#8 | name=reported_time json=reportedTime label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogBindingStatus#9 | name=low_watermark json=lowWatermark label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogBindingStatus#10 | name=high_watermark json=highWatermark label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogBindingStatus#11 | name=last_poll_time json=lastPollTime label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogBindingStatus#12 | name=counts json=counts label=optional type=message:dlap.log.v1.RecordCounts
+field dlap.log.v1.LogBindingStatus#13 | name=window_start json=windowStart label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogBindingStatus#14 | name=window_end json=windowEnd label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogBindingStatus#15 | name=observed_formats json=observedFormats label=repeated type=message:dlap.log.v1.ObservedFormat
+field dlap.log.v1.LogBindingStatus#16 | name=read_coverage json=readCoverage label=optional type=enum:dlap.log.v1.ReadCoverage
+field dlap.log.v1.LogBindingStatus#17 | name=read_coverage_since json=readCoverageSince label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogBindingStatus#18 | name=schema_version json=schemaVersion label=optional type=string
+message dlap.log.v1.LogQuarantineRecord |
+field dlap.log.v1.LogQuarantineRecord#1 | name=quarantine_id json=quarantineId label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#2 | name=binding_id json=bindingId label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#3 | name=source_provider json=sourceProvider label=optional type=enum:dlap.log.v1.SourceProvider
+field dlap.log.v1.LogQuarantineRecord#4 | name=source_kind json=sourceKind label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#5 | name=envelope json=envelope label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#6 | name=detected_version json=detectedVersion label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#7 | name=pinned_version json=pinnedVersion label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#8 | name=parser_version json=parserVersion label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#9 | name=reason json=reason label=optional type=enum:dlap.log.v1.QuarantineReason
+field dlap.log.v1.LogQuarantineRecord#10 | name=reason_detail json=reasonDetail label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#11 | name=raw_ref json=rawRef label=optional type=message:dlap.log.v1.RawRecordRef
+field dlap.log.v1.LogQuarantineRecord#12 | name=raw_excerpt json=rawExcerpt label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#13 | name=raw_truncated json=rawTruncated label=optional type=bool
+field dlap.log.v1.LogQuarantineRecord#14 | name=raw_sha256 json=rawSha256 label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#15 | name=raw_size_bytes json=rawSizeBytes label=optional type=int64
+field dlap.log.v1.LogQuarantineRecord#16 | name=event_time json=eventTime label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogQuarantineRecord#17 | name=quarantined_time json=quarantinedTime label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.LogQuarantineRecord#18 | name=native_event_id json=nativeEventId label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#19 | name=pass_through_event_id json=passThroughEventId label=optional type=string
+field dlap.log.v1.LogQuarantineRecord#20 | name=schema_version json=schemaVersion label=optional type=string
+message dlap.log.v1.ObservedFormat |
+field dlap.log.v1.ObservedFormat#1 | name=envelope json=envelope label=optional type=string
+field dlap.log.v1.ObservedFormat#2 | name=schema_version json=schemaVersion label=optional type=string
+field dlap.log.v1.ObservedFormat#3 | name=fingerprint json=fingerprint label=optional type=string
+field dlap.log.v1.ObservedFormat#4 | name=first_seen json=firstSeen label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.ObservedFormat#5 | name=last_seen json=lastSeen label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.ObservedFormat#6 | name=count json=count label=optional type=int64
+enum dlap.log.v1.Origin |
+value dlap.log.v1.Origin#0 | name=ORIGIN_UNSPECIFIED
+value dlap.log.v1.Origin#1 | name=ORIGIN_CLOUD_LOG
+value dlap.log.v1.Origin#2 | name=ORIGIN_CRAWLER
+value dlap.log.v1.Origin#3 | name=ORIGIN_REPLAY
+value dlap.log.v1.Origin#4 | name=ORIGIN_BACKFILL
+enum dlap.log.v1.ParseStatus |
+value dlap.log.v1.ParseStatus#0 | name=PARSE_STATUS_UNSPECIFIED
+value dlap.log.v1.ParseStatus#1 | name=PARSE_STATUS_FULL
+value dlap.log.v1.ParseStatus#2 | name=PARSE_STATUS_WARNINGS
+value dlap.log.v1.ParseStatus#3 | name=PARSE_STATUS_PARTIAL
+enum dlap.log.v1.ParseWarning |
+value dlap.log.v1.ParseWarning#0 | name=PARSE_WARNING_UNSPECIFIED
+value dlap.log.v1.ParseWarning#1 | name=PARSE_WARNING_UNKNOWN_FIELDS
+value dlap.log.v1.ParseWarning#2 | name=PARSE_WARNING_NEWER_MINOR
+value dlap.log.v1.ParseWarning#3 | name=PARSE_WARNING_HEURISTIC_CLASSIFICATION
+value dlap.log.v1.ParseWarning#4 | name=PARSE_WARNING_PROVIDER_TRUNCATED
+value dlap.log.v1.ParseWarning#5 | name=PARSE_WARNING_VERSION_PIN_MISMATCH
+value dlap.log.v1.ParseWarning#6 | name=PARSE_WARNING_EVENT_TIME_FALLBACK
+message dlap.log.v1.Principal |
+field dlap.log.v1.Principal#1 | name=type json=type label=optional type=enum:dlap.log.v1.PrincipalType
+field dlap.log.v1.Principal#2 | name=id json=id label=optional type=string
+field dlap.log.v1.Principal#3 | name=display_name json=displayName label=optional type=string
+field dlap.log.v1.Principal#4 | name=account_id json=accountId label=optional type=string
+enum dlap.log.v1.PrincipalType |
+value dlap.log.v1.PrincipalType#0 | name=PRINCIPAL_TYPE_UNSPECIFIED
+value dlap.log.v1.PrincipalType#1 | name=USER
+value dlap.log.v1.PrincipalType#2 | name=SERVICE_ACCOUNT
+value dlap.log.v1.PrincipalType#3 | name=GROUP
+value dlap.log.v1.PrincipalType#4 | name=ROLE
+value dlap.log.v1.PrincipalType#5 | name=SYSTEM
+enum dlap.log.v1.QuarantineReason |
+value dlap.log.v1.QuarantineReason#0 | name=QUARANTINE_REASON_UNSPECIFIED
+value dlap.log.v1.QuarantineReason#1 | name=QUARANTINE_REASON_INVALID_ENCODING
+value dlap.log.v1.QuarantineReason#2 | name=QUARANTINE_REASON_INVALID_JSON
+value dlap.log.v1.QuarantineReason#3 | name=QUARANTINE_REASON_UNKNOWN_ENVELOPE
+value dlap.log.v1.QuarantineReason#4 | name=QUARANTINE_REASON_UNKNOWN_MAJOR_VERSION
+value dlap.log.v1.QuarantineReason#5 | name=QUARANTINE_REASON_VERSION_PIN_MISMATCH
+value dlap.log.v1.QuarantineReason#6 | name=QUARANTINE_REASON_MISSING_REQUIRED_FIELD
+value dlap.log.v1.QuarantineReason#7 | name=QUARANTINE_REASON_FIELD_TYPE_MISMATCH
+value dlap.log.v1.QuarantineReason#8 | name=QUARANTINE_REASON_UNRESOLVABLE_ASSET_ID
+value dlap.log.v1.QuarantineReason#9 | name=QUARANTINE_REASON_PARSER_EXCEPTION
+value dlap.log.v1.QuarantineReason#10 | name=QUARANTINE_REASON_OVERSIZE_RECORD
+message dlap.log.v1.RawRecordRef |
+field dlap.log.v1.RawRecordRef#1 | name=transport json=transport label=optional type=string
+field dlap.log.v1.RawRecordRef#2 | name=uri json=uri label=optional type=string
+field dlap.log.v1.RawRecordRef#3 | name=record_index json=recordIndex label=optional type=int64
+field dlap.log.v1.RawRecordRef#4 | name=cursor json=cursor label=optional type=string
+enum dlap.log.v1.ReadCoverage |
+value dlap.log.v1.ReadCoverage#0 | name=READ_COVERAGE_UNSPECIFIED
+value dlap.log.v1.ReadCoverage#1 | name=READ_COVERAGE_CAPTURED
+value dlap.log.v1.ReadCoverage#2 | name=READ_COVERAGE_NONE_OBSERVED
+value dlap.log.v1.ReadCoverage#3 | name=READ_COVERAGE_NOT_CAPTURED
+message dlap.log.v1.RecordCounts |
+field dlap.log.v1.RecordCounts#1 | name=parsed json=parsed label=optional type=int64
+field dlap.log.v1.RecordCounts#2 | name=parsed_with_warnings json=parsedWithWarnings label=optional type=int64
+field dlap.log.v1.RecordCounts#3 | name=skipped json=skipped label=optional type=int64
+field dlap.log.v1.RecordCounts#4 | name=quarantined json=quarantined label=optional type=int64
+field dlap.log.v1.RecordCounts#5 | name=published json=published label=optional type=int64
+field dlap.log.v1.RecordCounts#6 | name=duplicates json=duplicates label=optional type=int64
+message dlap.log.v1.RequestMetadata |
+field dlap.log.v1.RequestMetadata#1 | name=caller_ip json=callerIp label=optional type=string
+field dlap.log.v1.RequestMetadata#2 | name=user_agent json=userAgent label=optional type=string
+field dlap.log.v1.RequestMetadata#3 | name=request_id json=requestId label=optional type=string
+field dlap.log.v1.RequestMetadata#4 | name=trace_id json=traceId label=optional type=string
+enum dlap.log.v1.ResourceRelation |
+value dlap.log.v1.ResourceRelation#0 | name=RESOURCE_RELATION_UNSPECIFIED
+value dlap.log.v1.ResourceRelation#1 | name=RESOURCE_RELATION_PARENT
+value dlap.log.v1.ResourceRelation#2 | name=RESOURCE_RELATION_SOURCE
+value dlap.log.v1.ResourceRelation#3 | name=RESOURCE_RELATION_DESTINATION
+value dlap.log.v1.ResourceRelation#4 | name=RESOURCE_RELATION_OTHER
+enum dlap.log.v1.ResultStatus |
+value dlap.log.v1.ResultStatus#0 | name=RESULT_STATUS_UNSPECIFIED
+value dlap.log.v1.ResultStatus#1 | name=SUCCESS
+value dlap.log.v1.ResultStatus#2 | name=FAILURE
+value dlap.log.v1.ResultStatus#3 | name=PENDING
+enum dlap.log.v1.SourceProvider |
+value dlap.log.v1.SourceProvider#0 | name=SOURCE_PROVIDER_UNSPECIFIED
+value dlap.log.v1.SourceProvider#1 | name=GCP
+value dlap.log.v1.SourceProvider#2 | name=AWS
+value dlap.log.v1.SourceProvider#3 | name=AZURE
+value dlap.log.v1.SourceProvider#4 | name=OCI
+value dlap.log.v1.SourceProvider#5 | name=UNITY
+value dlap.log.v1.SourceProvider#6 | name=DATABRICKS
+value dlap.log.v1.SourceProvider#7 | name=SNOWFLAKE
+message dlap.log.v1.TargetResource |
+field dlap.log.v1.TargetResource#1 | name=kind json=kind label=optional type=string
+field dlap.log.v1.TargetResource#2 | name=id json=id label=optional type=string
+field dlap.log.v1.TargetResource#3 | name=name json=name label=optional type=string
+field dlap.log.v1.TargetResource#4 | name=project json=project label=optional type=string
+field dlap.log.v1.TargetResource#5 | name=region json=region label=optional type=string
+field dlap.log.v1.TargetResource#6 | name=resource_path json=resourcePath label=optional type=string
+field dlap.log.v1.TargetResource#7 | name=labels json=labels label=repeated type=message:dlap.log.v1.TargetResource.LabelsEntry
+field dlap.log.v1.TargetResource#8 | name=canonical_uri json=canonicalUri label=optional type=string
+field dlap.log.v1.TargetResource#9 | name=created_time json=createdTime label=optional type=message:google.protobuf.Timestamp
+field dlap.log.v1.TargetResource#10 | name=size_bytes json=sizeBytes label=optional type=int64 presence=explicit
+field dlap.log.v1.TargetResource#11 | name=technical_metadata json=technicalMetadata label=repeated type=message:dlap.log.v1.TargetResource.TechnicalMetadataEntry
+field dlap.log.v1.TargetResource#12 | name=relation json=relation label=optional type=enum:dlap.log.v1.ResourceRelation
+message dlap.log.v1.TargetResource.LabelsEntry | map_entry=true
+field dlap.log.v1.TargetResource.LabelsEntry#1 | name=key json=key label=optional type=string
+field dlap.log.v1.TargetResource.LabelsEntry#2 | name=value json=value label=optional type=string
+message dlap.log.v1.TargetResource.TechnicalMetadataEntry | map_entry=true
+field dlap.log.v1.TargetResource.TechnicalMetadataEntry#1 | name=key json=key label=optional type=string
+field dlap.log.v1.TargetResource.TechnicalMetadataEntry#2 | name=value json=value label=optional type=string

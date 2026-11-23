@@ -1,0 +1,13 @@
+{
+  "TrailARN": "arn:aws:cloudtrail:eu-west-1:111122223333:trail/eu-trail",
+  "EventSelectors": [
+    {
+      "ReadWriteType": "ReadOnly",
+      "IncludeManagementEvents": false,
+      "DataResources": [
+        { "Type": "AWS::S3::Object", "Values": ["arn:aws:s3:::finance-raw/", "arn:aws:s3:::web-assets/images/"] },
+        { "Type": "AWS::Lambda::Function", "Values": ["arn:aws:lambda"] }
+      ]
+    }
+  ]
+}

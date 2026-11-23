@@ -1,0 +1,46 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "EXAMPLE",
+        "arn": "arn:aws:iam::123456789012:user/user-09ff66",
+        "accountId": "123456789012",
+        "accessKeyId": "EXAMPLEKEY",
+        "userName": "user-09ff66"
+      },
+      "eventTime": "2023-10-01T12:34:56Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteObjects",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.0.2.0",
+      "userAgent": "aws-sdk-go/1.15.12 (go1.12.6; linux; amd64)",
+      "requestParameters": {
+        "bucketName": "example-bucket",
+        "key": "example-object"
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "bytesTransferredIn": 0,
+        "bytesTransferredOut": 0
+      },
+      "requestID": "EXAMPLE123456789",
+      "eventID": "EXAMPLE-1234-5678-9012-EXAMPLE",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::example-bucket/example-object"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "sharedEventID": "EXAMPLE-1234-5678-9012-EXAMPLE",
+      "vpcEndpointId": "vpce-1a2b3c4d"
+    }
+  ]
+}

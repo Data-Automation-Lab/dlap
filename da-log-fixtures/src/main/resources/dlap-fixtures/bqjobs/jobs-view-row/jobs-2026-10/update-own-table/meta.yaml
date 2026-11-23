@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:UPDATE
+variant_ids:
+  - write.destination-table
+  - write.dml-statistics
+expected_outcome: PARSED
+anonymised: false
+notes: "UPDATE reads its own table to find rows; the table is written, not read, so there is one DATA_WRITE and no DATA_READ."

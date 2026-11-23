@@ -1,0 +1,34 @@
+{
+  "outcome": "PARSED_WITH_WARNINGS",
+  "events": [
+    {
+      "nativeEventId": "0a5e0c11-1fe0-4e00-8000-000000000313",
+      "eventTime": "2026-11-03T03:00:02Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3lifecycle.amazonaws.com",
+      "operation": "deleteExpiredObject",
+      "changeType": "UPDATE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "lifecycle.s3.amazonaws.com",
+        "type": "SYSTEM"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Object",
+        "canonicalUri": "s3://dlap-aws-e2e/raw/2026/07/sales.parquet",
+        "project": "123456789012",
+        "region": "us-east-1"
+      },
+      "requestMetadata": {
+        "callerIp": "lifecycle.s3.amazonaws.com",
+        "requestId": "PARSE03CTU000003"
+      },
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.11",
+      "parseWarnings": [
+        "PARSE_WARNING_HEURISTIC_CLASSIFICATION"
+      ]
+    }
+  ]
+}

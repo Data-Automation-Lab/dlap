@@ -1,0 +1,10 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers: []
+variant_ids:
+  - bq1.binding-pinned-v1
+expected_outcome: QUARANTINED:VERSION_PIN_MISMATCH
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Through the same pinned binding a v2 row is quarantined: the binding's mismatch policy applies."

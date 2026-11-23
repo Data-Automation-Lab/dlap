@@ -1,0 +1,294 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# INDEPENDENT COVERAGE SPEC. READ-ONLY FOR PARSER PACKAGES.
+#
+# This file is the denominator of the dbxaudit coverage score (com.dlap.fixtures.CoverageSpec).
+# It was written from the Databricks and Microsoft documentation by a package that does not build
+# the parser (SPEC-01). Parser and fixture packages use these ids in meta.yaml and never edit this
+# file. A change goes in its own commit, with no parser code and no fixture case in it;
+# scripts/ci-guards/post-test/coverage-spec-lock.sh fails any other commit.
+
+spec: dlap-coverage-spec/1
+family: dbxaudit
+title: Databricks audit logs (delivered JSON, the system.access.audit table and the Azure diagnostic form)
+source_kind: DATABRICKS_AUDIT
+written_by: SPEC-01
+written_on: "2026-10-19"
+research:
+  - "Hardening research, Databricks and Snowflake sources report (2026-10-18): sections 1.2 to 1.5 and section 5 (parser contract)"
+  - "docs/specs/log-event.md (LOG-01 contract): native keys event_id and DATABRICKS_AUDIT|requestId|timestamp|actionName"
+operation_id_rule: "<serviceName>:<actionName> (service_name:action_name on system-table rows, ServiceName:ActionName on Azure diagnostic records), exactly as the record spells them."
+version_rule: >-
+  Delivered JSON and system-table rows carry version, documented value 2.0; any other value is quarantined. The
+  Azure diagnostic form has no version field and carries OperationVersion 1.0.0, which versions that envelope.
+  The research found no changelog for the audit schema version and no compatibility promise for system tables,
+  so columns may be added at any time and are read by name.
+notes: >-
+  Not scored here: system.access.table_lineage and column_lineage (source-only rows as reads), system.query.history
+  and information_schema.tables belong to the dbxsystem family (DBX-01) and need their own spec. Verbose audit
+  events (notebook, jobs, databrickssql) are off by default; a workspace admin enables them.
+
+envelopes:
+  - id: delivered-json
+    title: Audit log delivery, JSON lines at <prefix>/workspaceId=<id>/date=<yyyy-mm-dd>/auditlogs_<id>.json (camelCase, epoch-ms timestamp)
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-log-delivery
+    versions: ["2.0"]
+  - id: system-table-row
+    title: Row of system.access.audit as a JSON object keyed by column name (snake_case, typed event_time, event_id)
+    doc_url: https://docs.databricks.com/aws/en/admin/system-tables/audit-logs
+    versions: ["2.0"]
+  - id: azure-diagnostic
+    title: Azure Databricks diagnostic log record (PascalCase, OperationVersion 1.0.0, Category, Identity)
+    doc_url: https://learn.microsoft.com/en-us/azure/databricks/admin/account-settings/audit-log-delivery
+    versions: ["1.0.0"]
+
+versions:
+  - id: "2.0"
+    title: Audit schema version 2.0, the documented value of version on delivered and system-table records
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    detect: Top-level version (delivered JSON) or the version column (system table) equals 2.0
+    required_fields: [version, "timestamp or event_time", "serviceName or service_name", "actionName or action_name", "requestId or request_id", "accountId or account_id", "response.statusCode or response.status_code"]
+    optional_fields: [workspaceId, userIdentity.email, sessionId, sourceIPAddress, userAgent, orgId, shardName, requestParams, event_id, identity_metadata, audit_level]
+  - id: "1.0.0"
+    title: Azure diagnostic form, OperationVersion 1.0.0 and no version field
+    doc_url: https://learn.microsoft.com/en-us/azure/databricks/admin/account-settings/audit-log-delivery
+    detect: PascalCase keys with OperationVersion 1.0.0 and Category
+    required_fields: [TimeGenerated, ServiceName, ActionName, RequestId, ResourceId]
+    optional_fields: [Identity.email, RequestParams, Response, SourceIPAddress, LogId, Type, OperationName]
+
+operations:
+  # ---------------------------------------------------------------- Unity Catalog (account-level)
+  - id: unityCatalog:getTable
+    expected_category: MANAGEMENT
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (a metadata fetch, not a data read); DBX-01 acceptance
+  - id: unityCatalog:createTable
+    expected_category: MANAGEMENT
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3
+  - id: unityCatalog:deleteTable
+    expected_category: MANAGEMENT
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3
+  - id: unityCatalog:updateTables
+    expected_category: MANAGEMENT
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (the docs spell it plural)
+  - id: unityCatalog:updateTable
+    expected_category: MANAGEMENT
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    status: unverified
+    reason: The docs spell updateTables; the singular may appear on real records (Databricks report section 1.3); confirm with a capture (LIVE-03)
+  - id: unityCatalog:generateTemporaryTableCredential
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3; operation READ counts as a read, READ_WRITE as a write
+  - id: unityCatalog:generateTemporaryPathCredential
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3; a path read signal
+  - id: unityCatalog:getVolume
+    expected_category: MANAGEMENT
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3
+  # ---------------------------------------------------------------- Delta Sharing
+  - id: unityCatalog:deltaSharingQueryTable
+    expected_category: DATA_READ
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (provider side read signal)
+  - id: unityCatalog:deltaSharingQueryTableChanges
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (provider side)
+  - id: unityCatalog:deltaSharingQueriedTable
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (provider side)
+  - id: unityCatalog:deltaSharingQueriedTableChanges
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (provider side)
+  - id: unityCatalog:deltaSharingGetQueryInfo
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (provider side)
+  - id: unityCatalog:deltaSharingProxyQueryTable
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (recipient side)
+  - id: unityCatalog:deltaSharingProxyQueryTableChanges
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (recipient side)
+  # ---------------------------------------------------------------- files and cloud storage
+  - id: filesystem:filesGet
+    expected_category: DATA_READ
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (path or volume read signal)
+  - id: filesystem:filesHead
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3
+  - id: filesystem:directoriesGet
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3
+  - id: cloudStorageMetadata:listObjects
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 (listed as a path read signal; a listing is MANAGEMENT per log-event.md section 4.3)
+  # ---------------------------------------------------------------- verbose audit events
+  - id: notebook:runCommand
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/verbose-logs
+    research: Databricks report section 1.3 (verbose, off by default)
+  - id: jobs:runCommand
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/verbose-logs
+    research: Databricks report section 1.3 (verbose, off by default)
+  - id: databrickssql:commandSubmit
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/verbose-logs
+    research: Databricks report section 1.3 (verbose; params commandText, warehouseId, commandId)
+  - id: databrickssql:commandFinish
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/verbose-logs
+    research: Databricks report section 1.3 (verbose)
+
+variants:
+  # ---------------------------------------------------------------- record and version
+  - id: record.invalid-json
+    title: Input that is not valid JSON is quarantined, never dropped silently
+    negative: true
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Log layer design B3
+  - id: record.unknown-fields
+    title: Unknown fields and new columns are ignored by name, never a rejection
+    doc_url: https://docs.databricks.com/aws/en/admin/system-tables/audit-logs
+    research: Databricks report section 1.4 (no schema evolution policy; parse tolerantly by name)
+  - id: version.unknown-future
+    title: An unknown version value is quarantined
+    negative: true
+    envelopes: [delivered-json, system-table-row]
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report sections 4 and 5
+  - id: status.error-response
+    title: response.statusCode other than 200 (400 for general errors) maps to FAILURE
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.2, field mapping
+
+  # ---------------------------------------------------------------- scope, identity, time
+  - id: scope.account-level-workspace-zero
+    title: Account-level unityCatalog events have workspaceId 0; the originating workspace and metastore come from requestParams.workspace_id and metastore_id
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.2, account-level gotcha; DBX-01 acceptance
+  - id: scope.workspace-level
+    title: A WORKSPACE_LEVEL event with its own workspaceId
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.2 (auditLevel ACCOUNT_LEVEL or WORKSPACE_LEVEL)
+  - id: field.workspace-id-string-or-number
+    title: workspaceId as a string or a number, or absent
+    envelopes: [delivered-json]
+    doc_url: https://docs.databricks.com/en/archive/security/monitor-log-schemas.html
+    research: Databricks report sections 1.2 and 5
+  - id: actor.email
+    title: Actor from userIdentity.email (user_identity.email on system-table rows)
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.2, field mapping
+  - id: actor.system-user
+    title: Automated actions use the actor System-User
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report sections 1.2 and 5
+  - id: actor.identity-metadata
+    title: identity_metadata run_by and run_as present, with acting_resource fields null or missing
+    envelopes: [system-table-row]
+    doc_url: https://docs.databricks.com/aws/en/admin/system-tables/audit-logs
+    research: Databricks report sections 1.2, 1.4 and 5
+  - id: time.epoch-milliseconds
+    title: timestamp in epoch milliseconds is the event time
+    envelopes: [delivered-json]
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-log-delivery
+    research: Databricks report section 1.2
+  - id: time.typed-event-time
+    title: event_time as a UTC timestamp is the event time
+    envelopes: [system-table-row]
+    doc_url: https://docs.databricks.com/aws/en/admin/system-tables/audit-logs
+    research: Databricks report section 1.2
+
+  # ---------------------------------------------------------------- request parameters
+  - id: params.truncated-suffix
+    title: A requestParams value truncated above 100 KB ends with "... truncated"
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report sections 1.2 and 5
+  - id: params.truncated-key
+    title: requestParams replaced by a single TRUNCATED key
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report sections 1.2 and 5
+  - id: params.sql-definitions-masked
+    title: Since 2026-08-26 request_params omits function_info, view_definition, definition_json and managed_definition
+    envelopes: [system-table-row]
+    doc_url: https://docs.databricks.com/aws/en/release-notes/product/2026/august
+    research: Databricks report sections 1.4 and 5
+  - id: params.map-or-json-string
+    title: request_params as a map or as a JSON string
+    envelopes: [system-table-row]
+    doc_url: https://docs.databricks.com/aws/en/admin/system-tables/audit-logs
+    research: Databricks report section 5, system table row
+  - id: asset.uc-full-name
+    title: The asset comes from requestParams full_name_arg or table_full_name (table_id, url or table_url as fallbacks) and uses the uc:// scheme
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.2, field mapping; DBX-01 acceptance
+
+  # ---------------------------------------------------------------- credentials (read signal)
+  - id: credential.read-operation
+    title: generateTemporaryTableCredential with operation READ counts as a read
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 read versus write table; DBX-01 acceptance
+  - id: credential.read-write-operation
+    title: A credential with operation READ_WRITE counts as a write
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report section 1.3 read versus write table
+  - id: credential.unknown-operation
+    title: A credential with operation UNKNOWN_TABLE_OPERATION or an unlisted value is neither a read nor a write
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    status: unverified
+    reason: The operation values come from the Unity Catalog OSS spec; the Databricks-hosted enum is unconfirmed (Databricks report section 1.3; LIVE-03)
+
+  # ---------------------------------------------------------------- delivery and dedup
+  - id: pair.request-response-same-request-id
+    title: A long action logs its request and response separately with one requestId; they give one event
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-logs
+    research: Databricks report sections 1.2 and 5
+  - id: delivery.rewritten-file
+    title: A delivered file is overwritten with appended lines; dedup on requestId plus timestamp plus actionName
+    envelopes: [delivered-json]
+    doc_url: https://docs.databricks.com/aws/en/admin/account-settings/audit-log-delivery
+    research: Databricks report sections 1.2 and 5; log-event.md section 5.2
+  - id: dedup.event-id
+    title: event_id is the dedup key of system-table rows
+    envelopes: [system-table-row]
+    doc_url: https://docs.databricks.com/aws/en/admin/system-tables/audit-logs
+    research: Databricks report section 4; log-event.md section 5.2
+  - id: binding.system-schema-not-enabled
+    title: A system schema that is not enabled sets read_signal_present=false for the binding instead of reporting no reads
+    envelopes: [system-table-row]
+    doc_url: https://docs.databricks.com/api/workspace/systemschemas/list
+    research: Databricks report sections 1.5 and 4; DBX-01 acceptance
+
+  # ---------------------------------------------------------------- Azure diagnostic form
+  - id: azure.pascal-case-keys
+    title: PascalCase keys (TimeGenerated, ServiceName, ActionName, RequestId, ResourceId) and Identity instead of userIdentity
+    envelopes: [azure-diagnostic]
+    doc_url: https://learn.microsoft.com/en-us/azure/databricks/admin/account-settings/audit-log-delivery
+    research: Databricks report sections 1.2 and 5
+  - id: azure.case-differences
+    title: Case differences in keys and values between the Azure form and the other forms
+    envelopes: [azure-diagnostic]
+    doc_url: https://learn.microsoft.com/en-us/azure/databricks/admin/account-settings/audit-log-delivery
+    research: Databricks report section 5, Azure diagnostic row
+  - id: azure.delivery-envelopes
+    title: Log Analytics typed rows, storage JSON lines and Event Hub records envelopes of the same record
+    envelopes: [azure-diagnostic]
+    doc_url: https://learn.microsoft.com/en-us/azure/databricks/admin/account-settings/audit-log-delivery
+    status: unverified
+    reason: The research could not confirm the Event Hub and Log Analytics envelopes for the Azure Databricks form (Databricks report section 6, item 7)

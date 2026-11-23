@@ -1,0 +1,388 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+version: '3.8'
+
+# DLAP Microservices Development Environment
+# Comprehensive Docker Compose setup for local development and testing
+#
+# Always used together with docker-compose.microservices.yml. Run from the repo root
+# and pass the repo-root .env explicitly. Compose reads .env from this directory,
+# not the repo root, so without --env-file your .env is silently ignored:
+#
+#   cp .env.example .env
+#   docker compose --env-file .env \
+#     -f deployment/environments/dev/docker-compose.yml \
+#     -f deployment/environments/dev/docker-compose.microservices.yml \
+#     up -d --build
+#
+# Every ${VAR:-default} below is documented in .env.example; unset variables fall
+# back to the same dev-only defaults, so the stack also starts without a .env.
+#
+# Host ports are DLAP_PORT_<SERVICE> (.env.example, "Host port overrides"); the defaults
+# are the values this stack has always published. The project name is compose's default
+# (this directory's name, "dev") unless COMPOSE_PROJECT_NAME is set; the e2e harnesses set
+# it per worktree (e2e-tests/harness-lib.sh). container_name stays fixed, so two projects
+# cannot run this pair on one Docker host at the same time.
+
+services:
+  # PostgreSQL Database with DLAP schema initialization
+  postgresql:
+    image: postgres:15.1
+    container_name: dlap-postgresql
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+      - ../../platform/database/init-scripts:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=dlap
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-dlap}
+      - POSTGRES_DB=dlap
+      # One password per database role (SEC-12, Q-176, Q-455), read by 00-create-multiple-databases.sh when
+      # the volume is new. Unset or empty, the role gets the published development value <name>_pass, so the
+      # quickstart boots with no setup. The services read the same variables (docker-compose.microservices.yml).
+      # The pilot and demo overlays require them; deployment/platform/database/gen-db-passwords.sh writes them.
+      - DLAP_COMMON_DB_PASSWORD=${DLAP_COMMON_DB_PASSWORD:-}
+      - DA_DISCOVERY_DB_PASSWORD=${DA_DISCOVERY_DB_PASSWORD:-}
+      - DA_CATALOG_DB_PASSWORD=${DA_CATALOG_DB_PASSWORD:-}
+      - DA_POLICYENGINE_DB_PASSWORD=${DA_POLICYENGINE_DB_PASSWORD:-}
+      - DA_REPORTING_DB_PASSWORD=${DA_REPORTING_DB_PASSWORD:-}
+      - DA_AUTOLABEL_DB_PASSWORD=${DA_AUTOLABEL_DB_PASSWORD:-}
+      - DA_AUTOARCHIVAL_DB_PASSWORD=${DA_AUTOARCHIVAL_DB_PASSWORD:-}
+      - DA_AUTODELETE_DB_PASSWORD=${DA_AUTODELETE_DB_PASSWORD:-}
+      - DA_AUTOCOMPLIANCE_DB_PASSWORD=${DA_AUTOCOMPLIANCE_DB_PASSWORD:-}
+      - DA_ADMIN_DB_PASSWORD=${DA_ADMIN_DB_PASSWORD:-}
+      - DA_LOGINGEST_DB_PASSWORD=${DA_LOGINGEST_DB_PASSWORD:-}
+      # The two platform roles: dlap_monitor (pg_monitor, used by postgres-exporter) and dlap_backup
+      # (REPLICATION and pg_read_all_data, used by the pilot backup agent).
+      - DLAP_MONITOR_DB_PASSWORD=${DLAP_MONITOR_DB_PASSWORD:-}
+      - DLAP_BACKUP_DB_PASSWORD=${DLAP_BACKUP_DB_PASSWORD:-}
+      # Authoritative DB list (ADR-0037): the init script creates exactly these. Must include
+      # every service that connects in docker-compose.microservices.yml, incl. da_logingest.
+      - POSTGRES_MULTIPLE_DATABASES=dlap_common,da_discovery,da_catalog,da_policyengine,da_reporting,da_autolabel,da_autoarchival,da_autodelete,da_autocompliance,da_admin,da_logingest
+      # PostgreSQL optimization settings
+      - POSTGRES_INITDB_ARGS=--data-checksums
+      # Performance tuning
+      - POSTGRES_MAX_CONNECTIONS=200
+      - POSTGRES_SHARED_BUFFERS=512MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=1536MB
+      - POSTGRES_MAINTENANCE_WORK_MEM=128MB
+      - POSTGRES_WORK_MEM=8MB
+    ports:
+      - "${DLAP_PORT_POSTGRES:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dlap -d dlap"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: 
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "effective_cache_size=1536MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "work_mem=8MB"
+      - "-c"
+      - "log_min_duration_statement=1000"
+      - "-c"
+      - "log_connections=on"
+      - "-c"
+      - "log_disconnections=on"
+      - "-c"
+      # DDL only (SEC-05, B6-I2): "all" writes every statement with its literals, which for the log
+      # tables means principals and IP addresses, into the container log.
+      - "log_statement=ddl"
+    restart: unless-stopped
+    networks:
+      - dlap-network
+
+  # Keycloak Identity and Access Management (IAM-02). The quickstart runs the patched 26.x server in
+  # development mode on an embedded file database, with the seeded dev realm (users with a published
+  # password, for the harnesses). Production mode on PostgreSQL with the production realm template is
+  # the pilot overlay deployment/environments/pilot/docker-compose.pilot.keycloak.yml.
+  keycloak:
+    # Keycloak 26.8.1 (2026-10-13), the current 26.x patch release, pinned by the digest of its
+    # multi-architecture index. The same image as the demo overlay and deployment/platform/keycloak/Dockerfile.
+    image: quay.io/keycloak/keycloak:26.8.1@sha256:79c623a22abacf3fe6c00a5fb30f5b7843d717b234033b80995891c06116d244
+    container_name: dlap-keycloak
+    # --import-realm imports the realm when it is not in the database yet. The database lives in the
+    # container, so a recreated container (docker compose up --force-recreate keycloak, or down and up)
+    # imports the realm file again; a restarted one keeps what it had (Q-068). Keycloak 26 has no
+    # overwrite strategy for --import-realm.
+    command: 'start-dev --import-realm'
+    volumes:
+      - ../../platform/keycloak/keycloak-import:/opt/keycloak/data/import
+      - ../../platform/keycloak/keycloak-health-check.sh:/opt/keycloak/health-check.sh
+    environment:
+      - KC_DB=dev-file
+      # The master-realm admin, created when the database is new. Keycloak 26 reads the KC_BOOTSTRAP_ADMIN_*
+      # pair; the KEYCLOAK_ADMIN pair is its deprecated spelling, kept with the same values because
+      # da-admin-service and DevComposeSecretsContractTest read it.
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KEYCLOAK_ADMIN:-admin}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-changeme}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
+      # From .env. The fallback is the published placeholder "changeme", not the well-known admin/admin
+      # (SEC-05, B2-S2); da-admin-service reads the same variable. The prod boot guard refuses both.
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-changeme}
+      # The realm import (dlap-realm.json) sets the dlap-backend client secret from this variable, so a
+      # secret chosen in .env reaches Keycloak and the services alike (Q-178).
+      - DLAP_BACKEND_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:-change-me-dev-only}
+      # Same for the dlap-mcp-gateway client (PEP-02, Q-458): without this line a secret chosen in .env
+      # never reached the realm import and the client kept the published default.
+      - DLAP_MCP_GATEWAY_CLIENT_SECRET=${DLAP_MCP_GATEWAY_CLIENT_SECRET:-change-me-dev-only}
+      # The scripts feature (JavaScript authenticators and mappers) stays off. Keycloak 26 leaves it off by
+      # default; it is disabled by name so a change of that default cannot turn it on. The quickstart used to
+      # switch it on (KC_FEATURES=scripts) and nothing in the realm uses it.
+      - KC_FEATURES_DISABLED=scripts
+      - KC_HTTP_PORT=8080
+      # Health and metrics live on the management port 9000 in Keycloak 26; the health check probes it.
+      - KC_HEALTH_ENABLED=true
+    ports:
+      - "${DLAP_PORT_KEYCLOAK:-8180}:8080"
+      # Nothing listens on 8443: the development server has no certificate. The mapping stays because
+      # e2e-tests/harness-lib.sh and .env.example pin DLAP_PORT_KEYCLOAK_HTTPS (HARN-01, e2e-tests/test-harness-lib.sh).
+      - "${DLAP_PORT_KEYCLOAK_HTTPS:-8443}:8443"
+    healthcheck:
+      test: 'bash /opt/keycloak/health-check.sh'
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    depends_on:
+      - postgresql
+    restart: unless-stopped
+    networks:
+      - dlap-network
+
+  # Single Kafka container with KRaft mode (no Zookeeper needed)
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: dlap-kafka
+    ports:
+      - "${DLAP_PORT_KAFKA:-9092}:${DLAP_PORT_KAFKA:-9092}"
+      - "${DLAP_PORT_KAFKA_CONTROLLER:-9093}:9093"
+    environment:
+      # KRaft mode configuration
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:${DLAP_PORT_KAFKA:-9092}'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:${DLAP_PORT_KAFKA:-9092}'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      
+      # Cluster configuration
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      
+      # Topic and replication settings (single node)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      
+      # Performance settings
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
+      
+      # JVM settings for development
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"
+      
+      # Log directories for KRaft
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+    volumes:
+      - kafka-kraft:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:${DLAP_PORT_KAFKA:-9092}", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - dlap-network
+
+  # Kafka UI removed from dev environment to reduce resource usage
+  # Redis removed from dev environment to reduce resource usage
+  # For test/prod environments, Redis is available in their respective docker-compose files
+
+  # ---------------------------------------------------------------------------------------------
+  # Monitoring (OBS-01), opt-in with the `monitoring` profile. Images are pinned to a release tag.
+  #
+  # The services serve /actuator/prometheus on a separate management port, open without a token on
+  # that port only. The dev stack leaves the actuator on the application port by default, because
+  # the health probes, the e2e harnesses and the README use it there, so the scrape needs the
+  # monitoring overlay as well, which moves the actuator of every service to port 9091:
+  #
+  #   docker compose --env-file .env --profile monitoring   #     -f deployment/environments/dev/docker-compose.yml   #     -f deployment/environments/dev/docker-compose.microservices.yml   #     -f deployment/environments/dev/docker-compose.monitoring.yml up -d
+  #
+  # Alertmanager and the two exporters publish no host port: only Prometheus and Grafana are reached
+  # from the host. docs/observability.md describes the stack.
+  # ---------------------------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: dlap-prometheus
+    ports:
+      - "${DLAP_PORT_PROMETHEUS:-9090}:9090"
+    volumes:
+      # The whole folder: prometheus.yml names alerts.yml and recording_rules.yml next to it.
+      - ../../platform/prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - alertmanager
+    restart: unless-stopped
+    networks:
+      - dlap-network
+    profiles:
+      - monitoring
+
+  # Alertmanager with the null receiver: alerts are grouped and shown, not sent anywhere.
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: dlap-alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ../../platform/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    restart: unless-stopped
+    networks:
+      - dlap-network
+    profiles:
+      - monitoring
+
+  # PostgreSQL metrics (pg_up, connections, deadlocks). Connects as dlap_monitor, a role that holds pg_monitor
+  # and nothing else (SEC-12, Q-247), never as the superuser. The init script creates it from
+  # DLAP_MONITOR_DB_PASSWORD; the published dlap_monitor_pass applies while that is unset.
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: dlap-postgres-exporter
+    environment:
+      - DATA_SOURCE_URI=postgresql:5432/dlap?sslmode=disable
+      - DATA_SOURCE_USER=dlap_monitor
+      - DATA_SOURCE_PASS=${DLAP_MONITOR_DB_PASSWORD:-dlap_monitor_pass}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - dlap-network
+    profiles:
+      - monitoring
+
+  # Kafka metrics (brokers, consumer group lag).
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.7.0
+    container_name: dlap-kafka-exporter
+    command:
+      - '--kafka.server=kafka:29092'
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - dlap-network
+    profiles:
+      - monitoring
+
+  # Grafana for monitoring dashboards (optional)
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: dlap-grafana
+    ports:
+      - "${DLAP_PORT_GRAFANA:-3001}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../../platform/grafana/provisioning:/etc/grafana/provisioning
+    restart: unless-stopped
+    networks:
+      - dlap-network
+    profiles:
+      - monitoring
+
+  # LocalStack: local AWS emulation for the AWS discovery provider. The community
+  # image implements S3 only; RDS and Glue calls need LocalStack Pro.
+  # Opt-in: `docker compose --profile aws up -d localstack`. Point discovery at it
+  # by setting these in .env (.env.example section 5): DLAP_AWS_ENABLED=true,
+  # DLAP_AWS_ENDPOINT=http://localstack:4566, DLAP_AWS_ACCESS_KEY=test, DLAP_AWS_SECRET_KEY=test.
+  localstack:
+    image: localstack/localstack:3.4
+    container_name: dlap-localstack
+    ports:
+      - "${DLAP_PORT_LOCALSTACK:-4566}:4566"
+    environment:
+      - SERVICES=s3,rds
+      - DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    restart: unless-stopped
+    networks:
+      - dlap-network
+    profiles:
+      - aws
+
+  # Unity Catalog OSS server (ADR-0029). Opt-in 'unity' profile. When up,
+  # point da-catalog at it to mirror tabular assets into UC:
+  #   DLAP_UNITY_ENABLED=true
+  #   DLAP_UNITY_URI=http://unitycatalog:8080/api/2.1/unity-catalog
+  unitycatalog:
+    image: unitycatalog/unitycatalog:main-2f2e32d
+    container_name: dlap-unitycatalog
+    ports:
+      # host 8081 is the gateway (and 8082-8091 are the services); expose UC on
+      # 18080. Services reach it in-network at http://unitycatalog:8080/… regardless.
+      - "${DLAP_PORT_UNITYCATALOG:-18080}:8080"
+    restart: unless-stopped
+    networks:
+      - dlap-network
+    profiles:
+      - unity
+
+volumes:
+  postgresql-data:
+    driver: local
+  kafka-kraft:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  # Ollama model cache - preserves pulled models across restarts
+  ollama-models:
+    driver: local
+
+networks:
+  dlap-network:
+    driver: bridge

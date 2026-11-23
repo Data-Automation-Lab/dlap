@@ -1,0 +1,89 @@
+{
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "status": {},
+    "authenticationInfo": {
+      "principalEmail": "user-f50c82e5@example.org"
+    },
+    "requestMetadata": {
+      "callerIp": "198.19.147.54",
+      "callerSuppliedUserAgent": "apitools Python/3.7.3 gsutil/4.66 (linux) analytics/disabled interactive/True command/mb google-cloud-sdk/352.0.0,gzip(gfe)",
+      "requestAttributes": {
+        "time": "2021-08-13T20:52:17.413982948Z",
+        "auth": {}
+      },
+      "destinationAttributes": {}
+    },
+    "serviceName": "storage.googleapis.com",
+    "methodName": "storage.buckets.create",
+    "authorizationInfo": [
+      {
+        "resource": "projects/_/buckets/usage-logs-test-user-1d1141",
+        "permission": "storage.buckets.create",
+        "granted": true,
+        "resourceAttributes": {}
+      }
+    ],
+    "resourceName": "projects/_/buckets/usage-logs-test-user-1d1141",
+    "serviceData": {
+      "@type": "type.googleapis.com/google.iam.v1.logging.AuditData",
+      "policyDelta": {
+        "bindingDeltas": [
+          {
+            "action": "ADD",
+            "role": "roles/storage.legacyBucketOwner",
+            "member": "projectEditor:proj-7b1afa9c"
+          },
+          {
+            "action": "ADD",
+            "role": "roles/storage.legacyBucketOwner",
+            "member": "projectOwner:proj-7b1afa9c"
+          },
+          {
+            "action": "ADD",
+            "role": "roles/storage.legacyBucketReader",
+            "member": "projectViewer:proj-7b1afa9c"
+          }
+        ]
+      }
+    },
+    "request": {
+      "defaultObjectAcl": {
+        "@type": "type.googleapis.com/google.iam.v1.Policy",
+        "bindings": [
+          {
+            "members": [
+              "projectViewer:proj-7b1afa9c"
+            ],
+            "role": "roles/storage.legacyObjectReader"
+          },
+          {
+            "role": "roles/storage.legacyObjectOwner",
+            "members": [
+              "projectOwner:proj-7b1afa9c",
+              "projectEditor:proj-7b1afa9c"
+            ]
+          }
+        ]
+      }
+    },
+    "resourceLocation": {
+      "currentLocations": [
+        "us"
+      ]
+    }
+  },
+  "insertId": "yz4x09e8y5hc",
+  "resource": {
+    "type": "gcs_bucket",
+    "labels": {
+      "bucket_name": "usage-logs-test-user-1d1141",
+      "location": "us",
+      "project_id": "proj-7b1afa9c"
+    }
+  },
+  "timestamp": "2021-08-13T20:52:17.406366080Z",
+  "severity": "NOTICE",
+  "logName": "projects/proj-7b1afa9c/logs/cloudaudit.googleapis.com%2Factivity",
+  "receiveTimestamp": "2021-08-13T20:52:18.480958763Z"
+}

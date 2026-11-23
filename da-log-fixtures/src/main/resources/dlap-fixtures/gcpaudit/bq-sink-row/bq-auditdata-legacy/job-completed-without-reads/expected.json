@@ -1,0 +1,4 @@
+{"outcome":"PARSED","events":[
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:02:00.567321Z|r1-n-1","changeType":"UPDATE","eventCategory":"EVENT_CATEGORY_MANAGEMENT","resultStatus":"FAILURE","targetResource":{"canonicalUri":"bqjob://proj-0d1a0001/bqjob_row_failed"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"},
+ {"nativeEventId":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access|2026-09-14T09:02:01.678432Z|r1-n-2","changeType":"UPDATE","eventCategory":"EVENT_CATEGORY_MANAGEMENT","resultStatus":"SUCCESS","targetResource":{"canonicalUri":"bqjob://proj-0d1a0001/bqjob_row_const"},"sourceFormat":"GCP_CLOUD_AUDIT/bq-sink-row","sourceSchemaVersion":"bq-auditdata-legacy"}
+]}

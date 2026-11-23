@@ -1,0 +1,31 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "0a7df978-3917-40be-ae58-815700ec896d",
+      "eventTime": "2023-07-10T12:20:09Z",
+      "sourceProvider": "AWS",
+      "sourceService": "rds.amazonaws.com",
+      "operation": "DescribeDBSnapshots",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::999945223994:user/user-c39c05"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    },
+    {
+      "nativeEventId": "76e5df0c-fff9-499e-9b50-14e3f35c0293",
+      "eventTime": "2023-07-10T12:25:03Z",
+      "sourceProvider": "AWS",
+      "sourceService": "iam.amazonaws.com",
+      "operation": "GetUser",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::999945223994:user/user-c39c05"
+      },
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    }
+  ]
+}

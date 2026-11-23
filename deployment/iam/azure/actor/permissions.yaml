@@ -1,0 +1,175 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# Azure Actor roles: the single source of truth (IAM-04). One Actor per retire executor: executor
+# "delete" is da-autodelete, executor "archive" is da-autoarchival. main.tf reads this file with
+# yamldecode and creates the custom roles of the executor it is given. The da-admin-service
+# ActorRoleTraceabilityTest checks every call site, that permissions and their call modules agree,
+# that blob data actions sit on the container scope only and control-plane actions on the
+# storage_account scope only, that nothing holds a wildcard or a never_grant entry, and that every
+# file of da-autodelete and da-autoarchival that imports an Azure client is cited or listed below.
+# A never_grant entry binds every executor unless it names executors; then it binds those, and its
+# exception says who else holds it and why (the archive Actor's blobs/read and blobs/write are the
+# single documented exception).
+# The da-admin-service permission self-check (GET /api/v1/permission-check/azure) reads the
+# caller's effective permissions on each named storage account and container
+# (Microsoft.Authorization/permissions) and reports the missing and the extra ones.
+#
+# Scopes (main.tf builds one custom role per scope, assignable only to the named resources):
+#   storage_account  "<role_name> (account)": control-plane actions, assigned on each storage
+#                    account the operator names (ARM ids, the same list as
+#                    dlap.autodelete.native-rule.azure-storage-account-ids).
+#   container        "<role_name> (container)": blob data actions, assigned on each container the
+#                    operator names, and only when object_actions is true. Needed only for a
+#                    single-blob delete (delete Actor) or a per-blob tier change (archive Actor).
+#
+# A permission may carry a condition (an Azure role assignment condition, version 2.0) and the
+# Microsoft page it rests on (condition_source). main.tf puts every condition of the executor's
+# container permissions on its container role assignments.
+#
+# The archive Actor (IAM-06, Q-761): da-autoarchival signs in with DefaultAzureCredential
+# (AzureBlobClients, EXEC-01), so Azure RBAC governs its calls. It is a separate Actor from the
+# delete Actor (its own module instance, its own role_name, its own role definitions) and it holds
+# exactly two data actions, on the container scope only: blobs/read (List Blobs, Get Blob
+# Properties) and blobs/write (Set Blob Tier). Azure has no narrower action for either. The write
+# carries a role assignment condition (ABAC, condition below) that admits the Blob.Write.Tier
+# suboperation only, so the assignment allows no other blob write. The read cannot be narrowed:
+# Get Blob Properties and Get Blob share the "Read a blob" operation and no suboperation splits
+# them. It holds no account action: it renders the management policy and never writes it.
+#
+# blobServices/read (Q-743, Q-694): the delete executor reads the account's blob service properties
+# to refuse a native delete rule on a versioned account (RET-08). It sits on the storage_account
+# scope with the other control-plane actions, so it is assigned on the named storage accounts only
+# and the role stays assignable to nothing else. It reads account settings, never blob content.
+cloud: azure
+# A role assigned on a storage account is inherited by its containers; the self-check accepts the
+# account actions on a container for that reason.
+scope_parents:
+  container: storage_account
+permissions:
+  - permission: Microsoft.Storage/storageAccounts/blobServices/read
+    scopes: [storage_account]
+    executors: [delete]
+    purpose: Read the account's blob service properties (isVersioningEnabled), so a native delete rule is refused on a versioned account before any approval.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/azure/AzureBlobLifecycleRuleApplier.java
+        line: 225
+        call: .getServiceProperties(
+  - permission: Microsoft.Storage/storageAccounts/managementPolicies/read
+    scopes: [storage_account]
+    executors: [delete]
+    purpose: Read the account's management policy, so the owner's rules are kept when DLAP adds or removes its own.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/azure/AzureBlobLifecycleRuleApplier.java
+        line: 242
+        call: client.get(group, account, ManagementPolicyName.DEFAULT)
+  - permission: Microsoft.Storage/storageAccounts/managementPolicies/write
+    scopes: [storage_account]
+    executors: [delete]
+    purpose: Write the merged management policy.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/azure/AzureBlobLifecycleRuleApplier.java
+        line: 163
+        call: client.createOrUpdate(
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/azure/AzureBlobLifecycleRuleApplier.java
+        line: 196
+        call: client.createOrUpdate(
+  - permission: Microsoft.Storage/storageAccounts/managementPolicies/delete
+    scopes: [storage_account]
+    executors: [delete]
+    purpose: Remove the policy when DLAP's rule was the last one (an empty policy cannot be written).
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/providers/azure/AzureBlobLifecycleRuleApplier.java
+        line: 194
+        call: client.delete(account[1], account[2], ManagementPolicyName.DEFAULT)
+  - permission: Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete
+    scopes: [container]
+    executors: [delete]
+    purpose: Delete one approved blob that no management policy rule can isolate (the direct engine delete). A data action.
+    calls:
+      - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AzureCloudDeletionService.java
+        line: 202
+        call: blob.delete()
+  - permission: Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
+    scopes: [container]
+    executors: [archive]
+    purpose: List the blobs of an archive rule's scope (List Blobs, the plan preview) and read one blob's size after its tier change (Get Blob Properties). A data action on the named containers only. Azure has no narrower action, and no condition can split Get Blob Properties from Get Blob, so it is not narrowed further.
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/azure/AzureManagementPolicyRuleProvider.java
+        line: 124
+        call: container.listBlobs(
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AzureCloudStorageService.java
+        line: 148
+        call: blobClient.getProperties()
+  - permission: Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write
+    scopes: [container]
+    executors: [archive]
+    purpose: Set one approved blob's access tier (Set Blob Tier) to archive it, and back to Hot to restore it. A data action on the named containers only; the assignment condition admits the Blob.Write.Tier suboperation only, so no blob content, metadata, lease or snapshot can be written.
+    condition: >-
+      ((!(ActionMatches{'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write'}
+      AND NOT SubOperationMatches{'Blob.Write.Tier'})) OR
+      (@Environment[UtcNow] DateTimeLessThan '2000-01-01T00:00:00.0Z'))
+    condition_source: https://learn.microsoft.com/en-us/azure/storage/blobs/storage-auth-abac-attributes#sets-the-access-tier-on-a-blob
+    calls:
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AzureCloudStorageService.java
+        line: 147
+        call: blobClient.setAccessTier(accessTier)
+      - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AzureCloudStorageService.java
+        line: 199
+        call: blobClient.setAccessTier(AccessTier.HOT)
+never_grant:
+  - permission: Microsoft.Storage/storageAccounts/write
+    scopes: [storage_account]
+    reason: Account settings (network rules, versioning, keys) are the owner's.
+  - permission: Microsoft.Storage/storageAccounts/delete
+    scopes: [storage_account]
+    reason: DLAP never deletes an account.
+  - permission: Microsoft.Storage/storageAccounts/listKeys/action
+    scopes: [storage_account]
+    reason: An account key bypasses Azure RBAC.
+  - permission: Microsoft.Storage/storageAccounts/regeneratekey/action
+    scopes: [storage_account]
+    reason: Rotating the owner's keys is never a retire step.
+  - permission: Microsoft.Authorization/roleAssignments/write
+    scopes: [storage_account]
+    reason: The Actor must not grant itself more.
+  - permission: Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
+    scopes: [container]
+    executors: [delete]
+    reason: The delete Actor never reads blobs; the size probe before a delete tolerates a denial.
+    exception: The archive Actor is the single documented exception (IAM-06, Q-761). Azure authorizes List Blobs and Get Blob Properties only with this data action, so it holds it on the named containers only, in its own role that is never merged with the delete Actor.
+  - permission: Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write
+    scopes: [container]
+    executors: [delete]
+    reason: The delete Actor never writes blobs.
+    exception: The archive Actor is the single documented exception (IAM-06, Q-761). Azure authorizes Set Blob Tier only with this data action, so it holds it on the named containers only, in its own role, with an assignment condition that admits the Blob.Write.Tier suboperation and no other write.
+  - permission: Microsoft.Storage/storageAccounts/blobServices/containers/blobs/deleteBlobVersion/action
+    scopes: [container]
+    reason: A version delete erases history.
+tolerated_denials:
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AzureCloudDeletionService.java
+    line: 185
+    call: blob.getProperties()
+    permission: Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
+    reason: A size probe before the delete. A denial other than 404 is logged and the delete goes on without the size, so the delete Actor never needs to read blobs.
+unreachable_calls:
+  - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AzureCloudStorageService.java
+    line: 238
+    call: .getProperties()
+    reason: getArchivalStatus has no caller in da-autoarchival, so this tier read is never made; blobs/read would cover it if a caller were added.
+  - source: da-autoarchival/src/main/java/com/dlap/autoarchival/service/storage/impl/AzureCloudStorageService.java
+    line: 271
+    call: .getProperties()
+    reason: getRestorationStatus has no caller in da-autoarchival, so this tier read is never made; blobs/read would cover it if a caller were added.
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AzureCloudDeletionService.java
+    line: 216
+    call: getContainer(ref.containerName()).delete()
+    reason: DispositionPlanner sends the engine only S3, GCS and Azure Blob objects (DIRECT_KINDS), so the Cosmos branch of deleteData is never reached by the executor.
+  - source: da-autodelete/src/main/java/com/dlap/autodelete/service/storage/impl/AzureCloudDeletionService.java
+    line: 247
+    call: server.databases().delete(ref.databaseName())
+    reason: Same as the Cosmos branch; an Azure SQL database never reaches the engine delete.
+no_permission_sources:
+  - source: da-autoarchival/src/main/java/com/dlap/autoarchival/providers/azure/AzureBlobClients.java
+    reason: Builds the blob service clients with DefaultAzureCredential (EXEC-01, Q-724) and makes no Azure call itself; the calls that use them are traced to blobs/read and blobs/write above.

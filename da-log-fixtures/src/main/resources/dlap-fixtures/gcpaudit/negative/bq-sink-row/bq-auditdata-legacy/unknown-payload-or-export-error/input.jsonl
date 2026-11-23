@@ -1,0 +1,2 @@
+{"logName":"projects/proj-0d1a0001/logs/bigquery.googleapis.com%2Fquery_log","resource":{"type":"bigquery_resource","labels":{"project_id":"proj-0d1a0001"}},"jsonPayload":{"query":"SELECT 1"},"timestamp":"2026-09-14T09:11:01.232323Z","severity":"INFO","insertId":"r1-neg-4"}
+{"logEntry":"{\"insertId\":\"r1-neg-5\"}","schemaErrorDetail":"Field protopayload_auditlog.servicedata_v1_bigquery.jobCompletedEvent.job.jobStatistics.totalSlotMs: INTEGER expected","sink":"projects/proj-0d1a0001/sinks/dlap-audit-sink","timestamp":"2026-09-14T09:11:02.343434Z"}

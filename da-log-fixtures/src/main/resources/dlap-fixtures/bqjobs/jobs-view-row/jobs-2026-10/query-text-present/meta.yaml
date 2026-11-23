@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:SELECT
+variant_ids:
+  - row.query-text-never-stored
+  - row.labels
+expected_outcome: PARSED
+anonymised: false
+notes: "The row carries the query column and labels. The query text must appear in no event field and not in raw_event (BqJobsParserTest#queryTextIsNeverStored searches the whole encoded event for the marker)."

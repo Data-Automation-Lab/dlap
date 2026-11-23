@@ -1,0 +1,332 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+version: '3.8'
+
+# DLAP Test Environment Microservices
+# Strategy 3: Test microservices with +100 port offset for isolation
+# Ports: 3100, 8181-8189 to avoid conflicts with dev environment (3000, 8081-8089)
+
+services:
+
+  # Frontend UI Service (Test Environment)
+  new-ui:
+    build:
+      context: ../../../new-ui
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-new-ui-test
+    ports:
+      - "3100:3000"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/dlap_common
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Discovery Service - Data Asset Discovery (Test)
+  da-discovery:
+    build:
+      context: ../../../da-discovery
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-discovery-test
+    ports:
+      - "8181:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_discovery
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Catalog Service - Asset Metadata Management (Test)
+  da-catalog:
+    build:
+      context: ../../../da-catalog
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-catalog-test
+    ports:
+      - "8182:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_catalog
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Policy Engine Service - Policy Evaluation & Enforcement (Test)
+  da-policyengine:
+    build:
+      context: ../../../da-policyengine
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-policyengine-test
+    ports:
+      - "8183:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_policyengine
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Reporting Service - Analytics & Dashboard Generation (Test)
+  da-reporting:
+    build:
+      context: ../../../da-reporting
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-reporting-test
+    ports:
+      - "8184:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_reporting
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AutoLabel Service - AI-powered Data Classification (Test)
+  da-autolabel:
+    build:
+      context: ../../../da-autolabel
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-autolabel-test
+    ports:
+      - "8185:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_autolabel
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AutoArchival Service - Automated Data Archiving (Test)
+  da-autoarchival:
+    build:
+      context: ../../../da-autoarchival
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-autoarchival-test
+    ports:
+      - "8186:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_autoarchival
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AutoDelete Service - Automated Data Deletion (Test)
+  da-autodelete:
+    build:
+      context: ../../../da-autodelete
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-autodelete-test
+    ports:
+      - "8187:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_autodelete
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AutoCompliance Service - Regulatory Compliance Monitoring (Test)
+  da-autocompliance:
+    build:
+      context: ../../../da-autocompliance
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-autocompliance-test
+    ports:
+      - "8188:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_autocompliance
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Admin Service - Platform Administration (Test)
+  da-admin-service:
+    build:
+      context: ../../../da-admin-service
+      dockerfile: src/main/docker/Dockerfile
+    container_name: dlap-da-admin-service-test
+    ports:
+      - "8189:8080"    # Test port offset +100
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/da_admin
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+
+
+    depends_on:
+      - postgresql
+      - keycloak
+      - kafka
+
+    networks:
+      - dlap-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  dlap-test-network:
+    external: true
+
+# Test Environment Microservices with +100 port offset
+# Usage: docker compose -f docker-compose.yml -f docker-compose.microservices.yml up -d
+# Ports: new-ui(3100), discovery(8181), catalog(8182), policyengine(8183), reporting(8184),
+#        autolabel(8185), autoarchival(8186), autodelete(8187), autocompliance(8188), admin(8189) 

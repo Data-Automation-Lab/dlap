@@ -1,0 +1,195 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# gitleaks configuration for DLAP (work package CI-02a).
+#
+# Used by:
+#   - the "Secret scan" job in .github/workflows/dlap-ci-cd.yml (pinned gitleaks
+#     image; push and pull request scan the added commits, nightly and manual
+#     runs scan the whole history)
+#   - the pre-commit hook in .pre-commit-config.yaml
+#   - the local command in CONTRIBUTING.md
+#
+# Policy
+#   1. The default gitleaks rules stay on. Nothing here switches a rule off.
+#   2. An allowlist entry is narrow: it names the rule (targetRules) AND the
+#      path AND either the exact placeholder value or the exact commit.
+#      "condition = AND" makes gitleaks require every listed field to match.
+#      Never allowlist a path on its own, and never allowlist a live credential
+#      to make a build pass: rotate or revoke it first.
+#   3. Inline "gitleaks:allow" comments do not work in CI (the job passes
+#      --ignore-gitleaks-allow). Every exception lives in this file, where
+#      CODEOWNERS review applies.
+#   4. Entries pinned to a commit cover history that cannot change. If history
+#      is ever rewritten, the pinned SHAs change and the entries must be redone.
+#   5. A value written in a regex below uses a one-character class ("[P]") so
+#      that this file does not match its own rule.
+#
+# Triage of the full-history scan (gitleaks 8.30.1, 2026-10-19, fresh clone of
+# origin with feature/deployment at 7cc841a, all remote branches, 488 commits
+# with changes): 38 findings, none of them reported by value. With this file
+# the same scan finds 0.
+#   - 5 findings: synthetic test values still in the tree (entries 1 to 3).
+#   - 10 findings: "Authorization: Bearer YOUR_TOKEN" style placeholders in
+#     Markdown curl examples (entry 4).
+#   - 5 findings: one Hugging Face access token in two 2025 commits, since
+#     removed from the tree (entry 5). The token LOOKS LIVE. It is allowlisted
+#     only so the history scan can stay green. It must be revoked.
+#   - 18 findings: JHipster scaffold dev secrets of the legacy da-discovery
+#     import: 8 JWT signing keys (entry 6) and 10 Keycloak realm client
+#     secrets in two realm copies (entries 7 and 8).
+
+title = "DLAP gitleaks configuration"
+
+[extend]
+useDefault = true
+
+# ---------------------------------------------------------------------------
+# Placeholders and synthetic test values that are still in the tree.
+# Pinned by rule, path and exact value, so a real secret added to the same
+# file, or the same value added to another file, is still reported.
+# ---------------------------------------------------------------------------
+
+# 1. Synthetic AWS-key-shaped input for the rules-based label client test.
+[[allowlists]]
+description = "Synthetic AWS-shaped value used as detector input in RuleBasedLabelClientTest"
+condition = "AND"
+targetRules = ["aws-access-token"]
+paths = ['''^da-llm-client/src/test/java/com/dlap/llm/client/impl/RuleBasedLabelClientTest\.java$''']
+regexes = ['''^AKIAABCDEFGHIJKLMNO[P]$''']
+
+# 2. The documented 32-character placeholder for the encryption setting in .env.example.
+[[allowlists]]
+description = "Placeholder encryption setting in .env.example (counting pattern, not a secret)"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''^\.env\.example$''']
+regexes = ['''^0123456789abcdef0123456789abcdef$''']
+
+# 3. A fixed 64-hex test vector in the admin-service encryption unit test.
+[[allowlists]]
+description = "Fixed hex test vector in BasicEncryptionServiceImplTest (counting pattern, not a secret)"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''^da-admin-service/src/test/java/com/dlap/adminservice/service/impl/BasicEncryptionServiceImplTest\.java$''']
+regexes = ['''^00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff$''']
+
+# 4. Placeholder bearer tokens in curl examples. Markdown only, and the whole
+#    matched value must be a YOUR_*-style placeholder or "invalid-token".
+[[allowlists]]
+description = "Placeholder bearer tokens in Markdown curl examples"
+condition = "AND"
+targetRules = ["curl-auth-header"]
+paths = ['''\.md$''']
+regexes = ['''^(?i)(your[_-][a-z_-]+|hf_your_token|invalid-token)$''']
+
+# 5. Invented values the demo launcher test writes to a throwaway env file to
+#    prove that it accepts strong settings (Q-279). Counting patterns, not secrets.
+[[allowlists]]
+description = "Invented strong-looking values in the demo launcher test (counting pattern, not secrets)"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''^deployment/environments/demo/test-demo\.sh$''']
+regexes = ['''^(pg|kc)-0123456789abcdef$''', '''^bk-0123456789abcdef0123456789abcdef$''']
+
+# ---------------------------------------------------------------------------
+# History-only findings, pinned by rule, commit and path. None of these values
+# is in the current tree except where noted.
+# ---------------------------------------------------------------------------
+
+# 5. Hugging Face access token pasted into 2025 deployment notes and a batch
+#    script (removed from the tree later; still in history). LIVE-LOOKING.
+#    ACTION: revoke it at huggingface.co (Settings, Access Tokens) if that was
+#    not done in 2025, then record the revocation. Tracked as an open question
+#    in the CI-02a hand-over. Allowlisted so the history scan is usable; this
+#    does not make the value safe.
+[[allowlists]]
+description = "Historic Hugging Face token in 2025 deployment notes (revoke it)"
+condition = "AND"
+targetRules = ["huggingface-access-token"]
+commits = ["5d47340fe3b05c9a8314f89a325ef817d897ab7a"]
+paths = [
+  '''^docs/DOCUMENTATION-UPDATE-SUMMARY\.md$''',
+  '''^docs/pending-work\.md$''',
+  '''^docs/workinglog\.md$''',
+]
+
+[[allowlists]]
+description = "Historic Hugging Face token in a 2025 batch script (revoke it)"
+condition = "AND"
+targetRules = ["huggingface-access-token"]
+commits = ["86bf12b5f3c40a0060ba123759888fcf0f0023f1"]
+paths = ['''^deployment/scripts/fix-hf-spaces-v2\.bat$''']
+
+# 6. JHipster scaffold: development JWT signing keys written by the generator
+#    into the da-discovery import (.yo-rc.json and the dev configs). The
+#    values were replaced afterwards; they are not in the current tree. They
+#    were dev-only scaffold defaults; no deployed environment is known to use
+#    them.
+[[allowlists]]
+description = "JHipster scaffold dev JWT keys in the da-discovery import commit"
+condition = "AND"
+targetRules = ["generic-api-key"]
+commits = ["3f2c92c1f3e4f73778234681369fc09cf956305a"]
+paths = [
+  '''^da-discovery/\.yo-rc\.json$''',
+  '''^da-discovery/src/main/docker/central-server-config/(docker|localhost)-config/application\.yml$''',
+  '''^da-discovery/src/main/resources/config/application-dev\.yml$''',
+]
+
+# 7. JHipster scaffold: Keycloak dev realm export with generated client
+#    secrets. This is the da-discovery import copy, still in the tree; the
+#    realm is a local development realm only.
+[[allowlists]]
+description = "JHipster scaffold dev Keycloak realm client secrets (da-discovery import)"
+condition = "AND"
+targetRules = ["generic-api-key"]
+commits = ["3f2c92c1f3e4f73778234681369fc09cf956305a"]
+paths = ['''^da-discovery/src/main/docker/realm-config/jhipster-realm\.json$''']
+
+# 8. The same realm export in its original 2025 location (path removed since).
+[[allowlists]]
+description = "JHipster scaffold dev Keycloak realm client secrets (original docker/keycloak copy)"
+condition = "AND"
+targetRules = ["generic-api-key"]
+commits = ["48e420d13fa3a23281db65e85ae7774fa93445d9"]
+paths = ['''^docker/keycloak/realm-config/jhipster-realm\.json$''']
+
+# 9. FIX-02 seed import: the AssumeRole response of the sts-assume-role-aws-service
+#    case, taken from the public invictus-ir/aws_dataset (MIT, 2023), carried an
+#    expired STS session token into commit 55a3c9aa. Q-220. The tree no longer
+#    holds it: the anonymiser now replaces session tokens and secret access keys
+#    with placeholders and the leak scanner fails the build on a real-looking
+#    one. The old commit still has it and history is not rewritten, so this one
+#    entry covers that commit and that file only. It is an expired temporary
+#    credential from a public dataset, not a live one.
+[[allowlists]]
+description = "Historic expired STS session token in the FIX-02 sts-assume-role-aws-service seed (Q-220)"
+condition = "AND"
+targetRules = ["generic-api-key"]
+commits = ["55a3c9aa407e27270dabbfadf45adae069265632"]
+paths = ['''^da-log-fixtures/src/main/resources/dlap-fixtures/cloudtrail/s3-file/1\.08/sts-assume-role-aws-service/input\.json$''']
+
+# 10. GCP-01 fixture generator (Q-399): the public googleapis commit the
+#     vendored audit protos come from, and a GCP API method name. Neither
+#     is a secret; pinned by rule, path and exact value.
+[[allowlists]]
+description = "Public googleapis commit hash and a GCP API method name in the gcpaudit fixture generator"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''^da-log-fixtures/src/main/java/com/dlap/fixtures/gen/gcpaudit/GcpAudit(CaseWriter|CaseBook)\.java$''']
+regexes = ['''^ba591f1d7fdedc610639425448756cd8a64adc0f$''', '''^v1\.compute\.instances\.insert$''']

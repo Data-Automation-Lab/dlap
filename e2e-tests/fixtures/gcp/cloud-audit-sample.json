@@ -1,0 +1,91 @@
+{
+  "entries": [
+    {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "severity": "NOTICE",
+      "timestamp": "2026-07-05T10:00:00Z",
+      "insertId": "gcp-e2e-0001-create-analytics-bucket",
+      "resource": {
+        "type": "gcs_bucket",
+        "labels": {
+          "project_id": "dlap-gcp-e2e",
+          "bucket_name": "dlap-gcp-e2e-analytics",
+          "location": "us-central1"
+        }
+      },
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "serviceName": "storage.googleapis.com",
+        "methodName": "storage.buckets.create",
+        "resourceName": "projects/_/buckets/dlap-gcp-e2e-analytics",
+        "authenticationInfo": {
+          "principalEmail": "dana@dlap-gcp-e2e.iam.gserviceaccount.com"
+        },
+        "authorizationInfo": [
+          {
+            "resource": "projects/_/buckets/dlap-gcp-e2e-analytics",
+            "permission": "storage.buckets.create",
+            "granted": true
+          }
+        ],
+        "requestMetadata": {
+          "callerIp": "203.0.113.51",
+          "callerSuppliedUserAgent": "google-cloud-sdk/468.0.0 gcloud/storage"
+        },
+        "request": {
+          "@type": "type.googleapis.com/google.storage.v1.InsertBucketRequest",
+          "bucket": {
+            "name": "dlap-gcp-e2e-analytics",
+            "location": "US-CENTRAL1",
+            "storageClass": "STANDARD"
+          }
+        }
+      }
+    },
+    {
+      "logName": "projects/dlap-gcp-e2e/logs/cloudaudit.googleapis.com%2Factivity",
+      "severity": "NOTICE",
+      "timestamp": "2026-07-05T10:03:00Z",
+      "insertId": "gcp-e2e-0003-create-orders-table",
+      "resource": {
+        "type": "bigquery_dataset",
+        "labels": {
+          "project_id": "dlap-gcp-e2e",
+          "dataset_id": "analytics"
+        }
+      },
+      "protoPayload": {
+        "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+        "serviceName": "bigquery.googleapis.com",
+        "methodName": "google.cloud.bigquery.v2.TableService.InsertTable",
+        "resourceName": "projects/dlap-gcp-e2e/datasets/analytics/tables/orders",
+        "authenticationInfo": {
+          "principalEmail": "etl-loader@dlap-gcp-e2e.iam.gserviceaccount.com"
+        },
+        "authorizationInfo": [
+          {
+            "resource": "projects/dlap-gcp-e2e/datasets/analytics",
+            "permission": "bigquery.tables.create",
+            "granted": true
+          }
+        ],
+        "requestMetadata": {
+          "callerIp": "203.0.113.52",
+          "callerSuppliedUserAgent": "google-api-python-client/2.130.0 (gzip)"
+        },
+        "request": {
+          "@type": "type.googleapis.com/google.cloud.bigquery.v2.InsertTableRequest",
+          "projectId": "dlap-gcp-e2e",
+          "datasetId": "analytics",
+          "table": {
+            "tableReference": {
+              "projectId": "dlap-gcp-e2e",
+              "datasetId": "analytics",
+              "tableId": "orders"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

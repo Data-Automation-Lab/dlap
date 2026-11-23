@@ -1,0 +1,6 @@
+origin: generated
+generator: com.dlap.discovery.coverage.ReadCoverageEventEncoder (copy of da-discovery src/test/resources/coverage/wire/observation-prefix-subset.json)
+doc_date: 2026-10-20
+license: Apache-2.0
+anonymised: true
+notes: "COV-01 wire example: one read-coverage observation as da-discovery writes it to dlap.log.event.normalized. da-catalog keeps an identical copy (da-catalog/src/test/resources/coverage/observation-prefix-subset.json) that ReadCoverageWireTest decodes; the two tests hold the writer and the reader together. Account and bucket names are invented."

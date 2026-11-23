@@ -1,0 +1,39 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.11",
+      "userIdentity": {
+        "type": "AWSService",
+        "invokedBy": "s3.amazonaws.com"
+      },
+      "eventTime": "2026-11-03T04:00:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "s3.amazonaws.com",
+      "requestParameters": {
+        "bucketName": "dlap-aws-e2e-replica",
+        "key": "raw/2026/09/orders.parquet"
+      },
+      "responseElements": null,
+      "requestID": "PARSE03CTS000001",
+      "eventID": "0a5e0c11-1fe0-4e00-8000-000000000321",
+      "readOnly": false,
+      "resources": [
+        {
+          "type": "AWS::S3::Object",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e-replica/raw/2026/09/orders.parquet"
+        },
+        {
+          "accountId": "123456789012",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::dlap-aws-e2e-replica"
+        }
+      ],
+      "eventType": "AwsServiceEvent",
+      "managementEvent": false,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Data"
+    }
+  ]
+}

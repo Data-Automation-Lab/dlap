@@ -1,0 +1,10 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+doc_date: 2026-09-04
+license: synthetic
+covers: []
+variant_ids:
+  - entry.invalid-json
+expected_outcome: QUARANTINED:INVALID_JSON
+anonymised: false
+notes: "Hand-written for GCP-01. A record that is not one JSON value (a cut-off write, a stray comma, single quotes or a bare word) is quarantined, never dropped."

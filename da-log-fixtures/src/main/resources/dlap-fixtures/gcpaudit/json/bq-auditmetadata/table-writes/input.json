@@ -1,0 +1,186 @@
+[
+  {
+    "insertId": "bq2-writes-1",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:19.123456808Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders_staging",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders_staging",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataChange": {
+          "insertedRowsCount": "120",
+          "reason": "JOB",
+          "jobName": "projects/proj-0d1a0001/jobs/bquxjob_load_1"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:20.023456808Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-writes-2",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:20.123456809Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.Query",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataChange": {
+          "insertedRowsCount": "120",
+          "deletedRowsCount": "3",
+          "reason": "QUERY",
+          "jobName": "projects/proj-0d1a0001/jobs/bquxjob_dml_1"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:21.023456809Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-writes-3",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:21.123456810Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquery.googleapis.com",
+      "methodName": "google.cloud.bigquery.v2.JobService.InsertJob",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders_v",
+      "authenticationInfo": {
+        "principalEmail": "analyst@example.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "dlap-fixture-client/1.0",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders_v",
+          "permission": "bigquery.jobs.create",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataChange": {
+          "insertedRowsCount": "120",
+          "reason": "MATERIALIZED_VIEW_REFRESH"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:22.023456810Z",
+    "severity": "INFO"
+  },
+  {
+    "insertId": "bq2-writes-4",
+    "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-03T10:00:22.123456811Z",
+    "resource": {
+      "type": "bigquery_dataset",
+      "labels": {
+        "project_id": "proj-0d1a0001",
+        "dataset_id": "sales"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": { },
+      "serviceName": "bigquerystorage.googleapis.com",
+      "methodName": "google.cloud.bigquery.storage.v1.BigQueryWrite.AppendRows",
+      "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+      "authenticationInfo": {
+        "principalEmail": "sa-0d1a00e1@proj-0d1a0001.iam.gserviceaccount.com"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "callerSuppliedUserAgent": "grpc-java/1.83.1",
+        "requestAttributes": { },
+        "destinationAttributes": { }
+      },
+      "authorizationInfo": [
+        {
+          "resource": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+          "permission": "bigquery.tables.updateData",
+          "granted": true,
+          "resourceAttributes": { }
+        }
+      ],
+      "metadata": {
+        "@type": "type.googleapis.com/google.cloud.audit.BigQueryAuditMetadata",
+        "tableDataChange": {
+          "insertedRowsCount": "120",
+          "reason": "WRITE_API",
+          "streamName": "projects/proj-0d1a0001/datasets/sales/tables/orders/streams/_default"
+        }
+      }
+    },
+    "receiveTimestamp": "2026-09-03T10:00:22.923456811Z",
+    "severity": "INFO"
+  }
+]

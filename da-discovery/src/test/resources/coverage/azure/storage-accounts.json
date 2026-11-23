@@ -1,0 +1,22 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/rg-data/providers/Microsoft.Storage/storageAccounts/dlapdemolake",
+      "name": "dlapdemolake",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "westeurope",
+      "kind": "StorageV2",
+      "sku": { "name": "Standard_LRS", "tier": "Standard" },
+      "properties": { "isHnsEnabled": true, "provisioningState": "Succeeded" }
+    },
+    {
+      "id": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/rg-data/providers/Microsoft.Storage/storageAccounts/dlapdemoarchive",
+      "name": "dlapdemoarchive",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "westeurope",
+      "kind": "StorageV2",
+      "sku": { "name": "Standard_GRS", "tier": "Standard" },
+      "properties": { "isHnsEnabled": false, "provisioningState": "Succeeded" }
+    }
+  ]
+}

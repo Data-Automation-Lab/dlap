@@ -1,0 +1,180 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP read-only pilot, production Keycloak overlay (IAM-02).
+#
+# up.sh applies it after docker-compose.pilot.base.yml (sorted order), and from then on stops asking for
+# PILOT_ALLOW_DEV_REALM: the quickstart realm with its seeded users is no longer imported. Paths are
+# relative to deployment/environments/dev, the folder of the first compose file. Needs Docker Compose
+# 2.24 or later (!override).
+#
+# What it does:
+#   1. Keycloak 26.8.1 in production mode from the image built by deployment/platform/keycloak/Dockerfile:
+#      `kc.sh start --optimized` (the build step ran at image build, with db=postgres, health on, metrics
+#      off and the scripts feature disabled), on its own PostgreSQL database "keycloak", so accounts,
+#      OTP devices and events survive a container recreation and are in the pilot backups (DR-01 backs
+#      up every non-template database).
+#   2. The production realm template deployment/platform/keycloak/production/dlap-realm.json in place of
+#      the quickstart realm: no seeded people, OTP for ROLE_ADMIN, ROLE_CDO and ROLE_POLICY_MANAGER, no
+#      social brokers, no password grant, login and admin events on, and the audience dlap-api in the
+#      access tokens of dlap-ui and dlap-backend (the audience the TLS overlay makes every service
+#      require; dlap-mcp-gateway tokens carry only dlap-mcp-pep), and sslRequired "external" (the TLS
+#      overlay makes it "all", see below). It is imported once, into an empty database; later changes go
+#      through the admin console or a new database (deployment/platform/keycloak/production/README.md).
+#   3. One issuer. The front-end URL is fixed to DLAP_PILOT_ID_URL, so every token carries
+#      $DLAP_PILOT_ID_URL/realms/dlap as its issuer, also the service tokens the services fetch on the
+#      internal network. Back-channel requests (keys, tokens, the admin API) keep working on
+#      http://keycloak:8080. The issuer and audience checks of the services are switched on by the TLS
+#      overlay (SEC-06), not here.
+#   4. da-discovery: its OAuth2 client registration ("oidc") would read
+#      http://keycloak:8080/realms/dlap/.well-known/openid-configuration at start, find the fixed issuer
+#      there and stop ("Unable to resolve Configuration with the provided Issuer"). The overlay points
+#      the registration at a provider "pilot" with explicit endpoints and the authorization_code grant
+#      type (which the discovery document used to supply), so nothing is discovered at start.
+#      The "oidc" provider's issuer-uri stays internal because CrawlerSecurityConfiguration builds its key
+#      URL from it. Plain variables, so the quickstart's SPRING_APPLICATION_JSON stays as it is.
+#
+# Settings read from .env.pilot:
+#   KEYCLOAK_ADMIN, KEYCLOAK_ADMIN_PASSWORD   the temporary master-realm admin, created at the first start
+#                                             only (a later change of the file does not apply). The
+#                                             production README says how to replace it.
+#   KEYCLOAK_DB_PASSWORD                      required: password of the "keycloak" database role. It is its
+#                                             own secret: the temporary bootstrap admin and the long-lived
+#                                             database role no longer share one (Q-541). up.sh refuses a
+#                                             missing, placeholder or admin-equal value. The role is created
+#                                             with it when the PostgreSQL volume is new; a pilot that started
+#                                             before this was required keeps the old password in the role, so
+#                                             set the variable to that old value (the admin password) or run
+#                                             ALTER ROLE keycloak PASSWORD ... first (README, "Keycloak
+#                                             database password").
+#   DLAP_BACKEND_CLIENT_SECRET,               required; the realm import writes them into the two machine
+#   DLAP_MCP_GATEWAY_CLIENT_SECRET            clients. up.sh refuses the published defaults.
+#   DLAP_PILOT_ID_URL                         optional, default http://localhost:8180: the URL browsers use
+#                                             for Keycloak, without /realms. Plain HTTP works only on a
+#                                             loopback host (an SSH tunnel): Keycloak 26 marks its cookies
+#                                             Secure, and browsers send those over HTTP to localhost only.
+#                                             Any other host name needs the TLS overlay.
+#   DLAP_PILOT_APP_URL                        optional, default http://localhost:8081: the UI origin. The
+#                                             dlap-ui client accepts exactly $DLAP_PILOT_APP_URL/ and
+#                                             $DLAP_PILOT_APP_URL/silent-check-sso.html as redirect URIs.
+#   PILOT_JWT_AUDIENCE                        optional, default dlap-api: the audience the realm writes into
+#                                             dlap-ui and dlap-backend tokens. The TLS overlay reads the
+#                                             same variable for the services' audience check.
+#
+# With the TLS overlay (SEC-06) the imported realm gets sslRequired "all" (Q-514, D31): Keycloak refuses
+# every request that is not HTTPS, also from private addresses. It applies to a NEW database only: a realm
+# that already exists keeps its setting, so change it in the admin console (Realm settings, General,
+# Require SSL) or import into a new database. Also set DLAP_PILOT_ID_URL and DLAP_PILOT_APP_URL to
+# PILOT_PUBLIC_ORIGIN, so the issuer and the redirect URIs are the public origin the gateway serves
+# (deployment/platform/keycloak/production/README.md, "Pilot").
+#
+# The "keycloak" database is created by the PostgreSQL init script (00-create-multiple-databases.sh,
+# KEYCLOAK_DB_NAME) when the volume is new. A volume from before this overlay has no such database, and
+# Keycloak then stops with "database keycloak does not exist". Create it once, with the role password in PW:
+#   printf '%s\n' "CREATE ROLE keycloak LOGIN PASSWORD :'pw';" "CREATE DATABASE keycloak OWNER keycloak;" \
+#     | ./up.sh exec -T postgresql psql -U dlap -d dlap -v ON_ERROR_STOP=1 -v pw="$PW"
+#
+# Check it: deployment/platform/keycloak/tests/pilot-login-smoke.sh starts PostgreSQL and Keycloak from
+# these files, signs in through the browser flow with and without OTP and through an identity provider,
+# and checks the issuer, the machine clients, the events and that the data survives a recreation.
+
+services:
+
+  postgresql:
+    environment:
+      # Read by 00-create-multiple-databases.sh on a new volume: a "keycloak" role that owns nothing but
+      # its own database.
+      KEYCLOAK_DB_NAME: "keycloak"
+      KEYCLOAK_DB_USER: "keycloak"
+      KEYCLOAK_DB_PASSWORD: "${KEYCLOAK_DB_PASSWORD:?KEYCLOAK_DB_PASSWORD must be set in .env.pilot}"
+
+  keycloak:
+    build:
+      context: ../../platform/keycloak
+      dockerfile: Dockerfile
+    image: dlap-identity:26.8.1-optimized
+    # Production mode without a build step at start. --import-realm imports the template once, into an
+    # empty database; a realm that exists is left alone.
+    command: !override
+      - "start"
+      - "--optimized"
+      - "--import-realm"
+    # Keycloak insists that an import file is named after its realm: <realm>-realm.json.
+    volumes: !override
+      - ../../platform/keycloak/production/dlap-realm.json:/opt/keycloak/data/import/dlap-realm.json:ro
+    environment: !override
+      # Database: PostgreSQL. KC_DB=postgres is built into the image.
+      - KC_DB_URL=jdbc:postgresql://postgresql:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD:?KEYCLOAK_DB_PASSWORD must be set in .env.pilot}
+      - KC_DB_POOL_INITIAL_SIZE=1
+      - KC_DB_POOL_MIN_SIZE=1
+      - KC_DB_POOL_MAX_SIZE=10
+      # Temporary master-realm admin, created at the first start only. da-admin-service signs in with the
+      # same pair (deployment/PRODUCTION.md, section 8.2).
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KEYCLOAK_ADMIN:-admin}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD must be set in .env.pilot}
+      # One issuer: the front-end URL is fixed, back-channel URLs follow the request.
+      - KC_HOSTNAME=${DLAP_PILOT_ID_URL:-http://localhost:8180}
+      - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
+      # Plain HTTP inside the compose network and on the loopback port only. No proxy headers are trusted:
+      # KC_HOSTNAME fixes every front-end URL, so a proxy in front (the TLS overlay's gateway) needs none.
+      - KC_HTTP_ENABLED=true
+      - KC_HTTP_PORT=8080
+      - KC_LOG_LEVEL=info
+      # Heap inside the 1280 MiB limit of docker-compose.pilot.base.yml.
+      - JAVA_OPTS_KC_HEAP=-Xms256m -Xmx768m
+      - JAVA_OPTS_APPEND=-XX:MaxMetaspaceSize=256m -XX:+ExitOnOutOfMemoryError
+      # Read by the realm import. There is no default: compose refuses a missing value and up.sh a
+      # published one.
+      - DLAP_BACKEND_CLIENT_SECRET=${DLAP_BACKEND_CLIENT_SECRET:?DLAP_BACKEND_CLIENT_SECRET must be set in .env.pilot}
+      - DLAP_MCP_GATEWAY_CLIENT_SECRET=${DLAP_MCP_GATEWAY_CLIENT_SECRET:?DLAP_MCP_GATEWAY_CLIENT_SECRET must be set in .env.pilot}
+      - DLAP_APP_URL=${DLAP_PILOT_APP_URL:-http://localhost:8081}
+      # The audience the realm puts into the access tokens of dlap-ui and dlap-backend. The TLS overlay
+      # (SEC-06) makes every service require PILOT_JWT_AUDIENCE, so the two read the same variable.
+      - DLAP_API_AUDIENCE=${PILOT_JWT_AUDIENCE:-dlap-api}
+      # sslRequired of realm dlap, read by the realm import (Q-514, D31). "external" here: plain HTTP is
+      # accepted from loopback and private addresses, which the internal network uses without TLS. The TLS
+      # overlay (docker-compose.pilot.tls.yml) sets "all". A literal, not a pass-through of the caller's
+      # environment, so a stray variable cannot weaken the realm.
+      - DLAP_REALM_SSL_REQUIRED=external
+    depends_on: !override
+      postgresql:
+        condition: service_healthy
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Health is on the management port 9000, which nothing publishes. The image has no curl or wget.
+    healthcheck: !override
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && timeout 5 cat <&3 | grep -m1 '\"status\"' | grep -q '\"UP\"'"]
+      interval: 10s
+      timeout: 8s
+      retries: 30
+      start_period: 60s
+
+  da-discovery:
+    environment:
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_PROVIDER=pilot
+      # A provider without issuer-uri gives the registration no grant type, and Spring then refuses to
+      # build it ("authorizationGrantType cannot be null"), which stops the context at start.
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_AUTHORIZATIONGRANTTYPE=authorization_code
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_AUTHORIZATIONURI=${DLAP_PILOT_ID_URL:-http://localhost:8180}/realms/dlap/protocol/openid-connect/auth
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_TOKENURI=http://keycloak:8080/realms/dlap/protocol/openid-connect/token
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_JWKSETURI=http://keycloak:8080/realms/dlap/protocol/openid-connect/certs
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_USERINFOURI=http://keycloak:8080/realms/dlap/protocol/openid-connect/userinfo
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_PILOT_USERNAMEATTRIBUTE=preferred_username

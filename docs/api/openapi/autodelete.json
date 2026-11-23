@@ -1,0 +1,1365 @@
+{
+  "components": {
+    "schemas": {
+      "DeleteKpisDTO": {
+        "properties": {
+          "activePolicies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsDeleted": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "assetsDeletedLast24h": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "averageDeletionTime": {
+            "format": "double",
+            "type": "number"
+          },
+          "complianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "estimatedMonthlySavings": {
+            "format": "double",
+            "type": "number"
+          },
+          "failedDeletion": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lastPolicyRun": {
+            "type": "string"
+          },
+          "pendingDeletion": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "storageReclaimed": {
+            "type": "string"
+          },
+          "totalSavingsToDate": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "DeletionByPolicyDTO": {
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "DeletionConfigDTO": {
+        "properties": {
+          "defaultSoftDeleteRetentionDays": {
+            "format": "int64",
+            "maximum": 36500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "notificationEmailsOnError": {
+            "items": {
+              "format": "email",
+              "maxLength": 254,
+              "minLength": 0,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 0,
+            "type": "array"
+          },
+          "requireApprovalForHardDelete": {
+            "type": "boolean"
+          },
+          "requireApprovalForSoftDelete": {
+            "type": "boolean"
+          },
+          "softDeleteByDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "DeletionConfigOverride": {
+        "properties": {
+          "requireApproval": {
+            "type": "boolean"
+          },
+          "softDelete": {
+            "type": "boolean"
+          },
+          "softDeleteRetentionDays": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "DeletionScope": {
+        "properties": {
+          "assetIds": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "DeletionTaskListResponse": {
+        "properties": {
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+            },
+            "type": "array"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "DeletionTaskRequest": {
+        "properties": {
+          "justification": {
+            "type": "string"
+          },
+          "overrideConfig": {
+            "$ref": "#/components/schemas/DeletionConfigOverride"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/DeletionScope"
+          },
+          "taskName": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope"
+        ],
+        "type": "object"
+      },
+      "DeletionTaskResponse": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskName": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DeletionTaskStatusDTO": {
+        "properties": {
+          "approvalComments": {
+            "type": "string"
+          },
+          "assetsFailedToProcess": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsPendingProcessing": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "assetsProcessedSuccessfully": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "errorMessages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "justification": {
+            "type": "string"
+          },
+          "overrideConfig": {
+            "$ref": "#/components/schemas/DeletionConfigOverride"
+          },
+          "rejectionComments": {
+            "type": "string"
+          },
+          "ruleAgeDays": {
+            "description": "Whole days since the rule was applied; set with ruleAppliedAt",
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "ruleAppliedAt": {
+            "description": "When the container rule was applied; set for RULE_IN_FORCE and for an applied container rule that waits for its proof (IN_PROGRESS), null otherwise",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "ruleEndsAt": {
+            "description": "When the executor removes the rule at its maximum age; set with ruleAppliedAt",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "scheduledHardDeleteAt": {
+            "description": "When the soft-delete window closes (ISO-8601 instant, UTC), from the record's window; null when the record has none",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/DeletionScope"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "taskName": {
+            "type": "string"
+          },
+          "totalAssetsInScope": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Pageable": {
+        "properties": {
+          "page": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sort": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "RecentActivityDTO": {
+        "properties": {
+          "assetName": {
+            "type": "string"
+          },
+          "assetSize": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "policy": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RestoreRequest": {
+        "properties": {
+          "notes": {
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RiskAssetDTO": {
+        "properties": {
+          "lastAccessed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "risk": {
+            "type": "string"
+          },
+          "scheduledDeletion": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StorageReclaimedTrendDTO": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "duplicateData": {
+            "format": "double",
+            "type": "number"
+          },
+          "gdpr": {
+            "format": "double",
+            "type": "number"
+          },
+          "qualityIssues": {
+            "format": "double",
+            "type": "number"
+          },
+          "retention": {
+            "format": "double",
+            "type": "number"
+          },
+          "storageOptimization": {
+            "format": "double",
+            "type": "number"
+          },
+          "totalReclaimed": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "TaskApprovalRequest": {
+        "properties": {
+          "comments": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TotalCostSavingsDTO": {
+        "properties": {
+          "averageSavingsPerAsset": {
+            "format": "double",
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "estimatedMonthlySavings": {
+            "type": "number"
+          },
+          "lastUpdated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "savingsPercentage": {
+            "format": "double",
+            "type": "number"
+          },
+          "savingsThisMonth": {
+            "type": "number"
+          },
+          "savingsThisYear": {
+            "type": "number"
+          },
+          "totalAssetsDeleted": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalSavingsToDate": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "TotalStorageReclaimedDTO": {
+        "properties": {
+          "averageStoragePerAsset": {
+            "format": "double",
+            "type": "number"
+          },
+          "lastUpdated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "storageReclaimedThisMonth": {
+            "type": "string"
+          },
+          "storageReclaimedThisYear": {
+            "type": "string"
+          },
+          "totalAssetsDeleted": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalStorageReclaimed": {
+            "type": "string"
+          },
+          "totalStorageReclaimedGB": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "WouldDeletePage": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/WouldDeleteRowDTO"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object"
+          },
+          "page": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "WouldDeleteRowDTO": {
+        "properties": {
+          "approvalId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetUri": {
+            "type": "string"
+          },
+          "cloudProvider": {
+            "type": "string"
+          },
+          "dispositionStatus": {
+            "type": "string"
+          },
+          "dryRun": {
+            "type": "boolean"
+          },
+          "hardDeleteApprovalId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "plannedMode": {
+            "type": "string"
+          },
+          "plannedPlatform": {
+            "type": "string"
+          },
+          "policyId": {
+            "type": "string"
+          },
+          "queuedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "readCoverage": {
+            "type": "string"
+          },
+          "recordId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ruleDocument": {
+            "type": "string"
+          },
+          "ruleEffectiveAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ruleId": {
+            "type": "string"
+          },
+          "scheduledHardDeleteAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "windowDays": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "API for AutoDelete Service",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "termsOfService": "http://swagger.io/terms/",
+    "title": "da-autodelete",
+    "version": "0.0.1-SNAPSHOT"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/api/v1/autodelete/restores/{softDeleteRecordId}": {
+      "post": {
+        "description": "A record whose bucket, prefix or container rule was applied (RULE_IN_FORCE, or AWAITING_PROOF) is restored by removing the rule; objects it already expired are gone. When DLAP's rule is not found the record ends RESTORE_FAILED (409, ruleRemoved false). A pending HARD_DELETE approval of the record is withdrawn by the service account on behalf of the caller (approvalWithdrawal in the answer).",
+        "operationId": "restore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "softDeleteRecordId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Restore a soft-deleted asset before anything is deleted in the cloud",
+        "tags": [
+          "Restore"
+        ]
+      }
+    },
+    "/api/v1/autodelete/would-delete": {
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WouldDeletePage"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "List the assets held for deletion and the rule that would delete each",
+        "tags": [
+          "Would delete"
+        ]
+      }
+    },
+    "/api/v1/delete-agent/dashboard/activities/recent": {
+      "get": {
+        "description": "Retrieves recent deletion activities",
+        "operationId": "getRecentActivities",
+        "parameters": [
+          {
+            "description": "Maximum number of activities to retrieve (default: 10)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecentActivityDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved activities"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecentActivityDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get recent activities",
+        "tags": [
+          "Delete Agent Dashboard API"
+        ]
+      }
+    },
+    "/api/v1/delete-agent/dashboard/assets/risk": {
+      "get": {
+        "description": "Retrieves assets at risk of deletion",
+        "operationId": "getRiskAssets",
+        "parameters": [
+          {
+            "description": "Maximum number of assets to retrieve (default: 10)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RiskAssetDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved risk assets"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RiskAssetDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get risk assets",
+        "tags": [
+          "Delete Agent Dashboard API"
+        ]
+      }
+    },
+    "/api/v1/delete-agent/dashboard/costs/total-savings": {
+      "get": {
+        "description": "Retrieves total cost savings achieved through deletion operations",
+        "operationId": "getTotalCostSavings",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotalCostSavingsDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved total cost savings"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotalCostSavingsDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get total cost savings",
+        "tags": [
+          "Delete Agent Dashboard API"
+        ]
+      }
+    },
+    "/api/v1/delete-agent/dashboard/kpis": {
+      "get": {
+        "description": "Retrieves key performance indicators for the Delete Agent",
+        "operationId": "getDeleteKpis",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteKpisDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved KPIs"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteKpisDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get Delete Agent KPIs",
+        "tags": [
+          "Delete Agent Dashboard API"
+        ]
+      }
+    },
+    "/api/v1/delete-agent/dashboard/policies/deletion-stats": {
+      "get": {
+        "description": "Retrieves deletion statistics grouped by policy type",
+        "operationId": "getDeletionByPolicyData",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeletionByPolicyDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved policy data"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeletionByPolicyDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get deletion by policy data",
+        "tags": [
+          "Delete Agent Dashboard API"
+        ]
+      }
+    },
+    "/api/v1/delete-agent/dashboard/storage/total-reclaimed": {
+      "get": {
+        "description": "Retrieves total storage space reclaimed through deletion operations",
+        "operationId": "getTotalStorageReclaimed",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotalStorageReclaimedDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved total storage reclaimed"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotalStorageReclaimedDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get total storage reclaimed",
+        "tags": [
+          "Delete Agent Dashboard API"
+        ]
+      }
+    },
+    "/api/v1/delete-agent/dashboard/trends/storage-reclaimed": {
+      "get": {
+        "description": "Retrieves storage reclaimed trends over time",
+        "operationId": "getStorageReclaimedTrends",
+        "parameters": [
+          {
+            "description": "Number of weeks to retrieve (default: 7)",
+            "in": "query",
+            "name": "weeks",
+            "required": false,
+            "schema": {
+              "default": 7,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StorageReclaimedTrendDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved trends"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StorageReclaimedTrendDTO"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get storage reclaimed trends",
+        "tags": [
+          "Delete Agent Dashboard API"
+        ]
+      }
+    },
+    "/api/v1/delete-agent/dashboard/trigger-run": {
+      "post": {
+        "description": "Triggers a manual deletion run",
+        "operationId": "triggerManualDeletionRun",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Manual deletion run triggered successfully"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Trigger manual deletion run",
+        "tags": [
+          "Delete Agent Dashboard API"
+        ]
+      }
+    },
+    "/api/v1/deletion/config": {
+      "get": {
+        "operationId": "getDeletionConfiguration",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionConfigDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved configuration"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionConfigDTO"
+                }
+              }
+            },
+            "description": "Forbidden if user does not have required role"
+          }
+        },
+        "summary": "Get current deletion configuration",
+        "tags": [
+          "Deletion Configuration API"
+        ]
+      },
+      "put": {
+        "description": "Updates the global auto-deletion configuration. Only ADMINs can perform this.",
+        "operationId": "updateDeletionConfiguration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletionConfigDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Configuration updated successfully"
+          },
+          "400": {
+            "description": "Invalid configuration provided"
+          },
+          "403": {
+            "description": "Forbidden if user is not an ADMIN"
+          }
+        },
+        "summary": "Update deletion configuration",
+        "tags": [
+          "Deletion Configuration API"
+        ]
+      }
+    },
+    "/api/v1/deletion/tasks": {
+      "get": {
+        "description": "Lists deletion tasks with pagination. ADMINs/CDOs see all, others might see a filtered list.",
+        "operationId": "listDeletionTasks",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskListResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "List all deletion tasks",
+        "tags": [
+          "Deletion Task API"
+        ]
+      },
+      "post": {
+        "operationId": "submitDeletionTask",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletionTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskResponse"
+                }
+              }
+            },
+            "description": "Task accepted for processing or approval"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskResponse"
+                }
+              }
+            },
+            "description": "Invalid request payload or validation error"
+          }
+        },
+        "summary": "Submit a new deletion task",
+        "tags": [
+          "Deletion Task API"
+        ]
+      }
+    },
+    "/api/v1/deletion/tasks/{taskId}": {
+      "get": {
+        "operationId": "getDeletionTaskStatus",
+        "parameters": [
+          {
+            "description": "ID of the deletion task",
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+                }
+              }
+            },
+            "description": "Successfully retrieved task status"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+                }
+              }
+            },
+            "description": "Task not found"
+          }
+        },
+        "summary": "Get deletion task status by ID",
+        "tags": [
+          "Deletion Task API"
+        ]
+      }
+    },
+    "/api/v1/deletion/tasks/{taskId}/approve": {
+      "post": {
+        "description": "Answers 409 with the approval API to use (RET-02: separation of duties is enforced there).",
+        "operationId": "approveDeletionTask",
+        "parameters": [
+          {
+            "description": "ID of the task to approve",
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+                }
+              }
+            },
+            "description": "Task approved successfully"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+                }
+              }
+            },
+            "description": "Task not found"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+                }
+              }
+            },
+            "description": "Task is not in a state that can be approved"
+          }
+        },
+        "summary": "Retired: approvals are decided in the policy engine",
+        "tags": [
+          "Deletion Task API"
+        ]
+      }
+    },
+    "/api/v1/deletion/tasks/{taskId}/reject": {
+      "post": {
+        "description": "Answers 409 with the approval API to use (RET-02: separation of duties is enforced there).",
+        "operationId": "rejectDeletionTask",
+        "parameters": [
+          {
+            "description": "ID of the task to reject",
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+                }
+              }
+            },
+            "description": "Task rejected successfully"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+                }
+              }
+            },
+            "description": "Task not found"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionTaskStatusDTO"
+                }
+              }
+            },
+            "description": "Task is not in a state that can be rejected"
+          }
+        },
+        "summary": "Retired: approvals are decided in the policy engine",
+        "tags": [
+          "Deletion Task API"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "APIs for Delete Agent dashboard data",
+      "name": "Delete Agent Dashboard API"
+    },
+    {
+      "description": "APIs for managing auto-deletion configurations",
+      "name": "Deletion Configuration API"
+    },
+    {
+      "description": "APIs for managing auto-deletion tasks",
+      "name": "Deletion Task API"
+    },
+    {
+      "description": "Restore soft-deleted assets within the deletion window",
+      "name": "Restore"
+    },
+    {
+      "description": "Assets held for deletion and the rule that would delete them",
+      "name": "Would delete"
+    }
+  ]
+}

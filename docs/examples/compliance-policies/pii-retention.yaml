@@ -1,0 +1,23 @@
+# PII retention: flag PII assets not accessed within the retention window (stale).
+apiVersion: dlap/v1
+kind: Policy
+metadata:
+  id: pii-retention-exceeded
+  name: "PII retention exceeded (stale PII)"
+  owner: "data-governance@example.com"
+  enabled: true
+spec:
+  triggers:
+    - type: schedule
+      cron: "0 0 4 * * ?"        # 04:00 daily
+  match:
+    labels:
+      allOf: ["data-class:pii"]
+      noneOf: ["legal-hold", "compliance:pii:retention-exceeded"]
+    lastAccessedAt:
+      olderThan: P365D           # ISO-8601: not accessed in a year
+  action:
+    type: addLabel
+    parameters:
+      labelName: "compliance:pii:retention-exceeded"
+      auditNote: "PII asset not accessed within the retention window."

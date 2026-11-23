@@ -1,0 +1,15 @@
+origin: public-dataset
+repo: GoogleCloudPlatform/professional-services
+commit: "d86f53e2dccb7bef1f4755e43bd92d8fd5d2d060"
+source_url: https://github.com/GoogleCloudPlatform/professional-services/blob/d86f53e2dccb7bef1f4755e43bd92d8fd5d2d060/examples/audit-log-examples/cloud-storage/gcs-admin-activity.log
+doc_date: 2026-10-05
+license: Apache-2.0
+covers:
+  - storage.googleapis.com:storage.buckets.create
+variant_ids:
+  - log.admin-activity
+  - actor.principal-email
+  - gcs.resource-labels
+expected_outcome: PARSED
+anonymised: true
+notes: "Anonymised excerpt of GoogleCloudPlatform/professional-services at d86f53e2dccb: cloud-storage/gcs-admin-activity.log, whole file. Changed from the source: identifiers anonymised by com.dlap.fixtures.anon.Anonymiser, records wrapped in the provider's delivery envelope, JSON re-indented. The example logs were published in 2021 and 2022, so they predate authorizationInfo.permissionType."

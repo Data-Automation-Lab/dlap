@@ -1,0 +1,16 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/test-project/logs/cloudaudit.googleapis.com%2Fdata_access|2021-11-25T21:56:00.276607Z|jpllvgecd7bx",
+      "eventTime": "2021-11-25T21:56:00.276607Z",
+      "observedTime": "2021-11-25T21:56:00.653866570Z",
+      "sourceProvider": "GCP",
+      "sourceService": "bigquery.googleapis.com",
+      "operation": "jobservice.jobcompleted",
+      "resultStatus": "SUCCESS",
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "bq-auditdata-legacy"
+    }
+  ]
+}

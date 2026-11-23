@@ -1,0 +1,15 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/rg-data/providers/Microsoft.Storage/storageAccounts/dlapdemolake/blobServices/default/providers/microsoft.insights/diagnosticSettings/to-archive",
+      "name": "to-archive",
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "properties": {
+        "storageAccountId": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/rg-ops/providers/Microsoft.Storage/storageAccounts/dlapopslogs",
+        "workspaceId": "",
+        "metrics": [],
+        "logs": [ { "category": null, "categoryGroup": "allLogs", "enabled": true, "retentionPolicy": { "days": 0, "enabled": false } } ]
+      }
+    }
+  ]
+}

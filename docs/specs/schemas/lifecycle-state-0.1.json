@@ -1,0 +1,361 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:lifecycle-state:schema:0.1",
+  "$comment": "Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. The ASF licenses this file to you under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0). Normative text: docs/specs/lifecycle-state.md. Rules a JSON Schema cannot express (time sources, determinism, ordering) are stated there.",
+  "title": "Lifecycle State 0.1",
+  "description": "The lifecycle state of one data asset at one evaluation instant, derived from the Asset Descriptor. A null value means unknown.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "specVersion",
+    "asset",
+    "platform",
+    "asOf",
+    "createdAt",
+    "lastReadAt",
+    "lastWrittenAt",
+    "readCoverage",
+    "readCoverageReasons",
+    "readCoverageSince",
+    "sizeBytes",
+    "sizeObservedAt",
+    "retention",
+    "legalHold",
+    "disposition",
+    "provenance"
+  ],
+  "properties": {
+    "specVersion": {
+      "const": "0.1",
+      "description": "Version of the Lifecycle State specification this object conforms to."
+    },
+    "asset": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The canonical asset URI (Asset Descriptor assetUri, asset-id.md)."
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "kind"],
+      "properties": {
+        "provider": {
+          "description": "Asset Descriptor cloudProvider.",
+          "enum": ["AWS", "GCP", "AZURE", "OCI", "UNITY", "DATABRICKS", "SNOWFLAKE"]
+        },
+        "kind": {
+          "description": "Asset Descriptor serviceType: the asset kind.",
+          "enum": [
+            "S3_BUCKET", "S3_OBJECT", "RDS_INSTANCE", "REDSHIFT_CLUSTER", "DYNAMODB_TABLE",
+            "GLUE_DATABASE", "GLUE_TABLE", "REDSHIFT_QUERY",
+            "GCS_BUCKET", "GCS_OBJECT", "BIGQUERY_DATASET", "BIGQUERY_TABLE", "BIGQUERY_JOB",
+            "CLOUD_SQL_INSTANCE",
+            "BLOB_STORAGE", "BLOB_CONTAINER", "BLOB_OBJECT", "SQL_DATABASE", "COSMOS_DB", "DATA_LAKE",
+            "UNITY_CATALOG", "UNITY_SCHEMA", "UNITY_TABLE", "UNITY_VOLUME",
+            "DATABRICKS_JOB", "SNOWFLAKE_TABLE",
+            "SPARK_JOB", "PYTHON_JOB", "DATAFLOW_JOB", "DBT_MODEL"
+          ]
+        }
+      }
+    },
+    "asOf": {
+      "$ref": "#/$defs/timestamp",
+      "description": "The evaluation instant. The only time taken from the engine's clock."
+    },
+    "createdAt": {
+      "$ref": "#/$defs/nullableTimestamp",
+      "description": "Asset Descriptor cloudCreatedAt."
+    },
+    "lastReadAt": {
+      "$ref": "#/$defs/nullableTimestamp",
+      "description": "Asset Descriptor lastAccessedAt. Null is unknown, never 'never read'."
+    },
+    "lastWrittenAt": {
+      "$ref": "#/$defs/nullableTimestamp",
+      "description": "Asset Descriptor lastModifiedAt."
+    },
+    "readCoverage": {
+      "description": "Asset Descriptor readCoverage. Null is unknown.",
+      "enum": ["FULL", "PARTIAL", "NONE", null]
+    },
+    "readCoverageReasons": {
+      "description": "Asset Descriptor readCoverageReasons, in the order of the observation.",
+      "type": "array",
+      "maxItems": 20,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    },
+    "readCoverageSince": {
+      "$ref": "#/$defs/nullableTimestamp",
+      "description": "Asset Descriptor readCoverageSince: start of the current run of FULL. Null unless readCoverage is FULL."
+    },
+    "sizeBytes": {
+      "description": "Asset Descriptor sizeBytes. Null is unknown; 0 is a real size.",
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "sizeObservedAt": {
+      "$ref": "#/$defs/nullableTimestamp",
+      "description": "Asset Descriptor sizeObservedAt."
+    },
+    "retention": { "$ref": "#/$defs/retention" },
+    "legalHold": {
+      "type": "boolean",
+      "description": "True when the asset is held. A hold blocks every disposition."
+    },
+    "disposition": {
+      "description": "The archive or delete that was executed, with its evidence. Null when none is known.",
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/disposition" }
+      ]
+    },
+    "provenance": {
+      "type": "array",
+      "description": "Which log bindings and event ids produced each field. One entry per field, in the order of the field enum.",
+      "items": { "$ref": "#/$defs/provenanceEntry" }
+    }
+  },
+  "allOf": [
+    { "$ref": "#/$defs/sizeAndObservationTogether" },
+    { "$ref": "#/$defs/coverageSinceOnlyWhenFull" },
+    { "$ref": "#/$defs/holdMatchesRetentionAndBlocksDisposition" },
+    { "$ref": "#/$defs/provenanceForCreatedAt" },
+    { "$ref": "#/$defs/provenanceForLastReadAt" },
+    { "$ref": "#/$defs/provenanceForLastWrittenAt" },
+    { "$ref": "#/$defs/provenanceForSizeBytes" },
+    { "$ref": "#/$defs/provenanceForReadCoverage" },
+    { "$ref": "#/$defs/provenanceForDisposition" }
+  ],
+  "$defs": {
+    "timestamp": {
+      "type": "string",
+      "description": "RFC 3339 instant in UTC with a Z suffix, with 0, 3, 6 or 9 fraction digits.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3}|\\.[0-9]{6}|\\.[0-9]{9})?Z$",
+      "format": "date-time"
+    },
+    "nullableTimestamp": {
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/timestamp" }
+      ]
+    },
+    "eventId": {
+      "type": "string",
+      "description": "A Log Event event_id: lowercase hex SHA-256 (log-event.md section 5.1).",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "basis", "days", "fixedDate", "expiresAt", "source"],
+      "properties": {
+        "status": {
+          "description": "Asset Descriptor retentionStatus.",
+          "enum": ["UNKNOWN", "NO_POLICY", "RETAINED", "DUE", "ON_HOLD"]
+        },
+        "basis": {
+          "description": "Asset Descriptor retentionBasis of the deciding rule.",
+          "enum": ["CREATED", "LAST_MODIFIED", "LAST_ACCESSED", "FIXED_DATE", null]
+        },
+        "days": {
+          "description": "Asset Descriptor retentionDays of the deciding rule. Null for FIXED_DATE.",
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 365000
+        },
+        "fixedDate": {
+          "$ref": "#/$defs/nullableTimestamp",
+          "description": "The expiry instant a FIXED_DATE rule carries. Null for the other bases."
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/nullableTimestamp",
+          "description": "Asset Descriptor retentionExpiresAt."
+        },
+        "source": {
+          "description": "Asset Descriptor retentionSource: POLICY, LABEL_DEFAULT, PROVIDER, MANUAL, or another upper snake case source.",
+          "anyOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,63}$" }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "basis": { "type": "null" } } },
+          "then": {
+            "properties": {
+              "days": { "type": "null" },
+              "fixedDate": { "type": "null" },
+              "source": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "basis": { "const": "FIXED_DATE" } } },
+          "then": {
+            "properties": {
+              "days": { "type": "null" },
+              "fixedDate": { "type": "string" },
+              "source": { "type": "string" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "basis": { "enum": ["CREATED", "LAST_MODIFIED", "LAST_ACCESSED"] } } },
+          "then": {
+            "properties": {
+              "days": { "type": "integer" },
+              "fixedDate": { "type": "null" },
+              "source": { "type": "string" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "NO_POLICY" } } },
+          "then": {
+            "properties": {
+              "basis": { "type": "null" },
+              "expiresAt": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "UNKNOWN" } } },
+          "then": { "properties": { "expiresAt": { "type": "null" } } }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["DUE", "RETAINED"] } } },
+          "then": {
+            "properties": {
+              "basis": { "type": "string" },
+              "expiresAt": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "executedAt", "executedBy", "evidence"],
+      "properties": {
+        "action": { "enum": ["archive", "delete"] },
+        "executedAt": {
+          "$ref": "#/$defs/timestamp",
+          "description": "Event time of the provider event that records the action."
+        },
+        "executedBy": {
+          "description": "native-rule: the provider acted on its own rule. engine: a lifecycle engine's executor issued the request.",
+          "enum": ["native-rule", "engine"]
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/eventId" },
+          "description": "Log Event ids that record the action, in ascending order."
+        }
+      }
+    },
+    "provenanceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "channel", "bindingIds", "eventIds"],
+      "properties": {
+        "field": {
+          "enum": [
+            "createdAt",
+            "lastReadAt",
+            "lastWrittenAt",
+            "readCoverage",
+            "sizeBytes",
+            "retention",
+            "legalHold",
+            "disposition"
+          ]
+        },
+        "channel": {
+          "description": "Evidence channel, <CHANNEL> or <CHANNEL>:<SOURCE_KIND> (asset-descriptor.md, evidence channels).",
+          "anyOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*(:[A-Z][A-Z0-9_]*)?$", "maxLength": 64 }
+          ]
+        },
+        "bindingIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Log Event binding_id values of the events, in ascending order. Empty when the events carry none."
+        },
+        "eventIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/eventId" },
+          "description": "Log Event ids that determine the field value, in ascending order."
+        }
+      }
+    },
+    "sizeAndObservationTogether": {
+      "if": { "properties": { "sizeBytes": { "type": "null" } } },
+      "then": { "properties": { "sizeObservedAt": { "type": "null" } } },
+      "else": { "properties": { "sizeObservedAt": { "type": "string" } } }
+    },
+    "coverageSinceOnlyWhenFull": {
+      "if": { "properties": { "readCoverage": { "const": "FULL" } } },
+      "then": { "properties": { "readCoverageSince": { "type": "string" } } },
+      "else": { "properties": { "readCoverageSince": { "type": "null" } } }
+    },
+    "holdMatchesRetentionAndBlocksDisposition": {
+      "if": { "properties": { "legalHold": { "const": true } } },
+      "then": {
+        "properties": {
+          "retention": { "properties": { "status": { "const": "ON_HOLD" } } },
+          "disposition": {
+            "description": "Only an archive executed before the hold may be recorded on a held asset; a held asset is never deleted.",
+            "anyOf": [
+              { "type": "null" },
+              { "type": "object", "properties": { "action": { "const": "archive" } } }
+            ]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "retention": { "properties": { "status": { "not": { "const": "ON_HOLD" } } } }
+        }
+      }
+    },
+    "provenanceForCreatedAt": {
+      "if": { "properties": { "createdAt": { "type": "null" } } },
+      "then": { "properties": { "provenance": { "not": { "contains": { "properties": { "field": { "const": "createdAt" } } } } } } },
+      "else": { "properties": { "provenance": { "contains": { "properties": { "field": { "const": "createdAt" } } } } } }
+    },
+    "provenanceForLastReadAt": {
+      "if": { "properties": { "lastReadAt": { "type": "null" } } },
+      "then": { "properties": { "provenance": { "not": { "contains": { "properties": { "field": { "const": "lastReadAt" } } } } } } },
+      "else": { "properties": { "provenance": { "contains": { "properties": { "field": { "const": "lastReadAt" } } } } } }
+    },
+    "provenanceForLastWrittenAt": {
+      "if": { "properties": { "lastWrittenAt": { "type": "null" } } },
+      "then": { "properties": { "provenance": { "not": { "contains": { "properties": { "field": { "const": "lastWrittenAt" } } } } } } },
+      "else": { "properties": { "provenance": { "contains": { "properties": { "field": { "const": "lastWrittenAt" } } } } } }
+    },
+    "provenanceForSizeBytes": {
+      "if": { "properties": { "sizeBytes": { "type": "null" } } },
+      "then": { "properties": { "provenance": { "not": { "contains": { "properties": { "field": { "const": "sizeBytes" } } } } } } },
+      "else": { "properties": { "provenance": { "contains": { "properties": { "field": { "const": "sizeBytes" } } } } } }
+    },
+    "provenanceForReadCoverage": {
+      "if": { "properties": { "readCoverage": { "type": "null" } } },
+      "else": { "properties": { "provenance": { "contains": { "properties": { "field": { "const": "readCoverage" } } } } } }
+    },
+    "provenanceForDisposition": {
+      "if": { "properties": { "disposition": { "type": "null" } } },
+      "then": { "properties": { "provenance": { "not": { "contains": { "properties": { "field": { "const": "disposition" } } } } } } },
+      "else": { "properties": { "provenance": { "contains": { "properties": { "field": { "const": "disposition" } } } } } }
+    }
+  }
+}

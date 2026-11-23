@@ -1,0 +1,18 @@
+origin: public-dataset
+repo: googleapis/google-cloudevents
+commit: "5427368e99996f3185f45d6eb444f8f7c1cd6e2d"
+source_url: https://github.com/googleapis/google-cloudevents/blob/5427368e99996f3185f45d6eb444f8f7c1cd6e2d/testdata/google/events/cloud/audit/v1/LogEntryData-bigqueryjobcompleted.json
+doc_date: 2026-10-15
+license: Apache-2.0
+covers:
+  - bigquery.googleapis.com:jobservice.jobcompleted
+variant_ids:
+  - log.data-access
+  - actor.principal-email
+  - actor.service-account
+  - entry.protopayload-without-type
+  - bq1.referenced-tables-objects
+  - bq1.resource-type
+expected_outcome: PARSED
+anonymised: true
+notes: "Anonymised excerpt of googleapis/google-cloudevents at 5427368e9999: LogEntryData-bigqueryjobcompleted.json, whole file. Changed from the source: identifiers anonymised by com.dlap.fixtures.anon.Anonymiser, records wrapped in the provider's delivery envelope, JSON re-indented. Test data of the CloudEvents schema project; the LogEntry is the legacy BigQuery v1 (AuditData) shape."

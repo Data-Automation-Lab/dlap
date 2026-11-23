@@ -1,0 +1,62 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.09",
+      "eventID": "c3d4e5f6-3333-4444-5555-666677778888",
+      "eventTime": "2026-07-05T12:10:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.30",
+      "userAgent": "aws-cli/2.15.0",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE0004",
+        "arn": "arn:aws:iam::123456789012:user/analyst",
+        "accountId": "123456789012",
+        "userName": "analyst"
+      },
+      "requestParameters": { "bucketName": "finance-reports", "key": "q1/old-report.csv" },
+      "responseElements": null,
+      "resources": [
+        { "type": "AWS::S3::Object", "ARN": "arn:aws:s3:::finance-reports/q1/old-report.csv" },
+        { "type": "AWS::S3::Bucket", "ARN": "arn:aws:s3:::finance-reports" }
+      ],
+      "recipientAccountId": "123456789012",
+      "eventType": "AwsApiCall",
+      "managementEvent": false,
+      "readOnly": false
+    },
+    {
+      "eventVersion": "1.09",
+      "eventID": "d4e5f6a7-4444-5555-6666-777788889999",
+      "eventTime": "2026-07-05T12:15:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "PutBucketAcl",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.10",
+      "userAgent": "console.amazonaws.com",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE0001",
+        "arn": "arn:aws:iam::123456789012:user/alice",
+        "accountId": "123456789012",
+        "userName": "alice"
+      },
+      "requestParameters": {
+        "bucketName": "finance-reports",
+        "accessControlList": {
+          "x-amz-grant-read": "uri=http://acs.amazonaws.com/groups/global/AuthenticatedUsers"
+        }
+      },
+      "responseElements": null,
+      "resources": [
+        { "type": "AWS::S3::Bucket", "ARN": "arn:aws:s3:::finance-reports" }
+      ],
+      "recipientAccountId": "123456789012",
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "readOnly": false
+    }
+  ]
+}

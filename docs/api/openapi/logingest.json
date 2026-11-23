@@ -1,0 +1,1224 @@
+{
+  "components": {
+    "schemas": {
+      "BackfillCreateRequest": {
+        "properties": {
+          "bindingId": {
+            "type": "string"
+          },
+          "from": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "streamId": {
+            "type": "string"
+          },
+          "to": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BackfillJob": {
+        "properties": {
+          "bindingId": {
+            "type": "string"
+          },
+          "errorDetail": {
+            "type": "string"
+          },
+          "finishedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fractionComplete": {
+            "format": "double",
+            "type": "number"
+          },
+          "from": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/BackfillProgress"
+          },
+          "requestedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "requestedBy": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "type": "string"
+          },
+          "streamId": {
+            "type": "string"
+          },
+          "to": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BackfillPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BackfillJob"
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "BackfillPartition": {
+        "properties": {
+          "done": {
+            "type": "boolean"
+          },
+          "high": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "low": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "state": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "BackfillProgress": {
+        "properties": {
+          "attempts": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "batches": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "duplicates": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "heartbeat": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "nextAttemptAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "partitions": {
+            "items": {
+              "$ref": "#/components/schemas/BackfillPartition"
+            },
+            "type": "array"
+          },
+          "quarantined": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "records": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "BindingHealth": {
+        "properties": {
+          "bindingId": {
+            "type": "string"
+          },
+          "configHash": {
+            "type": "string"
+          },
+          "fillRatios": {
+            "items": {
+              "$ref": "#/components/schemas/FillView"
+            },
+            "type": "array"
+          },
+          "heuristicRatio": {
+            "format": "double",
+            "type": "number"
+          },
+          "lagSeconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "lastRecordAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "readCoverage": {
+            "type": "string"
+          },
+          "readCoverageSince": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "readSignalPresent": {
+            "type": "boolean"
+          },
+          "scopeId": {
+            "type": "string"
+          },
+          "scopeType": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "string"
+          },
+          "sourceKind": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "stateDetail": {
+            "type": "string"
+          },
+          "streams": {
+            "items": {
+              "$ref": "#/components/schemas/StreamView"
+            },
+            "type": "array"
+          },
+          "topQuarantineReasons": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonView"
+            },
+            "type": "array"
+          },
+          "unknownFieldPaths": {
+            "items": {
+              "$ref": "#/components/schemas/UnknownPathView"
+            },
+            "type": "array"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "DriftPathView": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "format": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DriftReport": {
+        "properties": {
+          "fillDrops": {
+            "items": {
+              "$ref": "#/components/schemas/FillDropView"
+            },
+            "type": "array"
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "newVersions": {
+            "items": {
+              "$ref": "#/components/schemas/NewVersionView"
+            },
+            "type": "array"
+          },
+          "note": {
+            "type": "string"
+          },
+          "since": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "unknownPaths": {
+            "items": {
+              "$ref": "#/components/schemas/DriftPathView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "FillDropView": {
+        "properties": {
+          "baseline": {
+            "format": "double",
+            "type": "number"
+          },
+          "drop": {
+            "format": "double",
+            "type": "number"
+          },
+          "field": {
+            "type": "string"
+          },
+          "ratio": {
+            "format": "double",
+            "type": "number"
+          },
+          "samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FillView": {
+        "properties": {
+          "baseline": {
+            "format": "double",
+            "type": "number"
+          },
+          "field": {
+            "type": "string"
+          },
+          "ratio": {
+            "format": "double",
+            "type": "number"
+          },
+          "samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "HealthPage": {
+        "properties": {
+          "bindings": {
+            "items": {
+              "$ref": "#/components/schemas/BindingHealth"
+            },
+            "type": "array"
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "pipeline": {
+            "type": "string"
+          },
+          "selfTest": {
+            "$ref": "#/components/schemas/SelfTestView"
+          }
+        },
+        "type": "object"
+      },
+      "IngestRequestDTO": {
+        "properties": {
+          "callerIp": {
+            "type": "string"
+          },
+          "changeType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eventTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "operation": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "principalAccountId": {
+            "type": "string"
+          },
+          "principalDisplayName": {
+            "type": "string"
+          },
+          "principalId": {
+            "type": "string"
+          },
+          "principalType": {
+            "type": "string"
+          },
+          "rawEvent": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "resultStatus": {
+            "type": "string"
+          },
+          "sourceProvider": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "sourceService": {
+            "type": "string"
+          },
+          "targetProject": {
+            "type": "string"
+          },
+          "targetRegion": {
+            "type": "string"
+          },
+          "targetResourceId": {
+            "type": "string"
+          },
+          "targetResourceKind": {
+            "type": "string"
+          },
+          "targetResourceName": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "userAgent": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "changeType",
+          "eventTime",
+          "operation",
+          "sourceProvider"
+        ],
+        "type": "object"
+      },
+      "NewVersionView": {
+        "properties": {
+          "bindingId": {
+            "type": "string"
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "firstSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "QuarantinePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/QuarantineRow"
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "QuarantineRow": {
+        "properties": {
+          "bindingId": {
+            "type": "string"
+          },
+          "detectedVersion": {
+            "type": "string"
+          },
+          "envelope": {
+            "type": "string"
+          },
+          "eventTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "nativeEventId": {
+            "type": "string"
+          },
+          "notReplayableReason": {
+            "enum": [
+              "TRUNCATED",
+              "ALTERED"
+            ],
+            "type": "string"
+          },
+          "parserVersion": {
+            "type": "string"
+          },
+          "passThroughEventId": {
+            "type": "string"
+          },
+          "pinnedVersion": {
+            "type": "string"
+          },
+          "quarantineId": {
+            "type": "string"
+          },
+          "quarantinedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "rawExcerpt": {
+            "type": "string"
+          },
+          "rawRef": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "rawSha256": {
+            "type": "string"
+          },
+          "rawSizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "rawTruncated": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "reasonDetail": {
+            "type": "string"
+          },
+          "replayCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "replayable": {
+            "type": "boolean"
+          },
+          "replayedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceKind": {
+            "type": "string"
+          },
+          "sourceProvider": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReasonView": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/components/schemas/SampleView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ReplayRequest": {
+        "properties": {
+          "bindingId": {
+            "type": "string"
+          },
+          "detectedVersion": {
+            "type": "string"
+          },
+          "dryRun": {
+            "type": "boolean"
+          },
+          "fromSource": {
+            "type": "boolean"
+          },
+          "limit": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "quarantineIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SampleView": {
+        "properties": {
+          "detectedVersion": {
+            "type": "string"
+          },
+          "quarantineId": {
+            "type": "string"
+          },
+          "quarantinedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "rawExcerpt": {
+            "type": "string"
+          },
+          "rawTruncated": {
+            "type": "boolean"
+          },
+          "reasonDetail": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SelfTestView": {
+        "properties": {
+          "cases": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "failed": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "StreamView": {
+        "properties": {
+          "envelope": {
+            "type": "string"
+          },
+          "highWatermark": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastPoll": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lowWatermark": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "pinnedVersion": {
+            "type": "string"
+          },
+          "streamId": {
+            "type": "string"
+          },
+          "transport": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UnknownPathView": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "format": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VersionView": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "declared": {
+            "type": "string"
+          },
+          "envelope": {
+            "type": "string"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "firstSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "matchesPin": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/api/v1/logingest/backfills": {
+      "get": {
+        "operationId": "listBackfills",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bindingId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackfillPage"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "List backfill jobs",
+        "tags": [
+          "Log Backfill"
+        ]
+      },
+      "post": {
+        "operationId": "startBackfill",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackfillCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Start a bounded backfill job (ADMIN only, one active job per binding)",
+        "tags": [
+          "Log Backfill"
+        ]
+      }
+    },
+    "/api/v1/logingest/backfills/{id}": {
+      "get": {
+        "operationId": "getBackfill",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get one backfill job with its progress",
+        "tags": [
+          "Log Backfill"
+        ]
+      }
+    },
+    "/api/v1/logingest/backfills/{id}/cancel": {
+      "post": {
+        "operationId": "cancelBackfill",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Cancel a backfill job",
+        "tags": [
+          "Log Backfill"
+        ]
+      }
+    },
+    "/api/v1/logingest/drift": {
+      "get": {
+        "operationId": "drift",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriftReport"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Weekly drift report: new format versions, unknown paths, fill-ratio drops",
+        "tags": [
+          "Log Health"
+        ]
+      }
+    },
+    "/api/v1/logingest/events": {
+      "post": {
+        "operationId": "ingest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Ingest a single normalized cloud audit-log event",
+        "tags": [
+          "Log Ingest"
+        ]
+      }
+    },
+    "/api/v1/logingest/health": {
+      "get": {
+        "operationId": "page",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthPage"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Parser health per binding: status, versions, quarantine reasons, fill ratios, read coverage",
+        "tags": [
+          "Log Health"
+        ]
+      }
+    },
+    "/api/v1/logingest/health/{bindingId}": {
+      "get": {
+        "operationId": "binding",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bindingId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindingHealth"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Parser health of one binding",
+        "tags": [
+          "Log Health"
+        ]
+      }
+    },
+    "/api/v1/logingest/quarantine": {
+      "get": {
+        "operationId": "list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bindingId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "reason",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "replayed",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuarantinePage"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "List quarantined log records (masked, bounded excerpts)",
+        "tags": [
+          "Log Quarantine"
+        ]
+      }
+    },
+    "/api/v1/logingest/quarantine/replay": {
+      "post": {
+        "operationId": "replay",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplayRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Replay quarantined records (ADMIN only, idempotent)",
+        "tags": [
+          "Log Quarantine"
+        ]
+      }
+    },
+    "/api/v1/logingest/quarantine/{quarantineId}": {
+      "get": {
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "quarantineId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuarantineRow"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Get one quarantined log record",
+        "tags": [
+          "Log Quarantine"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Bounded, resumable reads of a binding's history",
+      "name": "Log Backfill"
+    },
+    {
+      "description": "Parser health, quarantine summary and format drift per binding",
+      "name": "Log Health"
+    },
+    {
+      "description": "Normalize and publish cloud audit-log events",
+      "name": "Log Ingest"
+    },
+    {
+      "description": "Inspect and replay records the parser registry quarantined",
+      "name": "Log Quarantine"
+    }
+  ]
+}

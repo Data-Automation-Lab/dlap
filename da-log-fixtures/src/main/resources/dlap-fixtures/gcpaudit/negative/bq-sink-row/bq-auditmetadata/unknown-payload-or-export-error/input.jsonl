@@ -1,0 +1,2 @@
+{"logName":"projects/proj-0d1a0001/logs/bigquerydatatransfer.googleapis.com%2Ftransfer_config","resource":{"type":"bigquery_dts_config","labels":{"project_id":"proj-0d1a0001","location":"eu"}},"jsonPayload":{"message":"Transfer run succeeded"},"timestamp":"2026-09-13T10:13:01.181818Z","severity":"INFO","insertId":"r2-neg-4"}
+{"logEntry":"{\"insertId\":\"r2-neg-5\"}","schemaErrorDetail":"Field protopayload_auditlog.metadataJson: STRING expected","sink":"projects/proj-0d1a0001/sinks/dlap-audit-sink","timestamp":"2026-09-13T10:13:02.292929Z"}

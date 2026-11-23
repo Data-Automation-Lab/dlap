@@ -1,0 +1,27 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "evt-0001",
+      "eventTime": "2026-02-01T10:00:00Z",
+      "observedTime": "2026-02-01T10:00:04Z",
+      "sourceProvider": "AWS",
+      "sourceService": "store",
+      "operation": "GetObject",
+      "changeType": "ACCESS",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "resultStatus": "SUCCESS",
+      "principal": {"type": "ROLE", "id": "arn:aws:iam::111122223333:role/reader", "accountId": "111122223333"},
+      "targetResource": {"id": "arn:aws:s3:::bucket-a/reports/q1.csv", "canonicalUri": "s3://bucket-a/reports/q1.csv"},
+      "requestMetadata": {"callerIp": "192.0.2.10"},
+      "sourceFormat": "DLAP_CONTRACT_DEMO/generic-json",
+      "sourceSchemaVersion": "1.0",
+      "parserVersion": "contract-demo-parser@1.0.0",
+      "bindingId": "fixture-contract-demo",
+      "origin": "ORIGIN_REPLAY",
+      "parseStatus": "PARSE_STATUS_FULL",
+      "parseWarnings": [],
+      "schemaVersion": "v1"
+    }
+  ]
+}

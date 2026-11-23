@@ -1,0 +1,5115 @@
+{
+  "components": {
+    "schemas": {
+      "AccessPatternsDTO": {
+        "properties": {
+          "hourlyDistribution": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "monthlyTrend": {
+            "items": {
+              "$ref": "#/components/schemas/MonthlyTrendDTO"
+            },
+            "type": "array"
+          },
+          "weeklyDistribution": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AssetActivityPageDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/AssetActivityRowDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "nextAfter": {
+            "description": "assetUri of the last row of this page; send it as 'after' to get the next page. Null on the last page, and on a page not ordered by assetUri ascending.",
+            "nullable": true,
+            "type": "string"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "AssetActivityRowDTO": {
+        "properties": {
+          "ageDays": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "assetType": {
+            "type": "string"
+          },
+          "assetUri": {
+            "type": "string"
+          },
+          "cloudCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cloudCreatedSource": {
+            "type": "string"
+          },
+          "cloudProvider": {
+            "type": "string"
+          },
+          "discoveredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "discoverySource": {
+            "type": "string"
+          },
+          "idleDays": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastAccessSource": {
+            "type": "string"
+          },
+          "lastAccessedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastPermissionChangeAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "legalHold": {
+            "type": "boolean"
+          },
+          "ownerInfo": {
+            "type": "string"
+          },
+          "readCoverage": {
+            "type": "string"
+          },
+          "readCoverageObservedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "readCoverageReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "readCoverageSince": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "retentionBasis": {
+            "enum": [
+              "CREATED",
+              "LAST_MODIFIED",
+              "LAST_ACCESSED",
+              "FIXED_DATE"
+            ],
+            "type": "string"
+          },
+          "retentionDays": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "retentionEvaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retentionExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retentionPolicyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "retentionSource": {
+            "type": "string"
+          },
+          "retentionStatus": {
+            "enum": [
+              "UNKNOWN",
+              "NO_POLICY",
+              "RETAINED",
+              "DUE",
+              "ON_HOLD"
+            ],
+            "type": "string"
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sizeObservedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetComplianceStatusDTO": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "complianceHistory": {
+            "$ref": "#/components/schemas/ComplianceHistoryDTO"
+          },
+          "controls": {
+            "items": {
+              "$ref": "#/components/schemas/ComplianceControlDTO"
+            },
+            "type": "array"
+          },
+          "evaluatedBy": {
+            "type": "string"
+          },
+          "frameworkCompliance": {
+            "items": {
+              "$ref": "#/components/schemas/ComplianceFrameworkStatusDTO"
+            },
+            "type": "array"
+          },
+          "lastEvaluated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "nextEvaluation": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "overallComplianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "overallComplianceStatus": {
+            "type": "string"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/ComplianceRecommendationDTO"
+            },
+            "type": "array"
+          },
+          "riskAssessment": {
+            "$ref": "#/components/schemas/ComplianceRiskAssessmentDTO"
+          },
+          "violations": {
+            "items": {
+              "$ref": "#/components/schemas/ComplianceViolationDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AssetIdResolutionDTO": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetUri": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetInputDTO": {
+        "properties": {
+          "assetName": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "assetType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "cloudConnectionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cloudProvider": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "detailsJson": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nativeAssetId": {
+            "maxLength": 1024,
+            "minLength": 0,
+            "type": "string"
+          },
+          "region": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetName",
+          "assetType",
+          "cloudConnectionId",
+          "cloudProvider",
+          "nativeAssetId"
+        ],
+        "type": "object"
+      },
+      "AssetLabelsPostRequestDTO": {
+        "properties": {
+          "labels": {
+            "items": {
+              "$ref": "#/components/schemas/LabelAssignmentInputDTO"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "labels"
+        ],
+        "type": "object"
+      },
+      "AssetLabelsResponseDTO": {
+        "properties": {
+          "labels": {
+            "items": {
+              "$ref": "#/components/schemas/LabelOutputDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AssetOutputDTO": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "assetType": {
+            "type": "string"
+          },
+          "assetUri": {
+            "type": "string"
+          },
+          "businessMetadataJson": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "cloudConnectionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cloudCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cloudCreatedSource": {
+            "type": "string"
+          },
+          "cloudProvider": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detailsJson": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "discoveredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "discoverySource": {
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastAccessSource": {
+            "type": "string"
+          },
+          "lastAccessedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastPermissionChangeAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastScannedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "legalHold": {
+            "type": "boolean"
+          },
+          "lifecycleEventTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "nativeAssetId": {
+            "type": "string"
+          },
+          "readCoverage": {
+            "type": "string"
+          },
+          "readCoverageObservedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "readCoverageReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "readCoverageSince": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "retentionBasis": {
+            "enum": [
+              "CREATED",
+              "LAST_MODIFIED",
+              "LAST_ACCESSED",
+              "FIXED_DATE"
+            ],
+            "type": "string"
+          },
+          "retentionDays": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "retentionEvaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retentionExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retentionPolicyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "retentionSource": {
+            "type": "string"
+          },
+          "retentionStatus": {
+            "enum": [
+              "UNKNOWN",
+              "NO_POLICY",
+              "RETAINED",
+              "DUE",
+              "ON_HOLD"
+            ],
+            "type": "string"
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sizeObservedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "technicalMetadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetPolicyMappingDTO": {
+        "properties": {
+          "applicablePolicies": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyMappingDTO"
+            },
+            "type": "array"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "complianceSummary": {
+            "$ref": "#/components/schemas/PolicyComplianceSummaryDTO"
+          },
+          "evaluationStatus": {
+            "type": "string"
+          },
+          "inheritedPolicies": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyMappingDTO"
+            },
+            "type": "array"
+          },
+          "lastEvaluated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyRecommendationDTO"
+            },
+            "type": "array"
+          },
+          "riskAssessment": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyRiskDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AssetRetentionView": {
+        "description": "Retention state and rules of one asset.",
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetUri": {
+            "type": "string"
+          },
+          "legalHold": {
+            "type": "boolean"
+          },
+          "retentionBasis": {
+            "type": "string"
+          },
+          "retentionDays": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "retentionEvaluatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retentionExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retentionPolicyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "retentionSource": {
+            "type": "string"
+          },
+          "retentionStatus": {
+            "type": "string"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RetentionRuleView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AssetSchemaDTO": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "constraints": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaConstraintDTO"
+            },
+            "type": "array"
+          },
+          "evolution": {
+            "$ref": "#/components/schemas/SchemaEvolutionDTO"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaFieldDTO"
+            },
+            "type": "array"
+          },
+          "indexes": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaIndexDTO"
+            },
+            "type": "array"
+          },
+          "lastAnalyzed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastUpdated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lineage": {
+            "$ref": "#/components/schemas/SchemaLineageDTO"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "schemaType": {
+            "$ref": "#/components/schemas/SchemaTypeDTO"
+          },
+          "schemaVersion": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/SchemaStatisticsDTO"
+          }
+        },
+        "type": "object"
+      },
+      "AssetUsageAnalyticsDTO": {
+        "properties": {
+          "accessPatterns": {
+            "$ref": "#/components/schemas/AccessPatternsDTO"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "performanceMetrics": {
+            "$ref": "#/components/schemas/PerformanceMetricsDTO"
+          },
+          "popularQueries": {
+            "items": {
+              "$ref": "#/components/schemas/PopularQueryDTO"
+            },
+            "type": "array"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendationDTO"
+            },
+            "type": "array"
+          },
+          "usageMetrics": {
+            "$ref": "#/components/schemas/UsageMetricsDTO"
+          },
+          "userAnalytics": {
+            "$ref": "#/components/schemas/UserAnalyticsDTO"
+          }
+        },
+        "type": "object"
+      },
+      "BusinessContactDTO": {
+        "properties": {
+          "department": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "email": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "role": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "name"
+        ],
+        "type": "object"
+      },
+      "BusinessMetadataDTO": {
+        "properties": {
+          "businessCriticality": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "businessDescription": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "businessDomain": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "businessName": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "businessOwner": {
+            "$ref": "#/components/schemas/BusinessContactDTO"
+          },
+          "dataQualityScore": {
+            "exclusiveMaximum": false,
+            "exclusiveMinimum": false,
+            "format": "double",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "dataSteward": {
+            "$ref": "#/components/schemas/BusinessContactDTO"
+          },
+          "retentionRequirements": {
+            "$ref": "#/components/schemas/RetentionRequirementsDTO"
+          },
+          "updateFrequency": {
+            "type": "string"
+          },
+          "useCases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "businessCriticality"
+        ],
+        "type": "object"
+      },
+      "BusinessMetadataInputDTO": {
+        "description": "Enhanced business metadata with steward relationships and compliance classification",
+        "properties": {
+          "businessMetadata": {
+            "$ref": "#/components/schemas/BusinessMetadataDTO"
+          },
+          "complianceClassification": {
+            "$ref": "#/components/schemas/ComplianceClassificationDTO"
+          },
+          "updateReason": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BusinessMetadataResponseDTO": {
+        "properties": {
+          "auditInfo": {
+            "$ref": "#/components/schemas/MetadataAuditDTO"
+          },
+          "businessMetadata": {
+            "$ref": "#/components/schemas/BusinessMetadataDTO"
+          },
+          "complianceClassification": {
+            "$ref": "#/components/schemas/ComplianceClassificationDTO"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendationDTO"
+            },
+            "type": "array"
+          },
+          "validationStatus": {
+            "$ref": "#/components/schemas/ValidationStatusDTO"
+          }
+        },
+        "type": "object"
+      },
+      "CatalogFiltersDTO": {
+        "properties": {
+          "catalogVersion": {
+            "type": "string"
+          },
+          "filterCategories": {
+            "items": {
+              "$ref": "#/components/schemas/FilterCategoryDTO"
+            },
+            "type": "array"
+          },
+          "lastUpdated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "quickFilters": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object"
+          },
+          "searchOptions": {
+            "$ref": "#/components/schemas/SearchOptionsDTO"
+          },
+          "totalAssets": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceClassificationDTO": {
+        "properties": {
+          "containsFinancial": {
+            "type": "boolean"
+          },
+          "containsPhi": {
+            "type": "boolean"
+          },
+          "containsPii": {
+            "type": "boolean"
+          },
+          "dataClassification": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "dataSubjectCategories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "gdprApplicable": {
+            "type": "boolean"
+          },
+          "hipaaRelevant": {
+            "type": "boolean"
+          },
+          "pciRelevant": {
+            "type": "boolean"
+          },
+          "privacyImpactLevel": {
+            "type": "string"
+          },
+          "regulatoryFrameworks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "soxRelevant": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "dataClassification"
+        ],
+        "type": "object"
+      },
+      "ComplianceControlDTO": {
+        "properties": {
+          "controlId": {
+            "type": "string"
+          },
+          "controlName": {
+            "type": "string"
+          },
+          "controlType": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "effectivenessScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "evidenceRequired": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "framework": {
+            "type": "string"
+          },
+          "implementationStatus": {
+            "type": "string"
+          },
+          "lastTested": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "nextTest": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "testFrequency": {
+            "type": "string"
+          },
+          "testResults": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "testedBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceEventDTO": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "triggeredBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceFrameworkStatusDTO": {
+        "properties": {
+          "applicableControls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "certificationExpiry": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "certificationStatus": {
+            "type": "string"
+          },
+          "complianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "complianceStatus": {
+            "type": "string"
+          },
+          "failedControls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "frameworkName": {
+            "type": "string"
+          },
+          "frameworkVersion": {
+            "type": "string"
+          },
+          "lastAssessment": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "metRequirements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "passedControls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "totalRequirements": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceHistoryDTO": {
+        "properties": {
+          "averageScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "firstEvaluation": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recentEvents": {
+            "items": {
+              "$ref": "#/components/schemas/ComplianceEventDTO"
+            },
+            "type": "array"
+          },
+          "scoreHistory": {
+            "additionalProperties": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "object"
+          },
+          "totalEvaluations": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "trend": {
+            "type": "string"
+          },
+          "trendAnalysis": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceRecommendationDTO": {
+        "properties": {
+          "actionRequired": {
+            "type": "string"
+          },
+          "affectedControls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assignedTo": {
+            "type": "string"
+          },
+          "costEstimate": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "estimatedEffort": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "expectedOutcome": {
+            "type": "string"
+          },
+          "framework": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "recommendationId": {
+            "type": "string"
+          },
+          "targetDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceRiskAssessmentDTO": {
+        "properties": {
+          "assessedBy": {
+            "type": "string"
+          },
+          "lastAssessed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "mitigationMeasures": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "nextAssessment": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "overallRiskLevel": {
+            "type": "string"
+          },
+          "residualRisk": {
+            "type": "string"
+          },
+          "riskCategories": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "riskFactors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "riskScore": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ComplianceViolationDTO": {
+        "properties": {
+          "assignedTo": {
+            "type": "string"
+          },
+          "controlId": {
+            "type": "string"
+          },
+          "currentValue": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detectedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "detectedBy": {
+            "type": "string"
+          },
+          "dueDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "evidence": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "expectedValue": {
+            "type": "string"
+          },
+          "framework": {
+            "type": "string"
+          },
+          "remediationActions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "violationId": {
+            "type": "string"
+          },
+          "violationType": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Disposition": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "executedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "executedBy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EdgeStatsDTO": {
+        "properties": {
+          "averageProcessingTime": {
+            "format": "double",
+            "type": "number"
+          },
+          "executionCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "failureCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lastSuccessfulExecution": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recordsProcessed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "reliability": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EnhancedLineageDTO": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "criticalPaths": {
+            "items": {
+              "$ref": "#/components/schemas/LineagePathDTO"
+            },
+            "type": "array"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/LineageIssueDTO"
+            },
+            "type": "array"
+          },
+          "lastUpdated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lineageGraph": {
+            "$ref": "#/components/schemas/LineageGraphDTO"
+          },
+          "lineageVersion": {
+            "type": "string"
+          },
+          "maxDepth": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/LineageStatisticsDTO"
+          },
+          "visualizationMetadata": {
+            "$ref": "#/components/schemas/LineageVisualizationMetadataDTO"
+          }
+        },
+        "type": "object"
+      },
+      "FieldConstraintsDTO": {
+        "properties": {
+          "customConstraints": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "enumValues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "format": {
+            "type": "string"
+          },
+          "maxLength": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "maxValue": {
+            "type": "string"
+          },
+          "minLength": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "minValue": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FieldMappingDTO": {
+        "properties": {
+          "confidence": {
+            "format": "double",
+            "type": "number"
+          },
+          "mappingType": {
+            "type": "string"
+          },
+          "sourceField": {
+            "type": "string"
+          },
+          "targetField": {
+            "type": "string"
+          },
+          "transformation": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FieldStatisticsDTO": {
+        "properties": {
+          "avgLength": {
+            "format": "double",
+            "type": "number"
+          },
+          "distinctCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fillRate": {
+            "format": "double",
+            "type": "number"
+          },
+          "lastAnalyzed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "maxLength": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxValue": {
+            "type": "string"
+          },
+          "minValue": {
+            "type": "string"
+          },
+          "nullCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topValues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "FilterCategoryDTO": {
+        "properties": {
+          "categoryName": {
+            "type": "string"
+          },
+          "categoryType": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "isExpandedByDefault": {
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/FilterOptionDTO"
+            },
+            "type": "array"
+          },
+          "totalOptions": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "FilterOptionDTO": {
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "displayValue": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "isSelected": {
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "subOptions": {
+            "items": {
+              "$ref": "#/components/schemas/FilterOptionDTO"
+            },
+            "type": "array"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LabelAssignmentInputDTO": {
+        "properties": {
+          "confidenceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "labelId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "labelName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LabelOutputDTO": {
+        "properties": {
+          "assignedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "assignedByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "confidenceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "labelCategory": {
+            "type": "string"
+          },
+          "labelId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "labelName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LegalHoldRequest": {
+        "description": "Reason for placing or releasing a legal hold.",
+        "properties": {
+          "reason": {
+            "description": "Why, for the audit trail",
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "type": "object"
+      },
+      "LifecycleState": {
+        "properties": {
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "asset": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/Disposition"
+          },
+          "lastReadAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastWrittenAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "legalHold": {
+            "type": "boolean"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          },
+          "provenance": {
+            "items": {
+              "$ref": "#/components/schemas/ProvenanceEntry"
+            },
+            "type": "array"
+          },
+          "readCoverage": {
+            "type": "string"
+          },
+          "readCoverageReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "readCoverageSince": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "retention": {
+            "$ref": "#/components/schemas/Retention"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sizeObservedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "specVersion": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LineageAssetDTO": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "assetType": {
+            "type": "string"
+          },
+          "cloudProvider": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LineageEdgeDTO": {
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "edgeId": {
+            "type": "string"
+          },
+          "executionStatus": {
+            "type": "string"
+          },
+          "fieldMappings": {
+            "items": {
+              "$ref": "#/components/schemas/FieldMappingDTO"
+            },
+            "type": "array"
+          },
+          "lastExecuted": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "relationshipType": {
+            "type": "string"
+          },
+          "sourceNodeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/EdgeStatsDTO"
+          },
+          "style": {
+            "type": "string"
+          },
+          "targetNodeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "transformationLogic": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "transformationType": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LineageGraphDTO": {
+        "properties": {
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/LineageEdgeDTO"
+            },
+            "type": "array"
+          },
+          "layers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "layout": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "maxDepth": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/LineageNodeDTO"
+            },
+            "type": "array"
+          },
+          "totalEdges": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalNodes": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "LineageIssueDTO": {
+        "properties": {
+          "affectedNodes": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detectedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "issueId": {
+            "type": "string"
+          },
+          "issueType": {
+            "type": "string"
+          },
+          "resolutionSuggestion": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LineageNodeDTO": {
+        "properties": {
+          "assetType": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "layer": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "nodeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "nodeName": {
+            "type": "string"
+          },
+          "nodeType": {
+            "type": "string"
+          },
+          "position": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/NodeStatsDTO"
+          },
+          "status": {
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "LineagePathDTO": {
+        "properties": {
+          "businessImpact": {
+            "type": "string"
+          },
+          "businessProcesses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "nodeSequence": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pathId": {
+            "type": "string"
+          },
+          "pathType": {
+            "type": "string"
+          },
+          "riskLevel": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LineageResponseDTO": {
+        "properties": {
+          "downstreamAssets": {
+            "items": {
+              "$ref": "#/components/schemas/LineageAssetDTO"
+            },
+            "type": "array"
+          },
+          "upstreamAssets": {
+            "items": {
+              "$ref": "#/components/schemas/LineageAssetDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "LineageStatisticsDTO": {
+        "properties": {
+          "assetTypeBreakdown": {
+            "additionalProperties": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "directDependencies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "indirectDependencies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lineageCompleteness": {
+            "format": "double",
+            "type": "number"
+          },
+          "lineageHealth": {
+            "type": "string"
+          },
+          "totalDownstreamAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalTransformations": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalUpstreamAssets": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "transformationTypeBreakdown": {
+            "additionalProperties": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "LineageVisualizationMetadataDTO": {
+        "properties": {
+          "availableFilters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "colorScheme": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "defaultViewport": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "iconMapping": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "layoutConfiguration": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "layoutType": {
+            "type": "string"
+          },
+          "supportsInteractiveEditing": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "MetadataAuditDTO": {
+        "properties": {
+          "changeHistory": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "createdByName": {
+            "type": "string"
+          },
+          "lastUpdatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastUpdatedBy": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastUpdatedByName": {
+            "type": "string"
+          },
+          "updateReason": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "MonthlyTrendDTO": {
+        "properties": {
+          "month": {
+            "type": "string"
+          },
+          "totalAccesses": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "uniqueUsers": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "NodeStatsDTO": {
+        "properties": {
+          "healthStatus": {
+            "type": "string"
+          },
+          "lastAccessed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastModified": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recordCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "usageFrequency": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageAssetOutputDTO": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/AssetOutputDTO"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Pageable": {
+        "properties": {
+          "page": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sort": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PageableObject": {
+        "properties": {
+          "offset": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "unpaged": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "PerformanceMetricsDTO": {
+        "properties": {
+          "avgQueryTime": {
+            "type": "string"
+          },
+          "errorRate": {
+            "format": "double",
+            "type": "number"
+          },
+          "fastestQuery": {
+            "type": "string"
+          },
+          "slowestQuery": {
+            "type": "string"
+          },
+          "timeoutRate": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "Platform": {
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyComplianceSummaryDTO": {
+        "properties": {
+          "complianceStatusBreakdown": {
+            "additionalProperties": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "compliantPolicies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "criticalIssues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastFullEvaluation": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "nonCompliantPolicies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "overallComplianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "overallStatus": {
+            "type": "string"
+          },
+          "partiallyCompliantPolicies": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "policyTypeBreakdown": {
+            "additionalProperties": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "totalPolicies": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyMappingDTO": {
+        "properties": {
+          "applicabilityReason": {
+            "type": "string"
+          },
+          "complianceScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "complianceStatus": {
+            "type": "string"
+          },
+          "evaluatedBy": {
+            "type": "string"
+          },
+          "exemptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastEvaluated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "policyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "policyName": {
+            "type": "string"
+          },
+          "policyType": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "type": "string"
+          },
+          "ruleCompliance": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyRuleComplianceDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyRecommendationDTO": {
+        "properties": {
+          "actionRequired": {
+            "type": "string"
+          },
+          "assignedTo": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "estimatedEffort": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "expectedOutcome": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "recommendationType": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyRiskDTO": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "identifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "impact": {
+            "type": "string"
+          },
+          "likelihood": {
+            "type": "string"
+          },
+          "mitigationActions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "riskLevel": {
+            "type": "string"
+          },
+          "riskType": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PolicyRuleComplianceDTO": {
+        "properties": {
+          "actualValue": {
+            "type": "string"
+          },
+          "complianceStatus": {
+            "type": "string"
+          },
+          "expectedValue": {
+            "type": "string"
+          },
+          "nonComplianceReason": {
+            "type": "string"
+          },
+          "recommendedActions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ruleId": {
+            "type": "string"
+          },
+          "ruleName": {
+            "type": "string"
+          },
+          "ruleType": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PopularQueryDTO": {
+        "properties": {
+          "avgExecutionTime": {
+            "type": "string"
+          },
+          "frequency": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "queryPattern": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProvenanceEntry": {
+        "properties": {
+          "bindingIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "eventIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "field": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RecommendationDTO": {
+        "properties": {
+          "actionRequired": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "potentialImpact": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Retention": {
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "days": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fixedDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RetentionRequirementsDTO": {
+        "properties": {
+          "archiveAfter": {
+            "type": "string"
+          },
+          "businessRetention": {
+            "type": "string"
+          },
+          "deleteAfter": {
+            "type": "string"
+          },
+          "legalRetention": {
+            "type": "string"
+          },
+          "retentionReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "RetentionRuleRequest": {
+        "description": "An operator's retention rule for one asset (source MANUAL).",
+        "properties": {
+          "basis": {
+            "description": "What the period counts from",
+            "enum": [
+              "CREATED",
+              "LAST_MODIFIED",
+              "LAST_ACCESSED",
+              "FIXED_DATE"
+            ],
+            "type": "string"
+          },
+          "days": {
+            "description": "Period in days, 0 to 365000; omitted for FIXED_DATE",
+            "example": 365,
+            "format": "int32",
+            "type": "integer"
+          },
+          "expiresAt": {
+            "description": "Expiry instant for FIXED_DATE",
+            "example": "2027-12-31T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Why, for the audit trail",
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "basis"
+        ],
+        "type": "object"
+      },
+      "RetentionRuleView": {
+        "description": "One retention rule that applies to an asset.",
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "days": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "issuedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "policyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "ruleId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaChangeDTO": {
+        "properties": {
+          "changeReason": {
+            "type": "string"
+          },
+          "changeTimestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "changeType": {
+            "type": "string"
+          },
+          "changedBy": {
+            "type": "string"
+          },
+          "fieldName": {
+            "type": "string"
+          },
+          "newValue": {
+            "type": "string"
+          },
+          "oldValue": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaConstraintDTO": {
+        "properties": {
+          "checkExpression": {
+            "type": "string"
+          },
+          "columnNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "constraintName": {
+            "type": "string"
+          },
+          "constraintType": {
+            "type": "string"
+          },
+          "enforced": {
+            "type": "boolean"
+          },
+          "referencedColumns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "referencedTable": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaEvolutionDTO": {
+        "properties": {
+          "firstVersion": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastChange": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recentChanges": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaChangeDTO"
+            },
+            "type": "array"
+          },
+          "totalVersions": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaVersionDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaFieldDTO": {
+        "properties": {
+          "classification": {
+            "type": "string"
+          },
+          "constraints": {
+            "$ref": "#/components/schemas/FieldConstraintsDTO"
+          },
+          "dataType": {
+            "type": "string"
+          },
+          "defaultValue": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fieldName": {
+            "type": "string"
+          },
+          "foreignKey": {
+            "type": "boolean"
+          },
+          "logicalType": {
+            "type": "string"
+          },
+          "nullable": {
+            "type": "boolean"
+          },
+          "ordinalPosition": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "primaryKey": {
+            "type": "boolean"
+          },
+          "properties": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/FieldStatisticsDTO"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaIndexDTO": {
+        "properties": {
+          "cardinality": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "columnNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "indexName": {
+            "type": "string"
+          },
+          "indexType": {
+            "type": "string"
+          },
+          "primary": {
+            "type": "boolean"
+          },
+          "properties": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "unique": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaLineageDTO": {
+        "properties": {
+          "downstream": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaRelationshipDTO"
+            },
+            "type": "array"
+          },
+          "lineageDepth": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lineageLastUpdated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "transformations": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaTransformationDTO"
+            },
+            "type": "array"
+          },
+          "upstream": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaRelationshipDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaRelationshipDTO": {
+        "properties": {
+          "fieldMappings": {
+            "items": {
+              "$ref": "#/components/schemas/FieldMappingDTO"
+            },
+            "type": "array"
+          },
+          "relatedAssetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "relatedAssetName": {
+            "type": "string"
+          },
+          "relationshipCreated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "relationshipType": {
+            "type": "string"
+          },
+          "transformationType": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaStatisticsDTO": {
+        "properties": {
+          "compressionRatio": {
+            "format": "double",
+            "type": "number"
+          },
+          "dataTypeCounts": {
+            "additionalProperties": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "lastAnalyzed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastUpdated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "schemaComplexity": {
+            "format": "double",
+            "type": "number"
+          },
+          "schemaDepth": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalColumns": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalRows": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalSize": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaTransformationDTO": {
+        "properties": {
+          "executedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "inputFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "outputFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "transformationId": {
+            "type": "string"
+          },
+          "transformationLogic": {
+            "type": "string"
+          },
+          "transformationType": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaTypeDTO": {
+        "properties": {
+          "encoding": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "formatSpecificProperties": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SchemaVersionDTO": {
+        "properties": {
+          "changeDescription": {
+            "type": "string"
+          },
+          "changedFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "fieldCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SearchOptionsDTO": {
+        "properties": {
+          "advancedOptions": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "defaultPageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "defaultSortOptions": {
+            "items": {
+              "$ref": "#/components/schemas/SortOptionDTO"
+            },
+            "type": "array"
+          },
+          "maxResults": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "searchableFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sortableFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "supportedOperators": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "supportsFullTextSearch": {
+            "type": "boolean"
+          },
+          "supportsFuzzySearch": {
+            "type": "boolean"
+          },
+          "supportsWildcards": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SortObject": {
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SortOptionDTO": {
+        "properties": {
+          "direction": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "TaxonomyLabelDTO": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdByUserId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "labelCategory": {
+            "type": "string"
+          },
+          "labelId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "labelName": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TaxonomyLabelsResponseDTO": {
+        "properties": {
+          "labels": {
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyLabelDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TopUserDTO": {
+        "properties": {
+          "accessCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "accessPattern": {
+            "type": "string"
+          },
+          "lastAccess": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UsageMetricsDTO": {
+        "properties": {
+          "avgAccessesPerDay": {
+            "format": "double",
+            "type": "number"
+          },
+          "lastAccessed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "peakUsageHour": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalAccesses": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "uniqueUsers": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "usageTrend": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserAnalyticsDTO": {
+        "properties": {
+          "departmentBreakdown": {
+            "additionalProperties": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "object"
+          },
+          "topUsers": {
+            "items": {
+              "$ref": "#/components/schemas/TopUserDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ValidationStatusDTO": {
+        "properties": {
+          "completenessScore": {
+            "format": "double",
+            "type": "number"
+          },
+          "isComplete": {
+            "type": "boolean"
+          },
+          "missingFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "overallStatus": {
+            "type": "string"
+          },
+          "validationErrors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "validationWarnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/api/v1/catalog/assets": {
+      "get": {
+        "operationId": "getAllAssets",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cloudProvider",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "assetType",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "region",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "labels",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "nameContains",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connectionId",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageAssetOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      },
+      "post": {
+        "operationId": "createAsset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/activity": {
+      "get": {
+        "description": "Page through assets with their creation time, size, last read, last write and retention state, computed as of one instant. Unknown values are null and never read as stale or fresh. Filters: provider, kind, status, last-read window, retention status, legal hold and read coverage. Paging is by page and size, or by keyset: send after=<nextAfter of the previous page> and size=N to walk the assets in assetUri order without a page shifting when assets are written; the walk ends when nextAfter is null.",
+        "operationId": "getAssetActivity",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "description": "Keyset cursor: the assetUri of the last row already seen (the previous page's nextAfter). Needs page 0 and the default assetUri ascending sort. Absent or blank: ordinary page and size paging.",
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Cloud providers, for example AWS or GCP; repeat or comma-separate",
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Asset kinds (serviceType), for example GCS_BUCKET; repeat or comma-separate",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Lifecycle statuses: ACTIVE, ARCHIVED, PENDING_DELETION, DELETED",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Only assets last read strictly before this ISO-8601 instant, for example 2026-07-19T00:00:00Z",
+            "in": "query",
+            "name": "lastReadBefore",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only assets last read strictly after this ISO-8601 instant",
+            "in": "query",
+            "name": "lastReadAfter",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "true: only assets with a recorded last read; false: only assets without one",
+            "in": "query",
+            "name": "lastReadKnown",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Stored retention status: UNKNOWN, NO_POLICY, RETAINED, DUE, ON_HOLD",
+            "in": "query",
+            "name": "retentionStatus",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "true: only assets on legal hold; false: only assets not held",
+            "in": "query",
+            "name": "legalHold",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Read coverage: FULL, PARTIAL, NONE, or UNKNOWN for none recorded",
+            "in": "query",
+            "name": "readCoverage",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "ISO-8601 instant the day counts are computed against; now when absent",
+            "in": "query",
+            "name": "asOf",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetActivityPageDTO"
+                }
+              }
+            },
+            "description": "One page of activity rows"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetActivityPageDTO"
+                }
+              }
+            },
+            "description": "A filter, the sort, a time or the cursor is malformed"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetActivityPageDTO"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetActivityPageDTO"
+                }
+              }
+            },
+            "description": "Forbidden - insufficient permissions"
+          }
+        },
+        "summary": "Asset activity report",
+        "tags": [
+          "Assets",
+          "Reports"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/classification-breakdown": {
+      "get": {
+        "operationId": "getClassificationBreakdown",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/count": {
+      "get": {
+        "operationId": "countTotalAssets",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/count/classified": {
+      "get": {
+        "operationId": "countClassifiedAssets",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/count/status/{status}": {
+      "get": {
+        "operationId": "countAssetsByStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "status",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/count/with-business-context": {
+      "get": {
+        "operationId": "countAssetsWithBusinessContext",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/count/with-lineage": {
+      "get": {
+        "operationId": "countAssetsWithLineage",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/count/with-metadata": {
+      "get": {
+        "operationId": "countAssetsWithMetadata",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/governance-issues": {
+      "get": {
+        "operationId": "getGovernanceIssues",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "object"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/lineage/connections/count": {
+      "get": {
+        "operationId": "countLineageConnections",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "int64",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/resolve": {
+      "get": {
+        "operationId": "resolveAssetIdByUri",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "assetUri",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetIdResolutionDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}": {
+      "get": {
+        "operationId": "getAssetById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/business-context": {
+      "put": {
+        "description": "Update comprehensive business metadata including steward relationships, compliance classification, and business context",
+        "operationId": "updateBusinessContext",
+        "parameters": [
+          {
+            "description": "Asset ID",
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessMetadataInputDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Business context updated successfully"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Invalid business metadata input"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Forbidden - insufficient permissions"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Asset not found"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Update enhanced business context and metadata",
+        "tags": [
+          "Assets",
+          "Business Metadata"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/business-metadata": {
+      "get": {
+        "description": "Retrieve complete business metadata including business context, steward relationships, compliance classification, audit information, and validation status",
+        "operationId": "getBusinessMetadata",
+        "parameters": [
+          {
+            "description": "Asset ID",
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Business metadata retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Forbidden - insufficient permissions"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Asset not found"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMetadataResponseDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get comprehensive business metadata",
+        "tags": [
+          "Assets",
+          "Business Metadata"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/compliance": {
+      "get": {
+        "description": "Retrieve detailed compliance status including framework compliance, violations, controls, risk assessment, and recommendations. This Priority 2 endpoint provides comprehensive compliance monitoring.",
+        "operationId": "getAssetComplianceStatus",
+        "parameters": [
+          {
+            "description": "Asset ID",
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetComplianceStatusDTO"
+                }
+              }
+            },
+            "description": "Asset compliance status retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetComplianceStatusDTO"
+                }
+              }
+            },
+            "description": "Access denied"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetComplianceStatusDTO"
+                }
+              }
+            },
+            "description": "Asset not found"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetComplianceStatusDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get asset compliance status",
+        "tags": [
+          "Asset Management",
+          "Compliance"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/labels": {
+      "get": {
+        "operationId": "getAssetLabels",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetLabelsResponseDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      },
+      "post": {
+        "operationId": "assignLabelsToAsset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetLabelsPostRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetLabelsResponseDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/labels/{labelName}": {
+      "delete": {
+        "operationId": "removeLabelFromAsset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "labelName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/legal-hold": {
+      "put": {
+        "operationId": "placeHold",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalHoldRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetRetentionView"
+                }
+              }
+            },
+            "description": "The hold is in place"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetRetentionView"
+                }
+              }
+            },
+            "description": "No such asset"
+          }
+        },
+        "summary": "Place a legal hold on an asset",
+        "tags": [
+          "retention-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/legal-hold/release": {
+      "post": {
+        "operationId": "releaseHold",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalHoldRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetRetentionView"
+                }
+              }
+            },
+            "description": "The hold is released"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetRetentionView"
+                }
+              }
+            },
+            "description": "No such asset"
+          }
+        },
+        "summary": "Release the legal hold of an asset",
+        "tags": [
+          "retention-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/lifecycle-state": {
+      "get": {
+        "description": "docs/specs/lifecycle-state.md; valid against docs/specs/schemas/lifecycle-state-0.1.json",
+        "operationId": "getLifecycleState",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifecycleState"
+                }
+              }
+            },
+            "description": "The object"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "No such asset"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The asset cannot be described in Lifecycle State 0.1"
+          }
+        },
+        "summary": "Lifecycle State 0.1 of an asset",
+        "tags": [
+          "lifecycle-state-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/lineage": {
+      "get": {
+        "operationId": "getAssetLineage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LineageResponseDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/lineage/enhanced": {
+      "get": {
+        "description": "Retrieve comprehensive lineage information with visualization metadata, graph nodes, edges, statistics, and critical path analysis. This Priority 2 endpoint provides detailed lineage for interactive graph rendering.",
+        "operationId": "getEnhancedLineage",
+        "parameters": [
+          {
+            "description": "Asset ID",
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum lineage depth to traverse",
+            "example": 5,
+            "in": "query",
+            "name": "maxDepth",
+            "required": false,
+            "schema": {
+              "default": 5,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnhancedLineageDTO"
+                }
+              }
+            },
+            "description": "Enhanced lineage information retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnhancedLineageDTO"
+                }
+              }
+            },
+            "description": "Access denied"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnhancedLineageDTO"
+                }
+              }
+            },
+            "description": "Asset not found"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnhancedLineageDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get enhanced data lineage visualization",
+        "tags": [
+          "Asset Management",
+          "Lineage"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/metadata/business": {
+      "put": {
+        "operationId": "updateBusinessMetadata",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": {
+                  "type": "object"
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetOutputDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "asset-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/policies": {
+      "get": {
+        "description": "Retrieve information about which policies apply to an asset, their compliance status, risk assessment, and recommendations. This Priority 2 endpoint provides policy-asset relationship details.",
+        "operationId": "getAssetPolicyMapping",
+        "parameters": [
+          {
+            "description": "Asset ID",
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetPolicyMappingDTO"
+                }
+              }
+            },
+            "description": "Asset policy mapping retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetPolicyMappingDTO"
+                }
+              }
+            },
+            "description": "Access denied"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetPolicyMappingDTO"
+                }
+              }
+            },
+            "description": "Asset not found"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetPolicyMappingDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get asset policy mapping",
+        "tags": [
+          "Asset Management",
+          "Policy"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/retention": {
+      "get": {
+        "operationId": "getRetention",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetRetentionView"
+                }
+              }
+            },
+            "description": "The state"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetRetentionView"
+                }
+              }
+            },
+            "description": "No such asset"
+          }
+        },
+        "summary": "Retention state and rules of an asset",
+        "tags": [
+          "retention-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/retention/rules": {
+      "post": {
+        "operationId": "addRule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetentionRuleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionRuleView"
+                }
+              }
+            },
+            "description": "The rule was stored"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionRuleView"
+                }
+              }
+            },
+            "description": "The rule is malformed"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionRuleView"
+                }
+              }
+            },
+            "description": "No such asset"
+          },
+          "409": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionRuleView"
+                }
+              }
+            },
+            "description": "Too many manual rules on the asset"
+          }
+        },
+        "summary": "Add a manual retention rule",
+        "tags": [
+          "retention-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/retention/rules/{ruleId}": {
+      "delete": {
+        "operationId": "removeRule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "ruleId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The rule was removed"
+          },
+          "404": {
+            "description": "No such manual rule"
+          }
+        },
+        "summary": "Remove a manual retention rule",
+        "tags": [
+          "retention-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/schema": {
+      "get": {
+        "description": "Retrieve detailed schema structure including field metadata, data types, constraints, indexes, statistics, lineage, and evolution history. This Priority 2 endpoint provides enhanced catalog functionality for complete asset understanding.",
+        "operationId": "getAssetSchema",
+        "parameters": [
+          {
+            "description": "Unique identifier of the asset to retrieve schema information for",
+            "example": "123e4567-e89b-12d3-a456-426614174000",
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Customer Table Schema": {
+                    "description": "Example schema for a customer table with comprehensive metadata",
+                    "value": {
+                      "assetId": "123e4567-e89b-12d3-a456-426614174000",
+                      "assetName": "customer_master_table",
+                      "fields": [
+                        {
+                          "classification": "PII",
+                          "dataType": "BIGINT",
+                          "description": "Unique identifier for customer",
+                          "fieldName": "customer_id",
+                          "logicalType": "IDENTIFIER",
+                          "nullable": false,
+                          "primaryKey": true,
+                          "statistics": {
+                            "distinctCount": 125000,
+                            "fillRate": 100.0
+                          }
+                        }
+                      ],
+                      "schemaType": {
+                        "encoding": "UTF-8",
+                        "format": "PARQUET",
+                        "type": "TABLE"
+                      },
+                      "schemaVersion": "2.1.0",
+                      "statistics": {
+                        "compressionRatio": 0.75,
+                        "totalColumns": 5,
+                        "totalRows": 125000,
+                        "totalSize": 52428800
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AssetSchemaDTO"
+                }
+              }
+            },
+            "description": "Asset schema information retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetSchemaDTO"
+                }
+              }
+            },
+            "description": "Access denied - insufficient permissions"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetSchemaDTO"
+                }
+              }
+            },
+            "description": "Asset not found"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetSchemaDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get comprehensive asset schema information",
+        "tags": [
+          "Asset Management",
+          "Schema"
+        ]
+      }
+    },
+    "/api/v1/catalog/assets/{assetId}/usage": {
+      "get": {
+        "description": "Retrieve comprehensive usage analytics for a specific asset including access patterns, user behavior, performance metrics, and optimization recommendations",
+        "operationId": "getAssetUsageAnalytics",
+        "parameters": [
+          {
+            "description": "Asset ID",
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetUsageAnalyticsDTO"
+                }
+              }
+            },
+            "description": "Usage analytics retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetUsageAnalyticsDTO"
+                }
+              }
+            },
+            "description": "Access denied"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetUsageAnalyticsDTO"
+                }
+              }
+            },
+            "description": "Asset not found"
+          }
+        },
+        "summary": "Get asset usage analytics",
+        "tags": [
+          "Asset Management"
+        ]
+      }
+    },
+    "/api/v1/catalog/filters": {
+      "get": {
+        "description": "Retrieve filter metadata for advanced search and filtering in the catalog UI. This Priority 2 endpoint provides filter categories, options, quick filters, and search capabilities.",
+        "operationId": "getCatalogFilters",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogFiltersDTO"
+                }
+              }
+            },
+            "description": "Catalog filters retrieved successfully"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogFiltersDTO"
+                }
+              }
+            },
+            "description": "Access denied"
+          },
+          "500": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogFiltersDTO"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get catalog faceted search filters",
+        "tags": [
+          "Catalog",
+          "Search"
+        ]
+      }
+    },
+    "/api/v1/catalog/lifecycle-states": {
+      "get": {
+        "description": "items are valid against docs/specs/schemas/lifecycle-state-0.1.json",
+        "operationId": "listLifecycleStates",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The page"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "page or size out of range"
+          }
+        },
+        "summary": "Lifecycle State 0.1 of every asset, paged",
+        "tags": [
+          "lifecycle-state-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/lifecycle-states/okf": {
+      "get": {
+        "description": "docs/specs/lifecycle-state.md section 8.2. ADMIN only.",
+        "operationId": "exportOkf",
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {}
+            },
+            "description": "The zip"
+          }
+        },
+        "summary": "OKF v0.1 export of Lifecycle State (zip of Markdown concept files)",
+        "tags": [
+          "lifecycle-state-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/taxonomy/labels": {
+      "get": {
+        "operationId": "getAllLabels",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "nameContains",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyLabelsResponseDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "label-taxonomy-controller"
+        ]
+      },
+      "post": {
+        "operationId": "createLabel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyLabelDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyLabelDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "label-taxonomy-controller"
+        ]
+      }
+    },
+    "/api/v1/catalog/taxonomy/labels/{idOrName}": {
+      "delete": {
+        "operationId": "deleteLabel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idOrName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "label-taxonomy-controller"
+        ]
+      },
+      "get": {
+        "operationId": "getLabelByIdOrName",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idOrName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyLabelDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "label-taxonomy-controller"
+        ]
+      },
+      "put": {
+        "operationId": "updateLabel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idOrName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyLabelDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyLabelDTO"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "label-taxonomy-controller"
+        ]
+      }
+    }
+  }
+}

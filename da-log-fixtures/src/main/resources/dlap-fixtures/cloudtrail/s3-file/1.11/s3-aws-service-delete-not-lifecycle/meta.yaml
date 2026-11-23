@@ -1,0 +1,15 @@
+origin: synthetic-from-doc
+source_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+doc_date: 2026-11-01
+license: synthetic
+covers:
+  - s3.amazonaws.com:DeleteObject
+variant_ids:
+  - uid.aws-service
+  - uid.invoked-by
+  - s3.request-parameters-bucket-key
+  - s3.object-and-bucket-resources
+  - account.recipient-account-id
+expected_outcome: PARSED
+anonymised: false
+notes: "Written by PARSE-03 (D36, Q-654). A delete of the current object performed by an AWS service that is not S3 lifecycle (userIdentity.type AWSService, invokedBy s3.amazonaws.com, the shape S3 replication or another S3 feature takes when it acts as a service principal; the exact principal S3 replication shows is [unverified]). The parser types it SYSTEM like every AWSService record (ADR-0102), so the delete proof and the Lifecycle State emitter must tell it apart by the lifecycle signature: it proves an engine delete, never a native rule, and its executedBy is not native-rule. Source: the CloudTrail userIdentity element page (source_url; AWSService and invokedBy). Every value is invented."

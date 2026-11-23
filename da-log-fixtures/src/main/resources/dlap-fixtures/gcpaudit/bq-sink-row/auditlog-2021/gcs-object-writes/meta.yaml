@@ -1,0 +1,15 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - storage.googleapis.com:storage.objects.create
+  - storage.googleapis.com:storage.objects.delete
+variant_ids:
+  - envelope.bq-json-string-columns
+  - gcs.create-request-response
+  - gcs.object-resource-name
+  - log.data-access
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. An object create whose request and response arrive as the STRING columns requestJson and responseJson (size, generation, timeCreated read from the response), and an object delete."

@@ -1,0 +1,10 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers: []
+variant_ids:
+  - binding.region-mismatch
+expected_outcome: QUARANTINED:UNKNOWN_ENVELOPE
+anonymised: false
+notes: "What the transport hands over when BigQuery refuses the query because the location does not match the region qualifier: one marker record, quarantined, so the operator sees the binding error."

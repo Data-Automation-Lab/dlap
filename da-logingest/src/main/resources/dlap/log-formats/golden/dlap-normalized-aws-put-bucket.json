@@ -1,0 +1,26 @@
+{
+  "id": "dlap-normalized-aws-put-bucket",
+  "binding": { "id": "dlap-selftest", "sourceKind": "DLAP_NORMALIZED_AWS", "envelope": "ingest-dto" },
+  "record": {
+    "sourceProvider": "AWS",
+    "sourceService": "s3.amazonaws.com",
+    "operation": "PutBucket",
+    "changeType": "CREATE",
+    "resultStatus": "SUCCESS",
+    "eventTime": "2026-07-05T10:00:00Z",
+    "principalId": "AIDAEXAMPLE0001",
+    "principalType": "IAMUser",
+    "targetResourceKind": "AWS::S3::Bucket",
+    "targetResourceId": "s3://selftest-bucket",
+    "targetProject": "123456789012",
+    "targetRegion": "us-east-1",
+    "requestId": "selftest-0001"
+  },
+  "expect": {
+    "outcome": "PARSED_WITH_WARNINGS",
+    "events": 1,
+    "operation": "PutBucket",
+    "changeType": "CREATE",
+    "category": "EVENT_CATEGORY_MANAGEMENT"
+  }
+}

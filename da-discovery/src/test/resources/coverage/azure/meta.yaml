@@ -1,0 +1,12 @@
+origin: hand-written
+source_url:
+  - https://learn.microsoft.com/en-us/rest/api/monitor/diagnostic-settings/list
+  - https://learn.microsoft.com/en-us/rest/api/storagerp/storage-accounts/list
+  - https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-logs/microsoft-storage-storageaccounts-blobservices-logs
+doc_date: 2026-10-20
+license: Apache-2.0
+anonymised: true
+covers:
+  - Microsoft.Storage/storageAccounts/read
+  - Microsoft.Insights/diagnosticSettings/read
+notes: "COV-01 test inputs. Written by hand from the DiagnosticSettingsResource and LogSettings definitions of the Azure Monitor REST reference (api-version 2021-05-01-preview, read on 2026-10-20) and the blobServices log categories page; no vendor sample is copied. Subscription, resource group, account and workspace names are invented."

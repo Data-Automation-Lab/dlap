@@ -1,0 +1,14 @@
+{
+  "insertId": "bq1-neg-2",
+  "logName": "projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access",
+  "timestamp": "2026-09-04T11:00:01.5Z",
+  "resource": {"type": "bigquery_resource", "labels": {"project_id": "proj-0d1a0001"}},
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData",
+    "serviceName": "bigquery.googleapis.com",
+    "methodName": "tabledataservice.list",
+    "resourceName": "projects/proj-0d1a0001/datasets/sales/tables/orders",
+    "serviceData": {"@type": "type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData", "tableDataListRequest": {"maxResults": 100}}
+  },
+  "receiveTimestamp": "2026-09-04T11:00:02Z"
+}

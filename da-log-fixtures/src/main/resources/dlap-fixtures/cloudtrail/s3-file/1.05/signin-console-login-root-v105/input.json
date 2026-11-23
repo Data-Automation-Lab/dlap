@@ -1,0 +1,32 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "Root",
+        "principalId": "1111",
+        "arn": "arn:aws:iam::123456789012:root",
+        "accountId": "123456789012",
+        "userName": "user-b94553"
+      },
+      "eventTime": "2019-01-01T00:00:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.19.244.171",
+      "userAgent": "Mozilla",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "eventID": "1",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    }
+  ]
+}

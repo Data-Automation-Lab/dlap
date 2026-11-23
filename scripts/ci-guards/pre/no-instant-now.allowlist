@@ -1,0 +1,111 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# Allowlist for scripts/ci-guards/pre/no-instant-now.sh (work-plan rule R6).
+#
+# One line per file: path|max|category|owner|reason
+#   max       the most zero-argument Instant.now() calls the file may keep. It only goes down:
+#             run  bash scripts/ci-guards/pre/no-instant-now.sh --tighten  after removing calls.
+#   category  (file level: the strictest call in the file decides)
+#             business    a call decides a business field (event time, last read, source
+#                         modified time, age evaluation): an R6 violation to remove.
+#             processing  an audit stamp, a response timestamp, a checkpoint or a dashboard
+#                         window: the time the service acted. Tolerated until the module owns a
+#                         Clock bean, then replaced with Instant.now(clock).
+#   owner     the work package expected to clear the entry, or - when none is assigned.
+#   reason    what the call does.
+# Sorted by path. Adding a file here, or raising a number, is not allowed.
+da-admin-service/src/main/java/com/dlap/adminservice/exception/GlobalExceptionHandler.java|1|processing|-|error response timestamp
+da-admin-service/src/main/java/com/dlap/adminservice/model/AbstractAuditableEntity.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-autocompliance/src/main/java/com/dlap/autocompliance/model/entity/AbstractAuditableEntity.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-autodelete/src/main/java/com/dlap/autodelete/exception/GlobalExceptionHandler.java|1|processing|-|error response timestamp
+da-autodelete/src/main/java/com/dlap/autodelete/service/impl/DeleteAgentDashboardServiceImpl.java|3|processing|-|dashboard, statistics or duration windows relative to now
+da-autolabel/src/main/java/com/dlap/autolabel/exception/GlobalExceptionHandler.java|3|processing|-|error response timestamp
+da-autolabel/src/main/java/com/dlap/autolabel/service/impl/AutoLabelOrchestratorImpl.java|2|processing|-|createdAt on manual-review rows
+da-autolabel/src/main/java/com/dlap/autolabel/service/impl/LabelAgentDashboardServiceImpl.java|1|processing|-|dashboard, statistics or duration windows relative to now
+da-catalog/src/main/java/com/dlap/catalog/common/GlobalExceptionHandler.java|1|processing|-|error response timestamp
+da-catalog/src/main/java/com/dlap/catalog/lineage/MetadataHarvester.java|1|processing|-|harvest time
+da-catalog/src/main/java/com/dlap/catalog/model/AssetLineage.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-catalog/src/main/java/com/dlap/catalog/service/LineageService.java|1|processing|-|lineage graph last-updated time
+da-discovery/src/main/java/com/dlap/discovery/catalog/service/impl/CatalogServiceImpl.java|13|processing|-|discovery-time and updatedAt stamps on the discovery module's own resource rows
+da-discovery/src/main/java/com/dlap/discovery/client/rest/DiscoveryJobController.java|3|processing|-|dashboard, statistics or duration windows relative to now
+da-discovery/src/main/java/com/dlap/discovery/client/util/JobUtil.java|1|processing|-|dashboard, statistics or duration windows relative to now
+da-discovery/src/main/java/com/dlap/discovery/client/util/TimeUtil.java|2|processing|-|dashboard, statistics or duration windows relative to now
+da-discovery/src/main/java/com/dlap/discovery/common/model/AbstractAuditingEntity.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-discovery/src/main/java/com/dlap/discovery/common/model/CheckpointEntity.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-discovery/src/main/java/com/dlap/discovery/common/model/CloudResource.java|3|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-discovery/src/main/java/com/dlap/discovery/common/model/DiscoveryJob.java|24|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-discovery/src/main/java/com/dlap/discovery/common/model/Lineage.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-discovery/src/main/java/com/dlap/discovery/common/model/ResourceChange.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-discovery/src/main/java/com/dlap/discovery/config/model/ConnectionDiscoveryConfig.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-discovery/src/main/java/com/dlap/discovery/config/model/GlobalDiscoveryConfig.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/AwsProcessingJobResourceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/EC2InstanceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/GlueResourceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/RdsResourceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/aws/S3ResourceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/azure/AzureProcessingJobResourceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/databricks/DatabricksProcessingJobResourceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/BigQueryCrawler.java|4|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/CloudSQLInstanceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/GCSResourceCrawler.java|4|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/gcp/GcpBigQueryJobResourceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/oracle/OracleComputeInstanceCrawler.java|2|business|-|creation time falls back to the wall clock, updatedAt is a placeholder
+da-discovery/src/main/java/com/dlap/discovery/crawler/service/unity/UnityCatalogResourceCrawler.java|2|business|DISC-02|updatedAt falls back to the wall clock where the source gives no modified time (lastDiscoveredAt is processing time)
+da-discovery/src/main/java/com/dlap/discovery/event/service/type/LogEvent.java|1|processing|-|DTO or event construction time
+da-discovery/src/main/java/com/dlap/discovery/event/service/type/ResourceEvent.java|1|processing|-|DTO or event construction time
+da-discovery/src/main/java/com/dlap/discovery/job/callable/LogAnalyzerCallable.java|1|processing|-|log-analysis checkpoint bookkeeping
+da-discovery/src/main/java/com/dlap/discovery/job/executable/LogAnalysisCallable.java|2|processing|-|log-analysis checkpoint bookkeeping
+da-discovery/src/main/java/com/dlap/discovery/job/service/CloudResourceDiscoveryDTO.java|2|processing|-|job start time
+da-discovery/src/main/java/com/dlap/discovery/log/service/aws/adapter/AWSLoggingAdapter.java|2|business|-|event time falls back to the wall clock when the record has none
+da-discovery/src/main/java/com/dlap/discovery/log/service/impl/DefaultCheckpointService.java|1|processing|-|log-analysis checkpoint bookkeeping
+da-discovery/src/main/java/com/dlap/discovery/service/stats/impl/DiscoveryStatsServiceImpl.java|1|processing|-|dashboard, statistics or duration windows relative to now
+da-logingest/src/main/java/com/dlap/logingest/demo/DemoEventSeeder.java|1|processing|-|demo seed data
+da-logingest/src/main/java/com/dlap/logingest/service/impl/LogIngestServiceImpl.java|1|processing|-|ingest time, the processing-time clock (ADR-0045)
+da-logingest/src/main/java/com/dlap/logingest/web/exception/GlobalExceptionHandler.java|1|processing|-|error response timestamp
+da-mcp-pep/src/main/java/com/dlap/mcppep/GlobalExceptionHandler.java|1|processing|-|error response timestamp
+da-policyengine/src/main/java/com/dlap/policyengine/dto/EventAnalyticsDTO.java|2|processing|-|DTO or event construction time
+da-policyengine/src/main/java/com/dlap/policyengine/dto/EventStreamDTO.java|1|processing|-|DTO or event construction time
+da-policyengine/src/main/java/com/dlap/policyengine/dto/PolicyImpactResponseDTO.java|1|processing|-|DTO or event construction time
+da-policyengine/src/main/java/com/dlap/policyengine/kafka/consumer/LifecycleEventStreamConsumer.java|1|business|-|stream event timestamp is the receive time, not the event time
+da-policyengine/src/main/java/com/dlap/policyengine/mapper/PolicyDraftMapper.java|1|processing|-|days since the last status change
+da-policyengine/src/main/java/com/dlap/policyengine/model/EventRule.java|3|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-policyengine/src/main/java/com/dlap/policyengine/model/EventSubscription.java|3|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-policyengine/src/main/java/com/dlap/policyengine/model/Policy.java|3|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-policyengine/src/main/java/com/dlap/policyengine/model/PolicyDraft.java|4|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-policyengine/src/main/java/com/dlap/policyengine/model/PolicyEvaluation.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-policyengine/src/main/java/com/dlap/policyengine/model/PolicyRule.java|3|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-policyengine/src/main/java/com/dlap/policyengine/service/EventSubscriptionService.java|14|business|-|stream event timestamp falls back to the wall clock (and 13 audit stamps and report windows)
+da-policyengine/src/main/java/com/dlap/policyengine/service/PolicyEngineMetricsService.java|1|processing|-|dashboard, statistics or duration windows relative to now
+da-policyengine/src/main/java/com/dlap/policyengine/service/PolicyService.java|6|processing|-|policy draft workflow timestamps (submitted, approved, rejected, published, overdue)
+da-policyengine/src/main/java/com/dlap/policyengine/web/exception/GlobalExceptionHandler.java|1|processing|-|error response timestamp
+da-policyengine/src/main/java/com/dlap/policyengine/web/rest/AuthZenEvaluationController.java|1|processing|-|decision-log publish time
+da-protos/src/main/java/com/dlap/common/auth/ServiceTokenProvider.java|2|processing|-|token expiry arithmetic
+da-protos/src/main/java/com/dlap/common/model/entity/Asset.java|3|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-protos/src/main/java/com/dlap/common/model/entity/AssetLabelAssignment.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-protos/src/main/java/com/dlap/common/model/entity/CloudResource.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-protos/src/main/java/com/dlap/common/model/entity/Label.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-protos/src/main/java/com/dlap/common/model/entity/User.java|2|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-reporting/src/main/java/com/dlap/reporting/common/exception/GlobalExceptionHandler.java|1|processing|-|error response timestamp
+da-reporting/src/main/java/com/dlap/reporting/model/AccessDecisionRecordEntity.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-reporting/src/main/java/com/dlap/reporting/model/AssetReadRecordEntity.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-reporting/src/main/java/com/dlap/reporting/model/DriftFindingEntity.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-reporting/src/main/java/com/dlap/reporting/model/GeneratedReport.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-reporting/src/main/java/com/dlap/reporting/model/PolicyActionEventRecord.java|1|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-reporting/src/main/java/com/dlap/reporting/model/ReportDefinition.java|3|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-reporting/src/main/java/com/dlap/reporting/model/UserNotificationPreference.java|3|processing|-|createdAt and updatedAt audit stamps (@PrePersist and @PreUpdate or setters)
+da-reporting/src/main/java/com/dlap/reporting/service/impl/ReportService.java|4|processing|-|report request, start, completion and generation times

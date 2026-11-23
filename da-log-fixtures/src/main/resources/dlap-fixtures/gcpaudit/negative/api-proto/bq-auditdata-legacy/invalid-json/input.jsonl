@@ -1,0 +1,1 @@
+{"insertId":"bq1-neg-3","logName":"projects/proj-0d1a0001/logs/cloudaudit.googleapis.com%2Fdata_access","timestamp":"2026-09-04T11:00:03.5Z","protoPayload":{"@type":"type.googleapis.com/google.cloud.audit.AuditLog","serviceData":{"typeUrl":"type.googleapis.com/google.cloud.bigquery.logging.v1.AuditData","base64":"igE="},,"methodName":"jobservice.jobcompleted"}}

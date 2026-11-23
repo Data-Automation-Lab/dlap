@@ -1,0 +1,242 @@
+# ===================================================================
+# Spring Boot configuration for the "dev" profile.
+#
+# This configuration overrides the application.yml file.
+#
+# More information on profiles: https://www.jhipster.tech/profiles/
+# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+# ===================================================================
+# Standard Spring Boot properties.
+# Full reference is available at:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+# ===================================================================
+
+logging:
+  level:
+    ROOT: DEBUG
+    tech.jhipster: DEBUG
+    org.hibernate.SQL: DEBUG
+    com.dlap.discovery: DEBUG
+  file:
+    name: logs/app.log
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n'
+
+eureka:
+  client:
+    enabled: false
+    service-url:
+      defaultZone: 'http://admin:${jhipster.registry.password}@localhost:8761/eureka/'
+  instance:
+    prefer-ip-address: true
+
+management:
+  tracing:
+    # Spring Boot 4 moved management.zipkin.tracing.endpoint here (BOOT-01). Only read when a Zipkin
+    # exporter is on the classpath, which this build does not ship.
+    export:
+      zipkin:
+        endpoint: 'http://localhost:9411/api/v2/spans'
+    sampling:
+      probability: 1.0 # report 100% of traces
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      # Spring Boot 4 removed management.endpoint.<id>.enabled; access is the replacement (BOOT-01).
+      access: unrestricted
+
+spring:
+  devtools:
+    restart:
+      enabled: true
+      additional-exclude: static/**
+    livereload:
+      enabled: false # we use Webpack dev server + BrowserSync for livereload
+  # Jackson 2 stays the JSON library (ADR-0066); Spring Boot 4 binds its settings under spring.jackson2.
+  jackson2:
+    serialization:
+      indent-output: true
+  # cache:
+  # type: none # Disable caching in dev profile. Allow Spring Boot to auto-configure JCache/EhCache.
+  cloud:
+    gcp:
+      sql:
+        enabled: false
+      core:
+        enabled: false
+      secretmanager:
+        enabled: false
+    config:
+      enabled: false # Disable Spring Cloud Config client
+      uri: 'http://admin:${jhipster.registry.password}@localhost:8761/config'
+      # name of the config server's property source (file.yml) that we want to use
+      name: DADiscovery
+      profile: dev
+      label: main
+  kafka:
+    listener:
+      missing-topics-fatal: false # Don't fail if topics don't exist
+      auto-startup: true # Enable listeners by default
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:postgresql}:${DB_PORT:5432}/${DB_NAME:dlap_common}
+    username: ${SPRING_DATASOURCE_USERNAME:da_discovery_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:da_discovery_pass}
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database: POSTGRESQL
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        hbm2ddl:
+          auto: validate
+        generate_statistics: true
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+  flyway:
+    enabled: true
+    schemas: dlap_discovery
+    baseline-on-migrate: true
+  messages:
+    cache-duration: PT1S # 1 second, see the ISO 8601 standard
+  thymeleaf:
+    cache: false
+  shell:
+    interactive:
+      enabled: true # Enable interactive shell mode for regular operation
+    command:
+      version:
+        enabled: true # Enable version command
+    history:
+      enabled: true # Enable history
+      file:
+        name: ~/.da-discovery-shell-history
+  autoconfigure:
+    exclude: []
+
+server:
+  port: 8081
+
+# ===================================================================
+# JHipster specific properties
+#
+# Full reference is available at: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+jhipster:
+  cache: # Cache configuration
+    ehcache: # Ehcache configuration
+      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
+      max-entries: 100 # Number of objects in each cache entry
+  registry:
+    password: ${JHIPSTER_REGISTRY_PASSWORD:admin}
+  # CORS is only enabled by default with the "dev" profile
+  cors:
+    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
+    allowed-origins: 'http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://localhost:4200,https://localhost:4200,http://localhost:3000,https://localhost:3000'
+    # Enable CORS when running in GitHub Codespaces
+    allowed-origin-patterns: 'https://*.githubpreview.dev'
+    allowed-methods: '*'
+    allowed-headers: '*'
+    exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
+    allow-credentials: true
+    max-age: 1800
+  security:
+    authentication:
+      jwt:
+        # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
+        # Dev default is a throwaway - set JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET in any real deployment.
+        base64-secret: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET:ZGV2LW9ubHktcmVwbGFjZS1tZS1pbi1wcm9kLXNldC1KSElQU1RFUl9TRUNVUklUWV9BVVRIRU5USUNBVElPTl9KV1RfQkFTRTY0X1NFQ1JFVA==}
+        # Token is valid 24 hours
+        token-validity-in-seconds: 86400
+        token-validity-in-seconds-for-remember-me: 2592000
+  mail: # specific JHipster mail property, for standard properties see MailProperties
+    base-url: 'http://127.0.0.1:8080'
+  logging:
+    use-json-format: false # By default, logs are not in Json format
+    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+      enabled: false
+      host: localhost
+      port: 5000
+      ring-buffer-size: 512
+# ===================================================================
+# Application specific properties
+# Add your own application properties here, see the ApplicationProperties class
+# to have type-safe configuration, like in the JHipsterProperties above
+#
+# More documentation is available at:
+# https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+discovery:
+  job:
+    executor:
+      mode: DEFAULT # Use DEFAULT executor in development
+
+# Application keys read by @Value. Client settings are spring.kafka.* (Q-334); the dead consumer and
+# producer keys of this block never reached a client and are gone.
+kafka:
+  topics:
+    resource-events: discovery-resource-events-dev
+    log-events: discovery-log-events-dev
+  group:
+    catalog-updater: discovery-catalog-updater-dev
+  admin:
+    replication-factor: 1
+    partitions: 3
+
+# Add GCP project ID (placeholder for development)
+gcp:
+  project:
+    id: 'development-project-id'
+
+# Cloud provider feature flags
+cloud:
+  provider:
+    gcp:
+      enabled: true
+    aws:
+      enabled: false
+    azure:
+      enabled: false
+    oci:
+      enabled: false
+    unity:
+      # UC-5 (ADR-0029): Unity Catalog discovery source. Off by default; enable
+      # alongside the compose 'unity' profile to crawl a local Unity Catalog.
+      enabled: ${CLOUD_PROVIDER_UNITY_ENABLED:false}
+      uri: ${CLOUD_PROVIDER_UNITY_URI:http://localhost:8080/api/2.1/unity-catalog}
+      token: ${CLOUD_PROVIDER_UNITY_TOKEN:}
+      page-size: 100
+
+# ===================================================================
+# Catalog specific properties
+# ===================================================================
+
+catalog:
+  external:
+    enabled: false # Set to true to enable the external catalog client and provide baseUrl and apiKey
+    baseUrl: 'http://localhost:8090/api/catalog' # Example: replace with actual external catalog base URL
+    apiKey: '' # Example: replace with actual API key if required, can be blank
+
+# application:

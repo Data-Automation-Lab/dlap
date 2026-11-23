@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.InsertJob
+variant_ids:
+  - bq2.metadata-truncated
+  - bq2.read.fields-truncated
+expected_outcome: PARSED_WITH_WARNINGS
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Truncated metadata (queryTruncated, fieldsTruncated, policyTagsTruncated) is parsed and flagged PROVIDER_TRUNCATED."

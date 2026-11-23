@@ -1,0 +1,82 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE0SRG9UFWUT",
+        "arn": "arn:aws:iam::999945223994:user/user-c39c05",
+        "accountId": "999945223994",
+        "accessKeyId": "AKIAEXAMPLE8QEANFZNK",
+        "userName": "user-c39c05"
+      },
+      "eventTime": "2023-07-10T11:59:58Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "PutBucketPolicy",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.168.10.20",
+      "userAgent": "[APN/1.0 HashiCorp/1.0 Terraform/1.1.2 (+https://www.terraform.io) terraform-provider-aws/3.76.1 (+https://registry.terraform.io/providers/hashicorp/aws) aws-sdk-go/1.44.157 (go1.19.3; linux; amd64) stratus-red-team_1d949e3e-4092-4c96-a6ef-96a967510a46 HashiCorp-terraform-exec/0.17.3]",
+      "requestParameters": {
+        "bucketPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": "s3:GetBucketAcl",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Resource": "arn:aws:s3:::stratus-red-team-ctes-bucket-qyxyekjbtk",
+              "Sid": "AWSCloudTrailAclCheck"
+            },
+            {
+              "Action": "s3:PutObject",
+              "Condition": {
+                "StringEquals": {
+                  "s3:x-amz-acl": "bucket-owner-full-control"
+                }
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Resource": "arn:aws:s3:::stratus-red-team-ctes-bucket-qyxyekjbtk/*",
+              "Sid": "AWSCloudTrailWrite"
+            }
+          ]
+        },
+        "bucketName": "stratus-red-team-ctes-bucket-qyxyekjbtk",
+        "Host": "stratus-red-team-ctes-bucket-qyxyekjbtk.s3.amazonaws.com",
+        "policy": ""
+      },
+      "responseElements": null,
+      "additionalEventData": {
+        "SignatureVersion": "SigV4",
+        "CipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "bytesTransferredIn": 494,
+        "AuthenticationMethod": "AuthHeader",
+        "x-amz-id-2": "nYXxFQV/wJW6Q8m2FyK2HAI8cus359tlU7z9JFVzEsUpAMXvR6IOm2o/ukKHTitxkHKEsN4U/qU=",
+        "bytesTransferredOut": 0
+      },
+      "requestID": "F0XQX2G7KS8GYAD2",
+      "eventID": "988f1043-3e3d-4d84-803b-1b4d00e0df90",
+      "readOnly": false,
+      "resources": [
+        {
+          "accountId": "999945223994",
+          "type": "AWS::S3::Bucket",
+          "ARN": "arn:aws:s3:::stratus-red-team-ctes-bucket-qyxyekjbtk"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "stratus-red-team-ctes-bucket-qyxyekjbtk.s3.amazonaws.com"
+      }
+    }
+  ]
+}

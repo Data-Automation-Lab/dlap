@@ -1,0 +1,11 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "eventTime": "2017-07-21T09:24:13.522192Z",
+      "sourceProvider": "AZURE",
+      "operation": "MICROSOFT.INSIGHTS/ALERTRULES/RESOLVED/ACTION",
+      "sourceFormat": "AZURE_ACTIVITY/resource-log"
+    }
+  ]
+}

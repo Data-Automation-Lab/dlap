@@ -1,0 +1,50 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.09",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "AIDAI1234567890EXAMPLE:user",
+        "arn": "arn:aws:sts::12948575929274:assumed-role/AdminRole/user",
+        "accountId": "12948575929274",
+        "accessKeyId": "AKIAEXAMPLE8XEQUNM9U"
+      },
+      "eventTime": "2024-01-15T12:00:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "CopyObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "203.0.113.42",
+      "userAgent": "aws-cli/2.13.0",
+      "requestParameters": {
+        "bucketName": "my-source-bucket",
+        "key": "data.csv",
+        "x-amz-copy-source": "my-source-bucket/data.csv"
+      },
+      "responseElements": null,
+      "requestID": "ABC123DEF456",
+      "eventID": "12345678-1234-1234-1234-123456789012",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "12948575929274",
+      "resources": [
+        {
+          "accountId": "12948575929274",
+          "arn": "arn:aws:s3:::my-source-bucket",
+          "type": "AWS::S3::Bucket"
+        },
+        {
+          "arn": "arn:aws:s3:::my-source-bucket/data.csv",
+          "type": "AWS::S3::Object"
+        },
+        {
+          "accountId": "12948575929274",
+          "arn": "arn:aws:s3:::my-dest-bucket",
+          "type": "AWS::S3::Bucket"
+        },
+        {
+          "arn": "arn:aws:s3:::my-dest-bucket/data.csv",
+          "type": "AWS::S3::Object"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<!--
+OWASP Dependency-Check suppressions (work package CI-02b). Read by scripts/ci-guards/scan/odc.sh.
+
+Add one only for a finding that is wrong for this project (Dependency-Check matches products by name and
+version, so a library that shares a name with a vulnerable product is a common false positive), never to
+get a build through. Every entry needs:
+  - the narrowest match: a packageUrl or the exact vulnerabilityName, not a whole library;
+  - an "until" attribute with a date at most one year away, so the decision is made again;
+  - a <notes> element that says why the finding does not apply, and where that was checked.
+scripts/ci-guards/pre/scan-suppressions.sh fails the build on an entry without notes or an "until"
+date, and on one past its date.
+
+Example (kept in this comment, so it suppresses nothing):
+
+  <suppress until="2027-06-30Z">
+    <notes>CVE-2099-0001 concerns the product "example" from vendor X; this is an unrelated library of
+    the same name. Checked against the advisory text on 2026-10-19 (Q-000).</notes>
+    <packageUrl regex="true">^pkg:maven/org\.example/example-lib@.*$</packageUrl>
+    <vulnerabilityName>CVE-2099-0001</vulnerabilityName>
+  </suppress>
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304, Q-314). Version confusion: Dependency-Check gives reactor-netty 1.3.x and Spring Boot's
+    spring-boot-netty and spring-boot-reactor-netty 4.1.x the CPE cpe:2.3:a:netty:netty with their own version numbers, and every Netty
+    advisory fixed in a 4.1.x release then matches. Neither jar contains Netty code: both depend on the
+    io.netty:netty-* jars, which ship at 4.2.17.Final in the same boot jars and are scanned without any
+    suppression. Checked on 2026-10-20: none of the 80 Netty CPE ranges in the report covers 4.2.17.]]></notes>
+    <filePath regex="true">.*/BOOT-INF/lib/(reactor-netty-(core|http)-1\.3\.[0-9]+|spring-boot-(reactor-)?netty-4\.1\.[0-9]+)\.jar</filePath>
+    <cpe>cpe:/a:netty:netty</cpe>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304, Q-314). Version confusion: grpc-netty-shaded 1.85.x is given cpe:2.3:a:netty:netty at the
+    gRPC version 1.85.1, so every Netty advisory fixed in 4.1.x matches. The jar bundles Netty 4.2.17.Final
+    (META-INF/io.grpc.netty.shaded.io.netty.versions.properties: netty-common.version=4.2.17.Final), the
+    release of the io.netty jars in the same boot jars, which stay scanned without suppression, so a Netty
+    advisory that covers 4.2.17 still fails the gate there. Checked on 2026-10-20: none of the Netty CPE
+    ranges in the report covers 4.2.17. Re-check when grpc-java.version changes (root build SecurityPatches).]]></notes>
+    <filePath regex="true">.*/BOOT-INF/lib/grpc-netty-shaded-1\.85\.[0-9]+\.jar</filePath>
+    <cpe>cpe:/a:netty:netty</cpe>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). CVE-2026-33117 is in the local cryptography path of azure-security-keyvault-keys before
+    4.10.6 (NVD text: the Java Key Vault Keys library, addressed in version 4.10.6). Dependency-Check
+    matches it to every Azure SDK artifact through the umbrella CPE cpe:2.3:a:microsoft:azure_sdk_for_java
+    at the artifact's own version. The keyvault-keys jar itself ships at 4.11.3 (root build SecurityPatches)
+    and is not covered by this entry; the artifacts listed here do not contain that code.]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.azure(\.resourcemanager)?/azure-(core|core-http-netty|core-management|json|identity|resourcemanager|resourcemanager-[a-z]+)@.*$</packageUrl>
+    <vulnerabilityName>CVE-2026-33117</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). CVE-2023-36415 (Azure Identity SDK remote code execution) is fixed for Java in
+    azure-identity 1.10.2 (NVD configuration cpe:2.3:a:microsoft:azure_identity_sdk with target software
+    java, before 1.10.2). The services ship 1.11.0 and 1.11.1; the match comes from the JavaScript
+    configuration of the same record (before 3.3.1), which Dependency-Check applies to the Java version.]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.azure/azure-identity@1\.(1[1-9]|[2-9][0-9])\..*$</packageUrl>
+    <vulnerabilityName>CVE-2023-36415</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). Wrong product: CVE-2024-52338 is in the Apache Arrow R package and CVE-2026-25087 in
+    Apache Arrow C++ (NVD texts). arrow-format, arrow-memory-core, arrow-memory-netty(-buffer-patch) and arrow-vector are the Java
+    implementation (the
+    BigQuery Storage read client brings them) and contain neither the R package nor the C++ library.]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.arrow/arrow-(format|memory-core|memory-netty|memory-netty-buffer-patch|vector)@.*$</packageUrl>
+    <vulnerabilityName>CVE-2024-52338</vulnerabilityName>
+    <vulnerabilityName>CVE-2026-25087</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[Wave-4B integration (Q-587). Wrong component: CVE-2026-111497 is an out-of-bounds write in the Brotli
+    decoder source c/dec/decode.c of Google Brotli 1.0.3 through 1.2.0 (NVD text). NVD lists it against the
+    product cpe:2.3:a:apache:arrow up to 26.0.0 because the Arrow C++ build bundles that C library; Arrow
+    has no fixed release, and the Java jars cannot hold the code. Checked on 2026-10-31 with the jars in the
+    boot jars of da-autodelete (15.0.0), da-discovery and da-logingest (17.0.0): arrow-format,
+    arrow-memory-core, arrow-memory-netty(-buffer-patch) and arrow-vector contain only Java classes, no
+    native library or C source, and no class refers to Brotli (the IPC codecs of arrow-vector are LZ4 and
+    Zstd). No Brotli jar is on the classpath of any boot jar. The one Brotli the images carry is the
+    operating system package libbrotli1 of the distroless base, which Trivy scans and which the base image
+    digest now pins at 1.1.0-2+deb13u1, the fixed package.]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.arrow/arrow-(format|memory-core|memory-netty|memory-netty-buffer-patch|vector)@.*$</packageUrl>
+    <vulnerabilityName>CVE-2026-111497</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). Wrong product: these OpenTelemetry advisories are for OpenTelemetry-Go (CPE target
+    software go: CVE-2023-45142, CVE-2023-47108, CVE-2026-24051, CVE-2026-29181, CVE-2026-39883) and for
+    the Python instrumentation (CVE-2023-43810, fixed in 0.41b0, a Python version). The matched jars are
+    Java: the GCP exporter and resource detectors (com.google.cloud.opentelemetry) and the Java semconv and
+    GCP resources modules, which the Google Cloud libraries bring.]]></notes>
+    <filePath regex="true">.*/BOOT-INF/lib/(detector-resources-support|exporter-metrics|shared-resourcemapping|opentelemetry-gcp-resources|opentelemetry-semconv)-[0-9][0-9a-z.\-]*\.jar</filePath>
+    <vulnerabilityName>CVE-2023-43810</vulnerabilityName>
+    <vulnerabilityName>CVE-2023-45142</vulnerabilityName>
+    <vulnerabilityName>CVE-2023-47108</vulnerabilityName>
+    <vulnerabilityName>CVE-2026-24051</vulnerabilityName>
+    <vulnerabilityName>CVE-2026-29181</vulnerabilityName>
+    <vulnerabilityName>CVE-2026-39883</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). Wrong product: CVE-2026-0994 is a recursion-limit bypass in
+    google.protobuf.json_format.ParseDict() of the Python protobuf package (NVD text). protobuf-java and
+    protobuf-java-util are the Java runtime and hold no Python code; Dependency-Check compares the Java
+    version 4.35.1 with the Python fix 33.4.]]></notes>
+    <filePath regex="true">.*/BOOT-INF/lib/protobuf-java(-util)?-4\.[0-9.]+\.jar</filePath>
+    <vulnerabilityName>CVE-2026-0994</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). Wrong component: CVE-2026-53914 is unsafe deserialization of the Kotlin build cache
+    metadata (NVD text), which is compiler and Gradle plugin code. kotlin-stdlib and its jdk7 and jdk8
+    companions are the runtime library (OkHttp and others bring it) and hold no build cache code. The match
+    ends when the Spring Boot BOM moves kotlin.version to 2.4.20 or later.]]></notes>
+    <filePath regex="true">.*/BOOT-INF/lib/kotlin-stdlib(-jdk7|-jdk8)?-2\.3\.[0-9]+\.jar</filePath>
+    <vulnerabilityName>CVE-2026-53914</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). Wrong product: CVE-2026-42154 is in the Prometheus server's remote read endpoint
+    /api/v1/read (NVD text, fixed in Prometheus 3.5.3 and 3.11.3). micrometer-registry-prometheus is the
+    Micrometer client that renders /actuator/prometheus; it has no remote read endpoint.]]></notes>
+    <filePath regex="true">.*/BOOT-INF/lib/micrometer-registry-prometheus-1\.[0-9.]+\.jar</filePath>
+    <vulnerabilityName>CVE-2026-42154</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). Wrong product: CVE-2009-2475, CVE-2009-2476, CVE-2009-2689 and CVE-2009-2716 are Sun
+    Java SE 5 and 6 runtime flaws (CPE cpe:2.3:a:sun:java_se). Dependency-Check gives JNA
+    (net.java.dev.jna, the native-access library) that CPE; the services run on the JDK 21 of the distroless
+    base image.]]></notes>
+    <filePath regex="true">.*/BOOT-INF/lib/jna-5\.[0-9.]+\.jar</filePath>
+    <vulnerabilityName>CVE-2009-2475</vulnerabilityName>
+    <vulnerabilityName>CVE-2009-2476</vulnerabilityName>
+    <vulnerabilityName>CVE-2009-2689</vulnerabilityName>
+    <vulnerabilityName>CVE-2009-2716</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). Wrong product: CVE-2004-0455 is a buffer overflow in cgi.c of www-sql before 0.5.7 (CPE
+    cpe:2.3:a:www-sql_project:www-sql). google-cloud-sql, proto-google-cloud-sql-v1 and -v1beta4 0.5.0 are the Java
+    client and protos of the Cloud SQL Admin API; the name and the version 0.5.0 caused the match.]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.google\.(cloud/google-cloud-sql|api\.grpc/proto-google-cloud-sql-v1(beta4)?)@.*$</packageUrl>
+    <vulnerabilityName>CVE-2004-0455</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). CVE-2018-1258 needs Spring Framework 5.0.5 together with Spring Security (NVD text:
+    Spring Framework version 5.0.5 when used in combination with any versions of Spring Security). The
+    services run Spring Framework 7.0.9 with Spring Security 7.1.1; the record lists every Spring Security
+    version, which is why the Security jars match.]]></notes>
+    <filePath regex="true">.*/BOOT-INF/lib/spring-security-[a-z0-9\-]+-7\.[0-9.]+\.jar</filePath>
+    <vulnerabilityName>CVE-2018-1258</vulnerabilityName>
+  </suppress>
+
+  <suppress until="2027-04-30Z">
+    <notes><![CDATA[VULN-01 (Q-304). Version confusion: spring-shell-jline 4.0.3 (Spring Shell's JLine adapter) is given the
+    CPE cpe:2.3:a:jline:jline at its own version, so JLine's CVE-2026-56740 and CVE-2026-56741 (remote-telnet,
+    fixed in 3.30.14 and 4.0.16) match. The JLine jar itself ships at 3.30.17 (root build SecurityPatches)
+    and is not covered by this entry.]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.shell/spring-shell-jline@.*$</packageUrl>
+    <vulnerabilityName>CVE-2026-56740</vulnerabilityName>
+    <vulnerabilityName>CVE-2026-56741</vulnerabilityName>
+  </suppress>
+</suppressions>

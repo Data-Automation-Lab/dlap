@@ -1,0 +1,8 @@
+discovery:
+  job:
+    executor:
+      mode: DEFAULT  # Can be DEFAULT, SPARK, or NIFI
+      spark:
+        enabled: false
+      nifi:
+        enabled: false 

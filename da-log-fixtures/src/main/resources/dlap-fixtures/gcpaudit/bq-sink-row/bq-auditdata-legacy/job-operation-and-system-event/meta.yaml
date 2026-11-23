@@ -1,0 +1,14 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:jobservice.insert
+  - bigquery.googleapis.com:jobservice.jobcompleted
+  - bigquery.googleapis.com:tableservice.delete
+variant_ids:
+  - entry.operation-first-last
+  - log.system-event
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Synthetic combinations: a v1 job insert and its completion as the first and last rows of one operation, and a system table deletion in the System Event log with an empty servicedata_v1_bigquery struct; the documentation shows operation markers and system events on v2 entries."

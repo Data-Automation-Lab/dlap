@@ -1,0 +1,12 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:DELETE
+variant_ids:
+  - write.destination-table
+  - actor.service-account
+expected_outcome: PARSED
+anonymised: false
+notes: "A DELETE statement removes rows, not the table: change type UPDATE, DATA_WRITE. The caller is a service account."

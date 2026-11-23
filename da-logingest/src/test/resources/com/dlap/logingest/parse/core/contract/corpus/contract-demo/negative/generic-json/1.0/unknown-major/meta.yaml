@@ -1,0 +1,9 @@
+origin: synthetic-from-doc
+source_url: https://www.rfc-editor.org/rfc/rfc8259
+doc_date: 2017-12-01
+license: synthetic
+covers: []
+variant_ids: [demo-unknown-major]
+expected_outcome: QUARANTINED:UNKNOWN_MAJOR_VERSION
+anonymised: false
+notes: "Major 2 has no parser."

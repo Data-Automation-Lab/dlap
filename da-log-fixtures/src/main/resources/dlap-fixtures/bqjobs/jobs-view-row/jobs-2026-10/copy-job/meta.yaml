@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - COPY:NULL
+variant_ids:
+  - write.destination-table
+expected_outcome: PARSED
+anonymised: false
+notes: "A copy job: referenced_tables is populated for query jobs only, so the copied source is not recorded as a read; the destination is a DATA_WRITE."

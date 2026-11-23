@@ -1,0 +1,19 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "z9y8x7w6-5432-10fe-dcba-EXAMPLE22222",
+      "eventTime": "2025-12-03T18:00:00Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "PutObject",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::111111111111:user/user-9915a6"
+      },
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e|2026-11-02T09:00:01.250Z|REST.GET.OBJECT|PARSE02SAL000021|curated/2026/sales.parquet",
+      "eventTime": "2026-11-02T09:00:01.250Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "REST.GET.OBJECT",
+      "changeType": "ACCESS",
+      "eventCategory": "EVENT_CATEGORY_DATA_READ",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:sts::123456789012:assumed-role/AnalystRole/session-1",
+        "type": "ROLE",
+        "accountId": "123456789012"
+      },
+      "targetResource": {
+        "canonicalUri": "s3://dlap-aws-e2e/curated/2026/sales.parquet"
+      },
+      "requestMetadata": {
+        "callerIp": "192.0.2.10",
+        "userAgent": "aws-sdk-java/2.20.0",
+        "requestId": "PARSE02SAL000021"
+      },
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    },
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e|2026-11-02T09:00:02.500Z|REST.DELETE.OBJECT|PARSE02SAL000022|curated/2026/old.parquet",
+      "eventTime": "2026-11-02T09:00:02.500Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "REST.DELETE.OBJECT",
+      "changeType": "DELETE",
+      "eventCategory": "EVENT_CATEGORY_DATA_WRITE",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::123456789012:user/user-5a1020",
+        "type": "USER",
+        "accountId": "123456789012"
+      },
+      "targetResource": {
+        "canonicalUri": "s3://dlap-aws-e2e/curated/2026/old.parquet"
+      },
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    },
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e|2026-11-02T09:00:03.750Z|REST.GET.OBJECT|PARSE02SAL000023|curated/2026/missing.parquet",
+      "eventTime": "2026-11-02T09:00:03.750Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "REST.GET.OBJECT",
+      "changeType": "ACCESS",
+      "resultStatus": "FAILURE",
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    },
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e|2026-11-02T09:00:04Z|REST.GET.VERSIONING|PARSE02SAL000024|",
+      "eventTime": "2026-11-02T09:00:04Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "REST.GET.VERSIONING",
+      "changeType": "ACCESS",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "0a5e0c110000400080000000000000000a5e0c110000400080000000000000ff"
+      },
+      "targetResource": {
+        "kind": "AWS::S3::Bucket",
+        "canonicalUri": "s3://dlap-aws-e2e"
+      },
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    }
+  ]
+}

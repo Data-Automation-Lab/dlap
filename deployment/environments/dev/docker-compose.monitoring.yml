@@ -1,0 +1,67 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Monitoring overlay of the dev stack (OBS-01, ADR-0037 amendment D4: override files are allowed).
+#
+# Moves the actuator of every service to its own management port, 9091 inside the container, which is
+# where deployment/platform/prometheus/prometheus.yml scrapes. On that port /actuator/prometheus is
+# open without a token; on the application port it still needs one. The port is not published on the
+# host: only Prometheus and Grafana are, and the container network carries the scrape.
+#
+# Because the actuator moves, /actuator/health of a service is then served on port 9091 as well, not on
+# the application port. The compose health checks use the application port and are not affected. Do not
+# combine this overlay with the e2e harnesses, which wait on the application port.
+#
+#   docker compose --env-file .env --profile monitoring \
+#     -f deployment/environments/dev/docker-compose.yml \
+#     -f deployment/environments/dev/docker-compose.microservices.yml \
+#     -f deployment/environments/dev/docker-compose.monitoring.yml up -d
+#
+# Check that every target is scraped (needs the stack up):
+#   bash deployment/platform/prometheus/verify-targets.sh
+
+services:
+  da-admin-service:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-autoarchival:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-autocompliance:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-autodelete:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-autolabel:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-catalog:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-discovery:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-logingest:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-policyengine:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091
+  da-reporting:
+    environment:
+      - MANAGEMENT_SERVER_PORT=9091

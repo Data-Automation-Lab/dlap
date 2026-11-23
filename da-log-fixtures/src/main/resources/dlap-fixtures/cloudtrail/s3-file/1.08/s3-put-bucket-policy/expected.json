@@ -1,0 +1,19 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "988f1043-3e3d-4d84-803b-1b4d00e0df90",
+      "eventTime": "2023-07-10T11:59:58Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "PutBucketPolicy",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "id": "arn:aws:iam::999945223994:user/user-c39c05"
+      },
+      "eventCategory": "EVENT_CATEGORY_PERMISSION",
+      "sourceFormat": "AWS_CLOUDTRAIL/s3-file",
+      "sourceSchemaVersion": "1.08"
+    }
+  ]
+}

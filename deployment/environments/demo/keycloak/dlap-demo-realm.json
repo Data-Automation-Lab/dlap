@@ -1,0 +1,385 @@
+{
+  "realm": "dlap",
+  "displayName": "DLAP demo",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "editUsernameAllowed": false,
+  "internationalizationEnabled": false,
+  "userManagedAccessAllowed": false,
+  "organizationsEnabled": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": 5,
+  "waitIncrementSeconds": 60,
+  "minimumQuickLoginWaitSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxFailureWaitSeconds": 900,
+  "maxDeltaTimeSeconds": 43200,
+  "passwordPolicy": "length(12) and notUsername and notEmail and passwordHistory(3)",
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyDigits": 6,
+  "otpPolicyPeriod": 30,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyCodeReusable": false,
+  "accessTokenLifespan": 300,
+  "accessCodeLifespan": 60,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 28800,
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 0,
+  "offlineSessionMaxLifespanEnabled": true,
+  "offlineSessionMaxLifespan": 86400,
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "default-roles-dlap",
+        "description": "Every account gets it. It grants no DLAP role: an account sees nothing until the founder adds it to a group.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_ADMIN",
+        "description": "Founder only. Sign-in asks for a one-time code (OTP), set up at the first sign-in. Opens the AuthZEN PDP (ADR-0040): never give it to a prospect.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_CDO",
+        "description": "Chief Data Officer.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_DIRECTOR",
+        "description": "Director.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_DATA_ENGINEER",
+        "description": "Data engineer.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_DATA_SCIENTIST",
+        "description": "Data scientist.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_DATA_ANALYST",
+        "description": "Data analyst.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_POLICY_MANAGER",
+        "description": "Policy manager.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_AUDITOR",
+        "description": "Auditor.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_VIEWER",
+        "description": "Read-only viewer.",
+        "composite": false
+      },
+      {
+        "name": "ROLE_SERVICE_ACCOUNT",
+        "description": "Machine principal, held only by the service account of dlap-backend (ADR-0034). Never give it to a person.",
+        "composite": false
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-dlap"
+  },
+  "groups": [
+    {
+      "name": "Administrators",
+      "realmRoles": [
+        "ROLE_ADMIN"
+      ]
+    },
+    {
+      "name": "CDOs",
+      "realmRoles": [
+        "ROLE_CDO"
+      ]
+    },
+    {
+      "name": "Directors",
+      "realmRoles": [
+        "ROLE_DIRECTOR"
+      ]
+    },
+    {
+      "name": "DataEngineers",
+      "realmRoles": [
+        "ROLE_DATA_ENGINEER"
+      ]
+    },
+    {
+      "name": "DataScientists",
+      "realmRoles": [
+        "ROLE_DATA_SCIENTIST"
+      ]
+    },
+    {
+      "name": "DataAnalysts",
+      "realmRoles": [
+        "ROLE_DATA_ANALYST"
+      ]
+    },
+    {
+      "name": "PolicyManagers",
+      "realmRoles": [
+        "ROLE_POLICY_MANAGER"
+      ]
+    },
+    {
+      "name": "Auditors",
+      "realmRoles": [
+        "ROLE_AUDITOR"
+      ]
+    },
+    {
+      "name": "Viewers",
+      "realmRoles": [
+        "ROLE_VIEWER"
+      ]
+    }
+  ],
+  "browserFlow": "dlap demo browser",
+  "authenticatorConfig": [
+    {
+      "alias": "dlap demo admin role",
+      "config": {
+        "condUserRole": "ROLE_ADMIN",
+        "negate": "false"
+      }
+    }
+  ],
+  "authenticationFlows": [
+    {
+      "alias": "dlap demo browser",
+      "description": "Session cookie, or user name and password; ROLE_ADMIN also needs a one-time code. No identity provider, no Kerberos.",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "flowAlias": "dlap demo forms",
+          "requirement": "ALTERNATIVE",
+          "priority": 20,
+          "autheticatorFlow": true,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "dlap demo forms",
+      "description": "User name and password, then the OTP step for ROLE_ADMIN.",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "flowAlias": "dlap demo admin otp",
+          "requirement": "CONDITIONAL",
+          "priority": 20,
+          "autheticatorFlow": true,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "dlap demo admin otp",
+      "description": "Runs when the user holds ROLE_ADMIN, directly or through a group. A user without an OTP device must set one up before any token is issued.",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-user-role",
+          "authenticatorConfig": "dlap demo admin role",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "dlap-ui",
+      "name": "DLAP demo UI",
+      "description": "The SPA. Public client, authorization code with PKCE (S256) only. Redirect URIs are exact: the two the SPA uses.",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "consentRequired": false,
+      "frontchannelLogout": true,
+      "fullScopeAllowed": true,
+      "rootUrl": "${DLAP_DEMO_APP_URL}",
+      "baseUrl": "${DLAP_DEMO_APP_URL}/",
+      "redirectUris": [
+        "${DLAP_DEMO_APP_URL}/",
+        "${DLAP_DEMO_APP_URL}/silent-check-sso.html"
+      ],
+      "webOrigins": [
+        "${DLAP_DEMO_APP_URL}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${DLAP_DEMO_APP_URL}/##${DLAP_DEMO_APP_URL}",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "standard.token.exchange.enabled": "false",
+        "use.refresh.tokens": "true"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "basic",
+        "profile",
+        "email",
+        "roles"
+      ],
+      "optionalClientScopes": [],
+      "protocolMappers": [
+        {
+          "name": "top-level roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "dlap-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "${DLAP_API_AUDIENCE:dlap-api}",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "dlap-backend",
+      "name": "DLAP services",
+      "description": "Service-to-service calls (ADR-0034). Client credentials only; the secret comes from DLAP_BACKEND_CLIENT_SECRET at the first import.",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${DLAP_BACKEND_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "consentRequired": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [],
+      "webOrigins": [],
+      "attributes": {
+        "client_credentials.use_refresh_token": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "standard.token.exchange.enabled": "false"
+      },
+      "defaultClientScopes": [
+        "acr",
+        "basic",
+        "profile",
+        "roles"
+      ],
+      "optionalClientScopes": [],
+      "protocolMappers": [
+        {
+          "name": "top-level roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "dlap-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "${DLAP_API_AUDIENCE:dlap-api}",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-dlap-backend",
+      "enabled": true,
+      "serviceAccountClientId": "dlap-backend",
+      "realmRoles": [
+        "ROLE_SERVICE_ACCOUNT"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e|2026-11-02T03:21:00Z|S3.TRANSITION_SIA.OBJECT|PARSE02SAL000011|raw/2026/07/a.parquet",
+      "eventTime": "2026-11-02T03:21:00Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "S3.TRANSITION_SIA.OBJECT",
+      "changeType": "ARCHIVE",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "targetResource": {
+        "canonicalUri": "s3://dlap-aws-e2e/raw/2026/07/a.parquet"
+      },
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SYSTEM"
+      },
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    },
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e|2026-11-02T03:21:01Z|S3.TRANSITION.OBJECT|PARSE02SAL000012|raw/2026/06/b.parquet",
+      "eventTime": "2026-11-02T03:21:01Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "S3.TRANSITION.OBJECT",
+      "changeType": "ARCHIVE",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "targetResource": {
+        "canonicalUri": "s3://dlap-aws-e2e/raw/2026/06/b.parquet"
+      },
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SYSTEM"
+      },
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    },
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e|2026-11-02T03:21:02Z|S3.TRANSITION_GDA.OBJECT|PARSE02SAL000013|raw/2026/05/c.parquet",
+      "eventTime": "2026-11-02T03:21:02Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "S3.TRANSITION_GDA.OBJECT",
+      "changeType": "ARCHIVE",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "targetResource": {
+        "canonicalUri": "s3://dlap-aws-e2e/raw/2026/05/c.parquet"
+      },
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SYSTEM"
+      },
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    },
+    {
+      "nativeEventId": "AWS_S3_SERVER_ACCESS_LOG|dlap-aws-e2e|2026-11-02T03:21:03Z|S3.DELETE.UPLOAD|PARSE02SAL000014|staging/upload.bin",
+      "eventTime": "2026-11-02T03:21:03Z",
+      "sourceProvider": "AWS",
+      "sourceService": "s3.amazonaws.com",
+      "operation": "S3.DELETE.UPLOAD",
+      "changeType": "UPDATE",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "resultStatus": "SUCCESS",
+      "principal": {
+        "type": "SYSTEM"
+      },
+      "sourceFormat": "AWS_S3_SERVER_ACCESS_LOG/cwl-json",
+      "sourceSchemaVersion": "V_1_0"
+    }
+  ]
+}

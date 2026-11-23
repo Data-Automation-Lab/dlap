@@ -1,0 +1,18 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - storage.googleapis.com:storage.objects.get
+  - storage.googleapis.com:storage.buckets.create
+variant_ids:
+  - status.nonzero-code
+  - status.granted-false
+  - log.policy-denied
+  - status.org-policy-denial
+  - status.vpc-sc-denial
+  - status.vpc-sc-ingress-egress
+  - envelope.bq-json-string-columns
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. A denied read (status 7 and granted false), a read with only a denied permission check, a Policy Denied bucket create with an organization policy violation, and a VPC Service Controls denial whose metadata (ingress and egress violations) arrives in metadataJson."

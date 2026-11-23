@@ -1,0 +1,231 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# AWS CloudTrail records as delivered in trail files (PARSE-02).
+#
+# Scope. This is the registry parser of the s3-file envelope, written so that S3 lifecycle
+# expirations (eventSource s3lifecycle.amazonaws.com) reach the delete topic with a canonical
+# s3:// target and a SYSTEM principal, which the delete proof of da-autodelete and the
+# Lifecycle State emitter of da-catalog need (Q-612, Q-596). It reads every CloudTrail record, but
+# the family's catalog cells stay supported: false: claiming 1.08 to 1.11 at score 0.99 is CT-01.
+# No transport delivers trail files yet; RegistryIngestService takes the records from whatever
+# transport a later package adds.
+#
+# Code: com.dlap.logingest.parse.cloudtrail (CloudTrailParser builds the S3 target and the
+# invokedBy fallback for the principal type). Sources: AWS log sources report (2026-10-18) sections
+# 3 and 4; https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-record-contents.html
+# and https://docs.aws.amazon.com/awscloudtrail/latest/userguide/filtering-data-events.html (the
+# s3lifecycle.amazonaws.com event source; opened 2026-11-01). The lifecycle event names are not
+# documented: the rows below for s3lifecycle are the names DLAP's delete and archive proofs assume,
+# and a live capture must confirm them (open question). Every other s3lifecycle name is an UPDATE
+# (catch-all rows, PARSE-03), and a DELETE of an S3 object that names a versionId or only adds a
+# delete marker is an UPDATE too (CloudTrailParser, D36, Q-651).
+spec-version: 1
+family: cloudtrail
+source-kind: AWS_CLOUDTRAIL
+source-provider: AWS
+description: AWS CloudTrail management and data events in trail files, {"Records":[...]}.
+settings:
+  on-mismatch: PARSE_WITH_DETECTED
+  # A CloudTrail record is at most 256 KB; a trail file is split into records before parsing.
+  max-record-bytes: 1048576
+  # Trail files arrive within about 5 minutes of the call, in S3, by prefix.
+  overlap: PT20M
+  poll-interval: PT5M
+envelopes:
+  - id: s3-file
+    description: A trail file object, {"Records":[...]}, one CloudTrail record per array element.
+    framing: [json-object-array, record]
+    records-pointer: /Records
+    version-detection:
+      scheme: major-minor
+      pointer: /eventVersion
+    native-key:
+      # CloudTrail eventID; CloudTrail is AWS's primary audit stream, so the key is not namespaced
+      # (log-event.md section 5.2; the legacy LookupEvents source hashed the same id).
+      parts:
+        - pointer: /eventID
+    fields:
+      event-time: /eventTime
+      service: /eventSource
+      operation: /eventName
+      # The stable principal: the role ARN of an assumed-role session (the session part changes on
+      # every assumption), else the caller ARN, else the invoking service. Never the access key id.
+      principal.id:
+        - /userIdentity/sessionContext/sessionIssuer/arn
+        - /userIdentity/arn
+        - /userIdentity/invokedBy
+      principal.type: /userIdentity/type
+      principal.display-name:
+        - /userIdentity/userName
+        - /userIdentity/sessionContext/sessionIssuer/userName
+      principal.account-id: /userIdentity/accountId
+      target.project: /recipientAccountId
+      target.region: /awsRegion
+      request.caller-ip: /sourceIPAddress
+      request.user-agent: /userAgent
+      request.request-id: /requestID
+      shared-event-id: /sharedEventID
+      supersedes-native-key: /addendum/originalEventID
+    required: [service]
+    known-paths:
+      - /eventVersion
+      - /userIdentity
+      - /errorCode
+      - /errorMessage
+      - /requestParameters
+      - /responseElements
+      - /additionalEventData
+      - /eventType
+      - /apiVersion
+      - /managementEvent
+      - /readOnly
+      - /resources
+      - /serviceEventDetails
+      - /vpcEndpointId
+      - /vpcEndpointAccountId
+      - /eventCategory
+      - /addendum
+      - /sessionCredentialFromConsole
+      - /edgeDeviceDetails
+      - /tlsDetails
+      - /insightDetails
+    result:
+      # An empty errorCode is no error (Condition: blank text is not present).
+      failure-when:
+        - pointer: /errorCode
+          present: true
+    principal-types:
+      AWSService: SYSTEM
+      AssumedRole: ROLE
+      Role: ROLE
+      IAMUser: USER
+      Root: USER
+      FederatedUser: USER
+      IdentityCenterUser: USER
+      SAMLUser: USER
+      WebIdentityUser: USER
+      Directory: USER
+      AWSAccount: USER
+      BuilderIdUser: USER
+    classification:
+      rules:
+        # ---- S3 objects (AWS report section 4.3). Data events; the target is the object.
+        - { service: s3.amazonaws.com, operation: GetObject, change-type: ACCESS, category: DATA_READ, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: SelectObjectContent, change-type: ACCESS, category: DATA_READ, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: GetObjectAttributes, change-type: ACCESS, category: DATA_READ, asset-kind: S3_OBJECT }
+        # HeadObject is a policy choice in the report; it returns metadata, so it never moves last read.
+        - { service: s3.amazonaws.com, operation: HeadObject, change-type: ACCESS, category: MANAGEMENT }
+        # PutObject may overwrite, so it is a write, not a creation (report section 4.3).
+        - { service: s3.amazonaws.com, operation: PutObject, change-type: UPDATE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: CopyObject, change-type: UPDATE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: CompleteMultipartUpload, change-type: UPDATE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3.amazonaws.com, operation: CreateMultipartUpload, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: UploadPart, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: UploadPartCopy, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: AbortMultipartUpload, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: DeleteObject, change-type: DELETE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        # The call names many keys; since 2025-06-11 each key also has its own DeleteObject event, so
+        # the call itself is a write on the bucket, never a delete of it.
+        - { service: s3.amazonaws.com, operation: DeleteObjects, change-type: UPDATE, category: DATA_WRITE }
+        - { service: s3.amazonaws.com, operation: RestoreObject, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: PutObjectTagging, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: DeleteObjectTagging, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: PutObjectAcl, change-type: PERMISSION, category: PERMISSION }
+        # ---- S3 buckets.
+        - { service: s3.amazonaws.com, operation: CreateBucket, change-type: CREATE, category: MANAGEMENT, asset-kind: S3_BUCKET }
+        - { service: s3.amazonaws.com, operation: DeleteBucket, change-type: DELETE, category: MANAGEMENT, asset-kind: S3_BUCKET }
+        - { service: s3.amazonaws.com, operation: PutBucketPolicy, change-type: PERMISSION, category: PERMISSION }
+        - { service: s3.amazonaws.com, operation: DeleteBucketPolicy, change-type: PERMISSION, category: PERMISSION }
+        - { service: s3.amazonaws.com, operation: PutBucketAcl, change-type: PERMISSION, category: PERMISSION }
+        - { service: s3.amazonaws.com, operation: PutPublicAccessBlock, change-type: PERMISSION, category: PERMISSION }
+        - { service: s3.amazonaws.com, operation: DeletePublicAccessBlock, change-type: PERMISSION, category: PERMISSION }
+        # Bucket configuration: reading it is a metadata read; writing or removing it changes the
+        # bucket's configuration (DeleteBucketLifecycle removes a rule, not the bucket).
+        - { service: s3.amazonaws.com, operation-prefix: Get, change-type: ACCESS, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation-prefix: List, change-type: ACCESS, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation: HeadBucket, change-type: ACCESS, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation-prefix: PutBucket, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3.amazonaws.com, operation-prefix: DeleteBucket, change-type: UPDATE, category: MANAGEMENT }
+        # ---- S3 lifecycle (filtering-data-events, example 4): expirations, delete marker creation,
+        # storage class transitions and multipart upload aborts that S3 performs itself. The event
+        # names are [unverified]: DeleteObject is what RET-02's delete proof expects and
+        # LifecycleTransition what RET-03's archive proof expects.
+        - { service: s3lifecycle.amazonaws.com, operation: DeleteObject, change-type: DELETE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: LifecycleExpiration, change-type: DELETE, category: DATA_WRITE, asset-kind: S3_OBJECT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: LifecycleTransition, change-type: ARCHIVE, category: MANAGEMENT, asset-kind: S3_OBJECT }
+        - { service: s3lifecycle.amazonaws.com, operation: AbortMultipartUpload, change-type: UPDATE, category: MANAGEMENT }
+        # Catch-all (D36, Q-650): every other s3lifecycle event name is an UPDATE, never a delete. An
+        # eventName is an API action name, which starts with a capital letter, so one row per letter
+        # reaches every unlisted name; the rows above are more specific and win. CloudTrailParser turns
+        # a name no row reaches into an UPDATE as well, and never gives an s3lifecycle record a bucket's
+        # canonical URI.
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: A, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: B, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: C, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: D, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: E, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: F, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: G, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: H, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: I, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: J, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: K, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: L, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: M, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: N, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: O, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: P, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: Q, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: R, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: S, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: T, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: U, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: V, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: W, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: X, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: Y, change-type: UPDATE, category: MANAGEMENT }
+        - { service: s3lifecycle.amazonaws.com, operation-prefix: Z, change-type: UPDATE, category: MANAGEMENT }
+        # ---- Other services in the corpus: identity and audit configuration, never asset state.
+        - { service: signin.amazonaws.com, operation: ConsoleLogin, change-type: ACCESS, category: MANAGEMENT }
+        - { service: sts.amazonaws.com, operation-prefix: Assume, change-type: ACCESS, category: MANAGEMENT }
+        - { service: sts.amazonaws.com, operation-prefix: Get, change-type: ACCESS, category: MANAGEMENT }
+        - { service: iam.amazonaws.com, operation-prefix: Get, change-type: ACCESS, category: MANAGEMENT }
+        - { service: iam.amazonaws.com, operation-prefix: List, change-type: ACCESS, category: MANAGEMENT }
+        - { service: ec2.amazonaws.com, operation-prefix: Describe, change-type: ACCESS, category: MANAGEMENT }
+        - { service: ec2.amazonaws.com, operation: GetPasswordData, change-type: ACCESS, category: MANAGEMENT }
+        - { service: ec2.amazonaws.com, operation: SharedSnapshotVolumeCreated, change-type: UPDATE, category: MANAGEMENT }
+        - { service: rds.amazonaws.com, operation-prefix: Describe, change-type: ACCESS, category: MANAGEMENT }
+        - { service: health.amazonaws.com, operation-prefix: Describe, change-type: ACCESS, category: MANAGEMENT }
+        - { service: cloudtrail.amazonaws.com, operation: CreateTrail, change-type: CREATE, category: MANAGEMENT }
+        - { service: cloudtrail.amazonaws.com, operation: StopLogging, change-type: UPDATE, category: MANAGEMENT }
+        - { service: cloudtrail.amazonaws.com, operation: StartLogging, change-type: UPDATE, category: MANAGEMENT }
+    versions:
+      # Major 1 with any minor (AWS report section 0, rule 1); a newer minor parses as 1.11 with
+      # PARSE_WARNING_NEWER_MINOR. Fields were added without a bump, so no version adds fields here.
+      - { id: "1.0" }
+      - { id: "1.01" }
+      - { id: "1.02" }
+      - { id: "1.03" }
+      - { id: "1.04" }
+      - { id: "1.05" }
+      - { id: "1.06" }
+      - { id: "1.07" }
+      - { id: "1.08" }
+      - { id: "1.09" }
+      - { id: "1.10" }
+      - { id: "1.11" }

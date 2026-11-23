@@ -1,0 +1,35 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file. Apache-2.0.
+#
+# Azure Reader role: the single source of truth (IAM-03). main.tf reads this file with
+# yamldecode and da-discovery ReaderRoleTraceabilityTest checks it (call sites, every action
+# ends in /read, no data actions, every Azure SDK file cited or listed below).
+#
+# Today only the COV-01 coverage collector calls Azure. The VM crawler logs "not implemented",
+# the Data Factory and Synapse job lists are offline stubs (StubAzureJobListClient) and
+# AzureLogAnalyzer reads nothing, so they need no permission. A real implementation adds its
+# actions here, with its call site, in the same change.
+#
+# Scope: subscription.
+cloud: azure
+permissions:
+  - permission: Microsoft.Storage/storageAccounts/read
+    scopes: [subscription]
+    purpose: List the storage accounts of a subscription (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/azure/coverage/AzureCoverageRestClient.java
+        line: 76
+        call: '"Microsoft.Storage/storageAccounts/read"'
+  - permission: Microsoft.Insights/diagnosticSettings/read
+    scopes: [subscription]
+    purpose: Read whether blob diagnostic settings send StorageRead logs (COV-01).
+    calls:
+      - source: da-discovery/src/main/java/com/dlap/discovery/providers/azure/coverage/AzureCoverageRestClient.java
+        line: 91
+        call: '"Microsoft.Insights/diagnosticSettings/read"'
+no_permission_sources:
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/azure/auth/AzureAuthenticationService.java
+    reason: Credential type and builder only; acquiring a token needs no role assignment.
+  - source: da-discovery/src/main/java/com/dlap/discovery/providers/azure/auth/AzureAuthenticationServiceImpl.java
+    reason: Builds a client-secret or default credential; acquiring a token needs no role assignment.

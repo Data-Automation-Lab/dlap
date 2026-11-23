@@ -1,0 +1,151 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# DLAP read-only pilot, backup overlay (DR-01).
+#
+# up.sh applies every docker-compose.pilot.*.yml of this folder in byte order, so this file comes
+# BEFORE docker-compose.pilot.base.yml ("backup" sorts before "base"). It therefore changes no
+# attribute that the base overlay replaces with !override (the postgresql command and ports), and it
+# does not need to: nothing here edits the database service.
+#
+# What it adds
+#   dlap-dr-init   a one-shot container that gives the backup volume to the postgres user (uid 999).
+#   dlap-backup    the backup agent (deployment/dr/agent.sh). It shares the network namespace of the
+#                  postgresql service, so it reaches the server on 127.0.0.1, where the image's
+#                  pg_hba.conf allows replication connections without a password. It connects as the
+#                  role dlap_backup, not as the superuser. It
+#                    - streams the write-ahead log into /backups/wal (pg_receivewal, a replication slot),
+#                    - takes a logical backup of every database each day and a base backup each week,
+#                    - copies new WAL and each new set off the VM with DLAP_BACKUP_SHIP_CMD,
+#                    - sets one server parameter, max_slot_wal_keep_size (4GB), so a stalled archive
+#                      cannot fill the database disk.
+#   RPO 15 minutes and RTO 4 hours are the targets; docs/guides/backup-and-restore.md says what each
+#   one needs and how they were measured.
+#
+# Settings (all optional; put them in .env.pilot)
+#   DLAP_BACKUP_DIR                    host folder for the backups instead of the named volume
+#                                      dlap-backups. Use a different disk from the database.
+#   DLAP_BACKUP_PASSPHRASE_FILE        host path of a file with the passphrase that encrypts every copy
+#                                      before it leaves the VM (one line; openssl rand -base64 48)
+#   DLAP_BACKUP_SHIP_CMD               command that uploads one file, called with $1 = file and
+#                                      $2 = object key, for example: rclone copyto "$1" "offsite:dlap/$2"
+#   DLAP_BACKUP_SHIP_PLAINTEXT         1 to ship without a passphrase file (not for customer data)
+#   DLAP_ENCRYPTION_KEY_FINGERPRINT    deployment/dr/key-escrow.sh fingerprint; recorded in every backup
+#   DLAP_BACKUP_AT, DLAP_BACKUP_BASE_AT, DLAP_BACKUP_BASE_EVERY_DAYS, DLAP_BACKUP_KEEP_LOGICAL,
+#   DLAP_BACKUP_KEEP_BASE, DLAP_WAL_CYCLE_SECONDS, DLAP_RPO_SECONDS, DLAP_WAL_MAX_KEEP_SIZE
+#                                      see deployment/dr/agent.sh
+#
+# The image of the agent is the image of the database (postgres:15.1): the client programs must match
+# the server. Change both together. deployment/dr/test-dr.sh checks that they are equal.
+#
+# Paths below are relative to the first compose file (deployment/environments/dev), so the scripts
+# are ../../dr. Needs Docker Compose 2.24 or later, as the rest of the pilot.
+
+x-dr-logging: &dr-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+
+  dlap-dr-init:
+    image: postgres:15.1
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["chown -R 999:999 /backups && chmod 700 /backups"]
+    volumes:
+      - ${DLAP_BACKUP_DIR:-dlap-backups}:/backups
+    network_mode: "none"
+    restart: "no"
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+      - DAC_OVERRIDE
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 32m
+    logging: *dr-logging
+
+  dlap-backup:
+    image: postgres:15.1
+    # Shares the postgresql container's network, so 127.0.0.1 is the database. The agent needs no
+    # published port and no password on the loopback interface.
+    network_mode: "service:postgresql"
+    user: "999:999"
+    init: true
+    entrypoint: ["bash", "/opt/dr/agent.sh"]
+    command: ["run"]
+    restart: unless-stopped
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      dlap-dr-init:
+        condition: service_completed_successfully
+    environment:
+      - PGHOST=127.0.0.1
+      - PGPORT=5432
+      # The backup role (SEC-12, Q-297): REPLICATION and pg_read_all_data, no superuser. The init script creates
+      # it from DLAP_BACKUP_DB_PASSWORD, which the pilot base overlay requires. Used on the quickstart pair alone
+      # (the full-stack drill, deployment/dr/stack-drill.sh), the variable may be unset on both sides, and the
+      # published dlap_backup_pass applies to the role and to the agent alike.
+      - PGUSER=dlap_backup
+      - PGPASSWORD=${DLAP_BACKUP_DB_PASSWORD:-dlap_backup_pass}
+      - DLAP_DR_DATA=/backups
+      - DLAP_BACKUP_SHIP_CMD=${DLAP_BACKUP_SHIP_CMD:-}
+      - DLAP_BACKUP_SHIP_PLAINTEXT=${DLAP_BACKUP_SHIP_PLAINTEXT:-0}
+      - DLAP_ENCRYPTION_KEY_FINGERPRINT=${DLAP_ENCRYPTION_KEY_FINGERPRINT:-}
+      - DLAP_BACKUP_AT=${DLAP_BACKUP_AT:-02:30}
+      - DLAP_BACKUP_BASE_AT=${DLAP_BACKUP_BASE_AT:-03:30}
+      - DLAP_BACKUP_BASE_EVERY_DAYS=${DLAP_BACKUP_BASE_EVERY_DAYS:-7}
+      - DLAP_BACKUP_KEEP_LOGICAL=${DLAP_BACKUP_KEEP_LOGICAL:-14}
+      - DLAP_BACKUP_KEEP_BASE=${DLAP_BACKUP_KEEP_BASE:-3}
+      - DLAP_WAL_CYCLE_SECONDS=${DLAP_WAL_CYCLE_SECONDS:-300}
+      - DLAP_WAL_MAX_KEEP_SIZE=${DLAP_WAL_MAX_KEEP_SIZE:-4GB}
+      - DLAP_RPO_SECONDS=${DLAP_RPO_SECONDS:-900}
+    volumes:
+      - ../../dr:/opt/dr:ro
+      - ${DLAP_BACKUP_DIR:-dlap-backups}:/backups
+      - ${DLAP_BACKUP_PASSPHRASE_FILE:-/dev/null}:/run/secrets/dlap_backup_passphrase:ro
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    healthcheck:
+      test: ["CMD", "bash", "/opt/dr/agent.sh", "status", "--check", "--quiet"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+      start_period: 120s
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          pids: 256
+    logging: *dr-logging
+
+volumes:
+  dlap-backups:

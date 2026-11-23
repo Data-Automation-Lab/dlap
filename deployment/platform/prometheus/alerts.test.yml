@@ -1,0 +1,1105 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Unit tests of alerts.yml and recording_rules.yml, run by promtool (check.sh):
+#   promtool test rules alerts.test.yml
+# Each alert has a case where it fires and a case where it must stay quiet. The series are synthetic
+# but carry the labels and names the services and exporters emit (docs/observability.md).
+
+rule_files:
+  - alerts.yml
+  - recording_rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  # ---------------------------------------------------------------- availability
+  - name: ServiceDown fires after two minutes of failed scrapes and not for a flap
+    interval: 1m
+    input_series:
+      - series: 'up{job="dlap-services", service="da-catalog", instance="da-catalog:9091"}'
+        values: '1 1 0 0 0 0 0'
+      - series: 'up{job="dlap-services", service="da-reporting", instance="da-reporting:9091"}'
+        values: '1 0 1 0 1 0 1'
+      - series: 'up{job="dlap-services", service="da-mcp-pep", instance="da-mcp-pep:9091"}'
+        values: '0 0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: ServiceDown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: ServiceDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: dlap-services
+              service: da-catalog
+              instance: "da-catalog:9091"
+            exp_annotations:
+              summary: "da-catalog is down"
+              description: "Prometheus could not scrape da-catalog (da-catalog:9091) for 2 minutes: the process is stopped or unreachable, or its management port is closed."
+              runbook: "docs/observability.md#4-alerts"
+
+  - name: McpPepDown fires only for a PEP that was up earlier in the day
+    interval: 1m
+    input_series:
+      # was up, then went down
+      - series: 'up{job="dlap-services", service="da-mcp-pep", instance="da-mcp-pep:9091"}'
+        values: '1 1 1 0 0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: McpPepDown
+        exp_alerts: []
+      - eval_time: 8m
+        alertname: McpPepDown
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: dlap-services
+              service: da-mcp-pep
+              instance: "da-mcp-pep:9091"
+            exp_annotations:
+              summary: "da-mcp-pep is down"
+              description: "da-mcp-pep (da-mcp-pep:9091) answered a scrape during the last day and has not for 2 minutes. Agents that route tool calls through it are denied or, in observe mode, unchecked."
+              runbook: "docs/observability.md#4-alerts"
+
+  - name: McpPepDown stays quiet when the PEP was never deployed
+    interval: 1m
+    input_series:
+      - series: 'up{job="dlap-services", service="da-mcp-pep", instance="da-mcp-pep:9091"}'
+        values: '0 0 0 0 0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: McpPepDown
+        exp_alerts: []
+      - eval_time: 8m
+        alertname: ServiceDown
+        exp_alerts: []
+
+  - name: ServiceRestartingRepeatedly fires on three restarts in 30 minutes
+    interval: 1m
+    input_series:
+      - series: 'process_start_time_seconds{job="dlap-services", service="da-autolabel", instance="da-autolabel:9091"}'
+        values: '1000x5 2000x5 3000x5 4000x5'
+      - series: 'process_start_time_seconds{job="dlap-services", service="da-catalog", instance="da-catalog:9091"}'
+        values: '1000x10 2000x10 2000x10'
+    alert_rule_test:
+      - eval_time: 12m
+        alertname: ServiceRestartingRepeatedly
+        exp_alerts: []
+      - eval_time: 18m
+        alertname: ServiceRestartingRepeatedly
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: dlap-services
+              service: da-autolabel
+              instance: "da-autolabel:9091"
+            exp_annotations:
+              summary: "da-autolabel restarted 3 times in 30 minutes"
+              description: "da-autolabel (da-autolabel:9091) keeps restarting: out of memory, a failing start-up dependency, or a crash loop."
+              runbook: "docs/observability.md#4-alerts"
+
+  - name: PostgresDown and KafkaBrokerDown fire after a minute and MonitoringTargetDown covers a dead exporter
+    interval: 1m
+    input_series:
+      - series: 'pg_up{job="postgres", instance="postgres-exporter:9187"}'
+        values: '1 1 0 0 0 0 0 0 0'
+      - series: 'kafka_brokers{job="kafka", instance="kafka-exporter:9308"}'
+        values: '1 1 0 0 0 0 0 0 0'
+      - series: 'up{job="postgres", instance="postgres-exporter:9187"}'
+        values: '1 1 1 1 1 1 1 1 1'
+      - series: 'up{job="kafka", instance="kafka-exporter:9308"}'
+        values: '1 1 1 1 1 1 1 1 1'
+      - series: 'up{job="grafana", instance="grafana:3000"}'
+        values: '1 1 0 0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: PostgresDown
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: PostgresDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: postgres
+              instance: "postgres-exporter:9187"
+            exp_annotations:
+              summary: "PostgreSQL is not answering"
+              description: "postgres_exporter (postgres-exporter:9187) cannot connect to PostgreSQL. Every service with a database is affected."
+              runbook: "docs/observability.md#4-alerts"
+      - eval_time: 5m
+        alertname: KafkaBrokerDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: kafka
+              instance: "kafka-exporter:9308"
+            exp_annotations:
+              summary: "Kafka reports no broker"
+              description: "kafka_exporter (kafka-exporter:9308) sees no broker. The log spine and the policy action bus are stopped."
+              runbook: "docs/observability.md#4-alerts"
+      - eval_time: 6m
+        alertname: MonitoringTargetDown
+        exp_alerts: []
+      - eval_time: 8m
+        alertname: MonitoringTargetDown
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: grafana
+              instance: "grafana:3000"
+            exp_annotations:
+              summary: "grafana cannot be scraped"
+              description: "Prometheus has not scraped grafana (grafana:3000) for 5 minutes. Its alerts are blind until it is back."
+              runbook: "docs/observability.md#4-alerts"
+
+  # ---------------------------------------------------------------- http
+  - name: HighServerErrorRatio fires above 5% with traffic and stays quiet on a healthy service, a quiet one, or actuator errors
+    interval: 1m
+    input_series:
+      # da-catalog: 1 request per second, 10% of them 5xx
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-catalog", instance="da-catalog:9091", status="200", uri="/api/v1/catalog/assets"}'
+        values: '0+54x30'
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-catalog", instance="da-catalog:9091", status="500", uri="/api/v1/catalog/assets"}'
+        values: '0+6x30'
+      # da-reporting: 1 request per second, no errors
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-reporting", instance="da-reporting:9091", status="200", uri="/api/v1/reporting/reports"}'
+        values: '0+60x30'
+      # da-autolabel: 0.02 requests per second, half of them fail (below the traffic floor)
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-autolabel", instance="da-autolabel:9091", status="200", uri="/api/v1/autolabel/x"}'
+        values: '0+1x30'
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-autolabel", instance="da-autolabel:9091", status="500", uri="/api/v1/autolabel/x"}'
+        values: '0+1x30'
+      # da-admin-service: only the actuator fails, at a high rate
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-admin-service", instance="da-admin-service:9091", status="200", uri="/api/v1/admin/users"}'
+        values: '0+60x30'
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-admin-service", instance="da-admin-service:9091", status="503", uri="/actuator/health"}'
+        values: '0+600x30'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: HighServerErrorRatio
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: HighServerErrorRatio
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-catalog
+            exp_annotations:
+              summary: "da-catalog: more than 5% of requests fail with a 5xx"
+              description: "da-catalog answered 10% of its requests with a 5xx over the last 5 minutes, for 10 minutes."
+              runbook: "docs/observability.md#4-alerts"
+      - eval_time: 20m
+        alertname: ServerErrorSpike
+        exp_alerts: []
+
+  - name: ServerErrorSpike is critical above 25%
+    interval: 1m
+    input_series:
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", status="200", uri="/access/v1/evaluation"}'
+        values: '0+30x30'
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", status="500", uri="/access/v1/evaluation"}'
+        values: '0+30x30'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: ServerErrorSpike
+        exp_alerts: []
+      - eval_time: 12m
+        alertname: ServerErrorSpike
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: da-policyengine
+            exp_annotations:
+              summary: "da-policyengine: a quarter of the requests fail with a 5xx"
+              description: "da-policyengine answered 50% of its requests with a 5xx over the last 5 minutes, for 5 minutes."
+              runbook: "docs/observability.md#4-alerts"
+
+  - name: HighMeanRequestLatency fires above two seconds with traffic and ignores a slow actuator
+    interval: 1m
+    input_series:
+      # da-autolabel: 1 request per second, 3 seconds each
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-autolabel", instance="da-autolabel:9091", status="200", uri="/api/v1/autolabel/label"}'
+        values: '0+60x30'
+      - series: 'http_server_requests_seconds_sum{job="dlap-services", service="da-autolabel", instance="da-autolabel:9091", status="200", uri="/api/v1/autolabel/label"}'
+        values: '0+180x30'
+      # da-catalog: 1 request per second, 0.1 second each, and a slow actuator
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-catalog", instance="da-catalog:9091", status="200", uri="/api/v1/catalog/assets"}'
+        values: '0+60x30'
+      - series: 'http_server_requests_seconds_sum{job="dlap-services", service="da-catalog", instance="da-catalog:9091", status="200", uri="/api/v1/catalog/assets"}'
+        values: '0+6x30'
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-catalog", instance="da-catalog:9091", status="200", uri="/actuator/prometheus"}'
+        values: '0+60x30'
+      - series: 'http_server_requests_seconds_sum{job="dlap-services", service="da-catalog", instance="da-catalog:9091", status="200", uri="/actuator/prometheus"}'
+        values: '0+3000x30'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: HighMeanRequestLatency
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: HighMeanRequestLatency
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-autolabel
+            exp_annotations:
+              summary: "da-autolabel: mean request time above 2 seconds"
+              description: "da-autolabel needed 3s per request on average over the last 5 minutes, for 10 minutes."
+              runbook: "docs/observability.md#4-alerts"
+
+  - name: HighAuthRejectRate fires above one rejected request per second
+    interval: 1m
+    input_series:
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-catalog", instance="da-catalog:9091", status="401", uri="UNKNOWN"}'
+        values: '0+120x30'
+      - series: 'http_server_requests_seconds_count{job="dlap-services", service="da-reporting", instance="da-reporting:9091", status="401", uri="UNKNOWN"}'
+        values: '0+12x30'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: HighAuthRejectRate
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: HighAuthRejectRate
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-catalog
+            exp_annotations:
+              summary: "da-catalog rejects more than one request per second as 401 or 403"
+              description: "da-catalog answered 2 requests per second with 401 or 403 for 10 minutes: a caller with a bad or expired token, a role mapping that changed, or probing."
+              runbook: "docs/observability.md#4-alerts"
+
+  # ---------------------------------------------------------------- jvm and pools
+  - name: HighJvmHeapUsage counts only pools with a maximum and fires above 90%
+    interval: 1m
+    input_series:
+      # G1: Eden has no maximum (-1), Old Gen carries the heap limit. 950 MiB used of 1000 MiB.
+      - series: 'jvm_memory_used_bytes{job="dlap-services", service="da-catalog", instance="da-catalog:9091", area="heap", id="G1 Old Gen"}'
+        values: '943718400+0x30'
+      - series: 'jvm_memory_used_bytes{job="dlap-services", service="da-catalog", instance="da-catalog:9091", area="heap", id="G1 Eden Space"}'
+        values: '52428800+0x30'
+      - series: 'jvm_memory_max_bytes{job="dlap-services", service="da-catalog", instance="da-catalog:9091", area="heap", id="G1 Old Gen"}'
+        values: '1048576000+0x30'
+      - series: 'jvm_memory_max_bytes{job="dlap-services", service="da-catalog", instance="da-catalog:9091", area="heap", id="G1 Eden Space"}'
+        values: '-1+0x30'
+      # da-reporting: 40% used
+      - series: 'jvm_memory_used_bytes{job="dlap-services", service="da-reporting", instance="da-reporting:9091", area="heap", id="G1 Old Gen"}'
+        values: '419430400+0x30'
+      - series: 'jvm_memory_max_bytes{job="dlap-services", service="da-reporting", instance="da-reporting:9091", area="heap", id="G1 Old Gen"}'
+        values: '1048576000+0x30'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: HighJvmHeapUsage
+        exp_alerts: []
+      - eval_time: 12m
+        alertname: HighJvmHeapUsage
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-catalog
+              instance: "da-catalog:9091"
+            exp_annotations:
+              summary: "da-catalog: JVM heap above 90%"
+              description: "da-catalog (da-catalog:9091) uses 95% of its maximum heap, for 10 minutes. Raise the container memory limit or look for a leak before the next out-of-memory restart."
+              runbook: "docs/observability.md#4-alerts"
+    promql_expr_test:
+      - expr: service:jvm_heap_used:ratio{service="da-reporting"}
+        eval_time: 2m
+        exp_samples:
+          - labels: 'service:jvm_heap_used:ratio{service="da-reporting", instance="da-reporting:9091"}'
+            value: 0.4
+
+  - name: HighGcPauseTime fires above 10% of wall time
+    interval: 1m
+    input_series:
+      - series: 'jvm_gc_pause_seconds_sum{job="dlap-services", service="da-autolabel", instance="da-autolabel:9091", action="end of minor GC", cause="G1 Evacuation Pause"}'
+        values: '0+9x30'
+      - series: 'jvm_gc_pause_seconds_sum{job="dlap-services", service="da-catalog", instance="da-catalog:9091", action="end of minor GC", cause="G1 Evacuation Pause"}'
+        values: '0+1x30'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: HighGcPauseTime
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: HighGcPauseTime
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-autolabel
+              instance: "da-autolabel:9091"
+            exp_annotations:
+              summary: "da-autolabel: more than 10% of the time in GC pauses"
+              description: "da-autolabel (da-autolabel:9091) spent 15% of the last 5 minutes paused for garbage collection, for 10 minutes."
+              runbook: "docs/observability.md#4-alerts"
+
+  - name: Database pool alerts fire on 90% use and on waiting threads
+    interval: 1m
+    input_series:
+      - series: 'hikaricp_connections_active{job="dlap-services", service="da-reporting", instance="da-reporting:9091", pool="HikariPool-1"}'
+        values: '10+0x20'
+      - series: 'hikaricp_connections_max{job="dlap-services", service="da-reporting", instance="da-reporting:9091", pool="HikariPool-1"}'
+        values: '10+0x20'
+      - series: 'hikaricp_connections_pending{job="dlap-services", service="da-reporting", instance="da-reporting:9091", pool="HikariPool-1"}'
+        values: '3+0x20'
+      - series: 'hikaricp_connections_active{job="dlap-services", service="da-catalog", instance="da-catalog:9091", pool="HikariPool-1"}'
+        values: '2+0x20'
+      - series: 'hikaricp_connections_max{job="dlap-services", service="da-catalog", instance="da-catalog:9091", pool="HikariPool-1"}'
+        values: '10+0x20'
+      - series: 'hikaricp_connections_pending{job="dlap-services", service="da-catalog", instance="da-catalog:9091", pool="HikariPool-1"}'
+        values: '0+0x20'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: DbConnectionPoolNearlyExhausted
+        exp_alerts: []
+      - eval_time: 7m
+        alertname: DbConnectionPoolNearlyExhausted
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-reporting
+              instance: "da-reporting:9091"
+              pool: HikariPool-1
+            exp_annotations:
+              summary: "da-reporting: database pool above 90%"
+              description: "da-reporting (da-reporting:9091) has 100% of pool HikariPool-1 in use, for 5 minutes."
+              runbook: "docs/observability.md#4-alerts"
+      - eval_time: 7m
+        alertname: DbConnectionPoolWaiting
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-reporting
+              instance: "da-reporting:9091"
+              pool: HikariPool-1
+            exp_annotations:
+              summary: "da-reporting: threads wait for a database connection"
+              description: "da-reporting (da-reporting:9091) has 3 threads waiting for a connection of pool HikariPool-1, for 5 minutes."
+              runbook: "docs/observability.md#4-alerts"
+
+  # ---------------------------------------------------------------- data plane
+  - name: KafkaConsumerLagHigh fires above 1000 messages for ten minutes
+    interval: 1m
+    input_series:
+      - series: 'kafka_consumergroup_lag{job="kafka", instance="kafka-exporter:9308", consumergroup="da-catalog-group", topic="dlap.log.events", partition="0"}'
+        values: '800+0x30'
+      - series: 'kafka_consumergroup_lag{job="kafka", instance="kafka-exporter:9308", consumergroup="da-catalog-group", topic="dlap.log.events", partition="1"}'
+        values: '800+0x30'
+      - series: 'kafka_consumergroup_lag{job="kafka", instance="kafka-exporter:9308", consumergroup="da-autolabel-group", topic="dlap.asset.discovered", partition="0"}'
+        values: '5+0x30'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: KafkaConsumerLagHigh
+        exp_alerts: []
+      - eval_time: 12m
+        alertname: KafkaConsumerLagHigh
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              consumergroup: da-catalog-group
+              topic: dlap.log.events
+            exp_annotations:
+              summary: "Consumer group da-catalog-group is 1600 messages behind on dlap.log.events"
+              description: "The lag of da-catalog-group on dlap.log.events stayed above 1000 messages for 10 minutes. The consumers are down, stuck, or slower than the producers."
+              runbook: "docs/observability.md#4-alerts"
+
+  - name: PostgresConnectionsNearLimit fires above 80% of max_connections
+    interval: 1m
+    input_series:
+      - series: 'pg_stat_activity_count{job="postgres", instance="postgres-exporter:9187", server="postgresql:5432", datname="da_catalog", state="idle"}'
+        values: '70+0x20'
+      - series: 'pg_stat_activity_count{job="postgres", instance="postgres-exporter:9187", server="postgresql:5432", datname="da_reporting", state="active"}'
+        values: '15+0x20'
+      - series: 'pg_settings_max_connections{job="postgres", instance="postgres-exporter:9187", server="postgresql:5432"}'
+        values: '100+0x20'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: PostgresConnectionsNearLimit
+        exp_alerts: []
+      - eval_time: 7m
+        alertname: PostgresConnectionsNearLimit
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              instance: "postgres-exporter:9187"
+              server: "postgresql:5432"
+            exp_annotations:
+              summary: "PostgreSQL uses more than 80% of max_connections"
+              description: "postgresql:5432 has 85% of max_connections in use, for 5 minutes. Eleven services each hold a pool."
+              runbook: "docs/observability.md#4-alerts"
+    promql_expr_test:
+      - expr: postgres:connections_used:ratio
+        eval_time: 2m
+        exp_samples:
+          - labels: 'postgres:connections_used:ratio{instance="postgres-exporter:9187", server="postgresql:5432"}'
+            value: 0.85
+
+  - name: PostgresDeadlocks fires when the counter moves
+    interval: 1m
+    input_series:
+      - series: 'pg_stat_database_deadlocks{job="postgres", instance="postgres-exporter:9187", datname="da_policyengine"}'
+        values: '0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'pg_stat_database_deadlocks{job="postgres", instance="postgres-exporter:9187", datname="da_catalog"}'
+        values: '4+0x22'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: PostgresDeadlocks
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: PostgresDeadlocks
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              instance: "postgres-exporter:9187"
+              datname: da_policyengine
+            exp_annotations:
+              summary: "PostgreSQL detected a deadlock in da_policyengine"
+              description: "da_policyengine on postgres-exporter:9187 recorded 1 new deadlocks in the last 10 minutes."
+              runbook: "docs/observability.md#4-alerts"
+      - eval_time: 22m
+        alertname: PostgresDeadlocks
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- lifecycle
+  - name: McpPepFailClosed fires when a decision was taken without the PDP and ignores normal denials
+    interval: 1m
+    input_series:
+      - series: 'dlap_mcppep_decisions_total{job="dlap-services", service="da-mcp-pep", instance="da-mcp-pep:9091", allow="false", failClosed="true"}'
+        values: '0 0 0 5 5 5 5 5 5 5 5 5 5 5 5 5'
+      - series: 'dlap_mcppep_decisions_total{job="dlap-services", service="da-mcp-pep", instance="da-mcp-pep:9091", allow="false", failClosed="false"}'
+        values: '0+100x15'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: McpPepFailClosed
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: McpPepFailClosed
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-mcp-pep
+            exp_annotations:
+              summary: "da-mcp-pep decided without the PDP"
+              description: "da-mcp-pep took 5 decisions in the last 10 minutes while the policy decision point was unreachable (denied in enforce mode, allowed and flagged in observe mode). Check da-policyengine."
+              runbook: "docs/observability.md#4-alerts"
+      - eval_time: 15m
+        alertname: McpPepFailClosed
+        exp_alerts: []
+
+  - name: Policy event publish failures fire on any failure in 15 minutes
+    interval: 1m
+    input_series:
+      - series: 'policyengine_access_decision_publish_failures_total{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", decision="allow"}'
+        values: '0 0 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2'
+      - series: 'policyengine_send_failures_total{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", topic="dlap.policy.action", actionType="DELETE"}'
+        values: '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0'
+      - series: 'policyengine_send_failures_total{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", topic="dlap.policy.action", actionType="ARCHIVE"}'
+        values: '0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: PolicyDecisionEventsNotPublished
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: PolicyDecisionEventsNotPublished
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-policyengine
+            exp_annotations:
+              summary: "da-policyengine could not publish access-decision events"
+              description: "2 access-decision events failed to reach Kafka in the last 15 minutes. Verdicts were still returned; the audit trail and drift detection miss these events."
+              runbook: "docs/observability.md#4-alerts"
+      - eval_time: 5m
+        alertname: PolicyActionEventsNotPublished
+        exp_alerts: []
+      - eval_time: 12m
+        alertname: PolicyActionEventsNotPublished
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-policyengine
+            exp_annotations:
+              summary: "da-policyengine could not publish policy action events"
+              description: "1 policy action events failed to reach Kafka in the last 15 minutes, so the label, archive and delete agents did not receive them."
+              runbook: "docs/observability.md#4-alerts"
+
+  # ---------------------------------------------------------------- policy store (POL-05, Q-861)
+  - name: PolicyStoreUnreadableDeny fires after five minutes of an unreadable invalid deny, not for a readable one, a blip or a healthy store
+    interval: 1m
+    input_series:
+      # unreadable from minute 2 on: fires at minute 7 (five minutes of "for")
+      - series: 'dlap_pdp_policies_invalid_deny{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", scope="unreadable"}'
+        values: '0 0 1+0x30'
+      - series: 'dlap_pdp_policies_invalid_deny{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", scope="readable"}'
+        values: '0+0x32'
+      # two instances of one service, only one of them sees the unreadable document: one alert for the service
+      - series: 'dlap_pdp_policies_invalid_deny{job="dlap-services", service="da-policyengine", instance="da-policyengine-2:9091", scope="unreadable"}'
+        values: '0+0x32'
+      # a readable-scope invalid deny alone, in another service name: quiet
+      - series: 'dlap_pdp_policies_invalid_deny{job="dlap-services", service="da-policyengine-readable", instance="x:9091", scope="readable"}'
+        values: '3+0x32'
+      - series: 'dlap_pdp_policies_invalid_deny{job="dlap-services", service="da-policyengine-readable", instance="x:9091", scope="unreadable"}'
+        values: '0+0x32'
+      # unreadable for three minutes, then fixed: quiet
+      - series: 'dlap_pdp_policies_invalid_deny{job="dlap-services", service="da-policyengine-blip", instance="y:9091", scope="unreadable"}'
+        values: '0 1 1 1 0+0x30'
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: PolicyStoreUnreadableDeny
+        exp_alerts: []
+      - eval_time: 8m
+        alertname: PolicyStoreUnreadableDeny
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: da-policyengine
+            exp_annotations:
+              summary: "da-policyengine denies every access request because of an unreadable stored policy"
+              description: "1 ENABLED policies in the store cannot be read and have no readable scope, so the PDP denies every request (policy-store-invalid) until they are fixed or disabled. The WARN line of the latest policy refresh names them."
+              runbook: "docs/observability.md#4-alerts"
+      - eval_time: 25m
+        alertname: PolicyStoreUnreadableDeny
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: da-policyengine
+            exp_annotations:
+              summary: "da-policyengine denies every access request because of an unreadable stored policy"
+              description: "1 ENABLED policies in the store cannot be read and have no readable scope, so the PDP denies every request (policy-store-invalid) until they are fixed or disabled. The WARN line of the latest policy refresh names them."
+              runbook: "docs/observability.md#4-alerts"
+
+  # ---------------------------------------------------------------- log parser health (LOG-03)
+  # The series carry the names and labels da-logingest and da-catalog export (docs/observability.md, section 1).
+  - name: LogQuarantineRatioHigh warns above 1%, pages above 10%, and is quiet under the floor or below 1%
+    interval: 1m
+    input_series:
+      # 3% quarantined of 1500 records per 15 minutes: warning
+      - series: 'dlap_logingest_records_total{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", format="cloudtrail-record", version="1.11", outcome="PARSED", binding="aws-main"}'
+        values: '0+100x40'
+      - series: 'dlap_logingest_quarantine_total{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", format="cloudtrail-record", version="1.11", reason="MISSING_REQUIRED_FIELD", binding="aws-main"}'
+        values: '0+3x40'
+      # 20% quarantined: critical
+      - series: 'dlap_logingest_records_total{job="dlap-services", service="da-logingest", source="GCP_CLOUD_AUDIT", format="gcp-audit-log", version="auditlog", outcome="PARSED", binding="gcp-main"}'
+        values: '0+100x40'
+      - series: 'dlap_logingest_quarantine_total{job="dlap-services", service="da-logingest", source="GCP_CLOUD_AUDIT", format="gcp-audit-log", version="auditlog", reason="FIELD_TYPE_MISMATCH", binding="gcp-main"}'
+        values: '0+20x40'
+      # 0.2% quarantined: quiet
+      - series: 'dlap_logingest_records_total{job="dlap-services", service="da-logingest", source="AZURE_ACTIVITY", format="activity-log", version="2.0", outcome="PARSED", binding="az-main"}'
+        values: '0+1000x40'
+      - series: 'dlap_logingest_quarantine_total{job="dlap-services", service="da-logingest", source="AZURE_ACTIVITY", format="activity-log", version="2.0", reason="INVALID_JSON", binding="az-main"}'
+        values: '0+2x40'
+      # everything quarantined but only 15 records per window: under the floor of 20, quiet
+      - series: 'dlap_logingest_records_total{job="dlap-services", service="da-logingest", source="DATABRICKS_AUDIT", format="audit-log", version="2.0", outcome="QUARANTINED", binding="dbx-main"}'
+        values: '0+1x40'
+      - series: 'dlap_logingest_quarantine_total{job="dlap-services", service="da-logingest", source="DATABRICKS_AUDIT", format="audit-log", version="2.0", reason="INVALID_JSON", binding="dbx-main"}'
+        values: '0+1x40'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: LogQuarantineRatioHigh
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: LogQuarantineRatioHigh
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              source: AWS_CLOUDTRAIL
+              version: "1.11"
+            exp_annotations:
+              summary: "AWS_CLOUDTRAIL 1.11: more than 1% of the records are quarantined"
+              description: "3% of the AWS_CLOUDTRAIL records of version 1.11 were quarantined over the last 15 minutes. A provider may have changed its format; list the reasons with GET /api/v1/logingest/health."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+          - exp_labels:
+              severity: critical
+              source: GCP_CLOUD_AUDIT
+              version: auditlog
+            exp_annotations:
+              summary: "GCP_CLOUD_AUDIT auditlog: more than 10% of the records are quarantined"
+              description: "20% of the GCP_CLOUD_AUDIT records of version auditlog were quarantined over the last 15 minutes. The log layer is losing most of what this source sends; usage and last-read dates go stale."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+
+  - name: LogUnknownMajorVersion pages on any record of a version no parser reads
+    interval: 1m
+    input_series:
+      - series: 'dlap_logingest_quarantine_total{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", format="cloudtrail-record", version="2.0", reason="UNKNOWN_MAJOR_VERSION", binding="aws-main"}'
+        values: '0 0 0 0 0 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4'
+      # other reasons never trigger it
+      - series: 'dlap_logingest_quarantine_total{job="dlap-services", service="da-logingest", source="GCP_CLOUD_AUDIT", format="gcp-audit-log", version="auditlog", reason="INVALID_JSON", binding="gcp-main"}'
+        values: '0 0 0 0 0 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: LogUnknownMajorVersion
+        exp_alerts: []
+      - eval_time: 7m
+        alertname: LogUnknownMajorVersion
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              source: AWS_CLOUDTRAIL
+              format: cloudtrail-record
+              version: "2.0"
+            exp_annotations:
+              summary: "AWS_CLOUDTRAIL/cloudtrail-record: records of unknown major version 2.0"
+              description: "4 AWS_CLOUDTRAIL records of version 2.0 were quarantined as UNKNOWN_MAJOR_VERSION in the last 10 minutes. No parser reads that version: add one, then replay with POST /api/v1/logingest/quarantine/replay."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+      # the increase leaves the 10 minute window
+      - eval_time: 20m
+        alertname: LogUnknownMajorVersion
+        exp_alerts: []
+
+  - name: LogNewFormatVersionObserved is informational for an hour after the first sighting
+    interval: 1m
+    input_series:
+      # first seen 10 minutes after the epoch of the test (600 s)
+      - series: 'dlap_logingest_version_first_seen_timestamp_seconds{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", format="cloudtrail-record", version="1.12"}'
+        values: '600+0x130'
+      # first seen long ago: a restart does not make it new
+      - series: 'dlap_logingest_version_first_seen_timestamp_seconds{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", format="cloudtrail-record", version="1.11"}'
+        values: '-100000+0x130'
+      # a version that left the table reads NaN
+      - series: 'dlap_logingest_version_first_seen_timestamp_seconds{job="dlap-services", service="da-logingest", source="GCP_CLOUD_AUDIT", format="gcp-audit-log", version="gone"}'
+        values: 'NaN+0x130'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LogNewFormatVersionObserved
+        exp_alerts:
+          - exp_labels:
+              severity: info
+              source: AWS_CLOUDTRAIL
+              format: cloudtrail-record
+              version: "1.12"
+            exp_annotations:
+              summary: "AWS_CLOUDTRAIL/cloudtrail-record: new version 1.12 observed"
+              description: "Version 1.12 of cloudtrail-record (AWS_CLOUDTRAIL) was first seen less than an hour ago. Open a ticket: capture a redacted sample as a fixture and check the drift report (GET /api/v1/logingest/drift)."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+      - eval_time: 125m
+        alertname: LogNewFormatVersionObserved
+        exp_alerts: []
+
+  - name: LogFieldFillDrop fires when a field is filled 20 points less often than its 7-day median
+    interval: 5m
+    input_series:
+      # 0.95 for seven days, then 0.5: the drop is 0.45 and is not in the baseline, which ends an hour earlier
+      - series: 'dlap_logingest_field_fill_ratio{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", version="1.11", field="target.region"}'
+        values: '0.95x2015 0.5x30'
+      # a 10 point dip only: quiet
+      - series: 'dlap_logingest_field_fill_ratio{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", version="1.11", field="request.caller-ip"}'
+        values: '0.9x2015 0.8x30'
+      # no history older than an hour: no baseline, no alert
+      - series: 'dlap_logingest_field_fill_ratio{job="dlap-services", service="da-logingest", source="GCP_CLOUD_AUDIT", version="auditlog", field="principal.id"}'
+        values: '_x2025 0.1x10'
+    alert_rule_test:
+      - eval_time: 7d
+        alertname: LogFieldFillDrop
+        exp_alerts: []
+      - eval_time: 168h35m
+        alertname: LogFieldFillDrop
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              source: AWS_CLOUDTRAIL
+              version: "1.11"
+              field: target.region
+            exp_annotations:
+              summary: "AWS_CLOUDTRAIL 1.11: field target.region is filled 45% less often"
+              description: "The share of AWS_CLOUDTRAIL events that carry target.region fell by 45% against the 7-day median. Records still parse, so nothing is quarantined: the provider stopped sending the field, or a mapping stopped finding it."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+
+  - name: SpineUnmatchedTargetsHigh fires above 5% of log targets without a catalog asset and respects the floor
+    interval: 1m
+    input_series:
+      - series: 'dlap_catalog_unmatched_target_total{job="dlap-services", service="da-catalog", provider="AWS", kind="S3_BUCKET", category="DATA_READ"}'
+        values: '0+10x100'
+      - series: 'dlap_catalog_asset_match_total{job="dlap-services", service="da-catalog", method="exact"}'
+        values: '0+100x100'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: SpineUnmatchedTargetsHigh
+        exp_alerts: []
+      - eval_time: 40m
+        alertname: SpineUnmatchedTargetsHigh
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: "More than 5% of the log targets match no catalog asset"
+              description: "9.091% of the log targets of the last hour found no catalog row. Usage and last-read dates are not reaching the assets they belong to. Split the counter by provider and kind (dlap_catalog_unmatched_target_total) to find the source."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+
+  - name: SpineUnmatchedTargetsHigh stays quiet at 2% and under 50 targets an hour
+    interval: 1m
+    input_series:
+      - series: 'dlap_catalog_unmatched_target_total{job="dlap-services", service="da-catalog", provider="AWS", kind="S3_BUCKET", category="DATA_READ"}'
+        values: '0+2x100'
+      - series: 'dlap_catalog_asset_match_total{job="dlap-services", service="da-catalog", method="exact"}'
+        values: '0+100x100'
+    alert_rule_test:
+      - eval_time: 60m
+        alertname: SpineUnmatchedTargetsHigh
+        exp_alerts: []
+
+  - name: SpineUnmatchedTargetsHigh is quiet when almost nothing flows even if all of it is unmatched
+    interval: 1m
+    input_series:
+      - series: 'dlap_catalog_unmatched_target_total{job="dlap-services", service="da-catalog", provider="AWS", kind="UNRESOLVED", category="DATA_READ"}'
+        values: '0+0.1x100'
+    alert_rule_test:
+      - eval_time: 60m
+        alertname: SpineUnmatchedTargetsHigh
+        exp_alerts: []
+
+  - name: ReadSignalMissing fires when writes arrive without reads and ignores unknown and healthy bindings
+    interval: 1m
+    input_series:
+      - series: 'dlap_logingest_read_signal_present{job="dlap-services", service="da-logingest", binding="gcp-writes"}'
+        values: '1 1 1 0x60'
+      - series: 'dlap_logingest_read_signal_present{job="dlap-services", service="da-logingest", binding="gcp-reads"}'
+        values: '1x63'
+      - series: 'dlap_logingest_read_signal_present{job="dlap-services", service="da-logingest", binding="aws-lookup"}'
+        values: 'NaN+0x62'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: ReadSignalMissing
+        exp_alerts: []
+      - eval_time: 50m
+        alertname: ReadSignalMissing
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              binding: gcp-writes
+            exp_annotations:
+              summary: "gcp-writes: writes are logged, reads are not"
+              description: "Binding gcp-writes delivered data writes but no data read for 24 hours. Data-access logging may be off at the provider (CloudTrail data events, GCP data-access audit logs). Reports must show read logging as not enabled, never as not read."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+
+  - name: LogSourceSilent fires for a binding quiet for two hours after a busy day and skips built-in bindings
+    interval: 10m
+    input_series:
+      # busy for 22 hours (132 steps), then silent for 4 hours
+      - series: 'dlap_logingest_records_total{job="dlap-services", service="da-logingest", source="GCP_CLOUD_AUDIT", format="gcp-audit-log", version="auditlog", outcome="PARSED", binding="gcp-main"}'
+        values: '0+10x132 1320x24'
+      # still busy
+      - series: 'dlap_logingest_records_total{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", format="cloudtrail-record", version="1.11", outcome="PARSED", binding="aws-main"}'
+        values: '0+10x156'
+      # the built-in REST binding is quiet by design
+      - series: 'dlap_logingest_records_total{job="dlap-services", service="da-logingest", source="DLAP_NORMALIZED_AWS", format="ingest-dto", version="v1", outcome="PARSED", binding="dlap-rest-aws"}'
+        values: '0+10x132 1320x24'
+      # never delivered anything: nothing to be silent about
+      - series: 'dlap_logingest_records_total{job="dlap-services", service="da-logingest", source="AZURE_ACTIVITY", format="activity-log", version="2.0", outcome="PARSED", binding="az-new"}'
+        values: '0x156'
+    alert_rule_test:
+      - eval_time: 22h
+        alertname: LogSourceSilent
+        exp_alerts: []
+      - eval_time: 25h
+        alertname: LogSourceSilent
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              binding: gcp-main
+            exp_annotations:
+              summary: "gcp-main delivered no records for 2 hours"
+              description: "Binding gcp-main delivered records earlier today and none in the last 2 hours. Check its cursor lag, its credentials and the provider sink."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+
+  - name: LogCursorLagHigh fires after ten minutes above 30 minutes of lag
+    interval: 1m
+    input_series:
+      - series: 'dlap_logingest_cursor_lag_seconds{job="dlap-services", service="da-logingest", source="AWS_CLOUDTRAIL", stream="s3-trail-files", binding="aws-main"}'
+        values: '120 120 2400x20'
+      # an hourly GCS sink reads about 3000 seconds behind at times, below the threshold
+      - series: 'dlap_logingest_cursor_lag_seconds{job="dlap-services", service="da-logingest", source="GCP_CLOUD_AUDIT", stream="gcs-sink", binding="gcp-main"}'
+        values: '1700x22'
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: LogCursorLagHigh
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: LogCursorLagHigh
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              source: AWS_CLOUDTRAIL
+              stream: s3-trail-files
+              binding: aws-main
+            exp_annotations:
+              summary: "aws-main/s3-trail-files: cursor is 40m 0s behind"
+              description: "The oldest unacknowledged event of AWS_CLOUDTRAIL stream s3-trail-files (binding aws-main) is 40m 0s old, for 10 minutes. The poll is failing, throttled or stuck behind a bad object."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+
+  - name: LogPublishFailures fires on any failed send in ten minutes
+    interval: 1m
+    input_series:
+      - series: 'dlap_logingest_publish_failures_total{job="dlap-services", service="da-logingest", topic="dlap.log.event.quarantine"}'
+        values: '0x14 2x14'
+      - series: 'dlap_logingest_publish_failures_total{job="dlap-services", service="da-logingest", topic="dlap.log.event.normalized"}'
+        values: '0x28'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: LogPublishFailures
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LogPublishFailures
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              topic: dlap.log.event.quarantine
+            exp_annotations:
+              summary: "da-logingest could not publish to dlap.log.event.quarantine"
+              description: "2 sends to dlap.log.event.quarantine failed in the last 10 minutes. For dlap.log.event.normalized the events are in the replay store but not on the spine; for the quarantine and binding-status topics the notice is lost while the table row stays."
+              runbook: "docs/observability.md#log-parser-health-runbook"
+      - eval_time: 26m
+        alertname: LogPublishFailures
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- OBS-02: approvals, backfill, drift state
+  - name: ApprovalBreakGlassUsed fires on a counter that starts at 1 and on a later increase, not on a flat one
+    interval: 1m
+    input_series:
+      # created by the first release (value 1) at minute 15; a second release at minute 50
+      - series: 'policyengine_approvals_break_glass_total{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", actionClass="HARD_DELETE"}'
+        values: '_x14 1x34 2x20'
+      # existed before the window and did not move
+      - series: 'policyengine_approvals_break_glass_total{job="dlap-services", service="da-policyengine", instance="da-policyengine:9091", actionClass="ARCHIVE"}'
+        values: '3x70'
+    alert_rule_test:
+      - eval_time: 12m
+        alertname: ApprovalBreakGlassUsed
+        exp_alerts: []
+      # one scrape of the new series: increase() alone would return nothing, the new-series clause fires
+      - eval_time: 15m
+        alertname: ApprovalBreakGlassUsed
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: da-policyengine
+              actionClass: HARD_DELETE
+            exp_annotations:
+              summary: "Break-glass release of a HARD_DELETE action"
+              description: "Approval requests of class HARD_DELETE were released by break-glass in the last 10 minutes, without the usual second approver. Read the BREAK-GLASS log line and the audit entry of each release, and confirm the emergency was real."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+      # flat at 1 for a while: increase() is 0 and the series is older than ten minutes
+      - eval_time: 30m
+        alertname: ApprovalBreakGlassUsed
+        exp_alerts: []
+      # the second release, 1 -> 2
+      - eval_time: 50m
+        alertname: ApprovalBreakGlassUsed
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: da-policyengine
+              actionClass: HARD_DELETE
+            exp_annotations:
+              summary: "Break-glass release of a HARD_DELETE action"
+              description: "Approval requests of class HARD_DELETE were released by break-glass in the last 10 minutes, without the usual second approver. Read the BREAK-GLASS log line and the audit entry of each release, and confirm the emergency was real."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+      - eval_time: 65m
+        alertname: ApprovalBreakGlassUsed
+        exp_alerts: []
+
+  - name: ApprovalBreakGlassUsed sums the replicas and sees a release on a replica that restarted
+    interval: 1m
+    input_series:
+      # replica A is steady; replica B restarted and released once (its new series starts at 1)
+      - series: 'policyengine_approvals_break_glass_total{job="dlap-services", service="da-policyengine", instance="a:9091", actionClass="SOFT_DELETE"}'
+        values: '4x30'
+      - series: 'policyengine_approvals_break_glass_total{job="dlap-services", service="da-policyengine", instance="b:9091", actionClass="SOFT_DELETE"}'
+        values: '_x19 1x10'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: ApprovalBreakGlassUsed
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: ApprovalBreakGlassUsed
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: da-policyengine
+              actionClass: SOFT_DELETE
+            exp_annotations:
+              summary: "Break-glass release of a SOFT_DELETE action"
+              description: "Approval requests of class SOFT_DELETE were released by break-glass in the last 10 minutes, without the usual second approver. Read the BREAK-GLASS log line and the audit entry of each release, and confirm the emergency was real."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+
+  - name: ApprovalOutboxSendFailing fires on failed sends and not on sent ones
+    interval: 1m
+    input_series:
+      - series: 'policyengine_approvals_outbox_total{job="dlap-services", service="da-policyengine", kind="ACTION", result="sent"}'
+        values: '0+1x40'
+      # the first failure creates the series at 1, then two more
+      - series: 'policyengine_approvals_outbox_total{job="dlap-services", service="da-policyengine", kind="ACTION", result="failed"}'
+        values: '_x9 1 1 2 3 3x30'
+      - series: 'policyengine_approvals_outbox_total{job="dlap-services", service="da-policyengine", kind="DECIDED", result="failed"}'
+        values: '0x40'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: ApprovalOutboxSendFailing
+        exp_alerts: []
+      - eval_time: 12m
+        alertname: ApprovalOutboxSendFailing
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-policyengine
+              kind: ACTION
+            exp_annotations:
+              summary: "da-policyengine could not send ACTION approval messages"
+              description: "About 2 sends of ACTION approval outbox messages failed in the last 15 minutes. Approved actions and approval notices wait in the outbox and are retried on the next tick; check Kafka."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+      - eval_time: 40m
+        alertname: ApprovalOutboxSendFailing
+        exp_alerts: []
+
+  - name: BackfillJobStuck fires when the oldest heartbeat of a binding is over 900 s old for 5 minutes
+    interval: 1m
+    input_series:
+      # aws-main: the last heartbeat was at minute 0, so the age grows 60 s a minute (above 900 from minute 16);
+      # at minute 30 the job writes a heartbeat again and the age restarts from 0
+      - series: 'dlap_logingest_backfill_heartbeat_age_seconds{job="dlap-services", service="da-logingest", instance="da-logingest-1:8090", binding="aws-main"}'
+        values: '0+60x29 0+60x30'
+      # the same job seen by a second replica reads the same table: it must not make a second alert
+      - series: 'dlap_logingest_backfill_heartbeat_age_seconds{job="dlap-services", service="da-logingest", instance="da-logingest-2:8090", binding="aws-main"}'
+        values: '0+60x29 0+60x30'
+      # gcp-main sits exactly on the limit: not above it
+      - series: 'dlap_logingest_backfill_heartbeat_age_seconds{job="dlap-services", service="da-logingest", instance="da-logingest-1:8090", binding="gcp-main"}'
+        values: '900x60'
+      # azure-main has no RUNNING job: the gauge reads 0
+      - series: 'dlap_logingest_backfill_heartbeat_age_seconds{job="dlap-services", service="da-logingest", instance="da-logingest-1:8090", binding="azure-main"}'
+        values: '0x60'
+    alert_rule_test:
+      # the age is 600 s, then 900 s (not above): quiet
+      - eval_time: 10m
+        alertname: BackfillJobStuck
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: BackfillJobStuck
+        exp_alerts: []
+      # above 900 since minute 16: pending for 5 minutes, so still quiet at minute 20
+      - eval_time: 20m
+        alertname: BackfillJobStuck
+        exp_alerts: []
+      - eval_time: 22m
+        alertname: BackfillJobStuck
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-logingest
+              binding: aws-main
+            exp_annotations:
+              summary: "da-logingest: the backfill job of binding aws-main has not moved for 22m 0s"
+              description: "The oldest RUNNING backfill job of binding aws-main last wrote its progress heartbeat 22m 0s ago (limit 15 minutes). The job is stuck behind a failing or throttled source, or its replica died and nobody resumed it. List jobs with GET /api/v1/logingest/backfills?status=RUNNING and read the progress heartbeat."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+      # the heartbeat moved at minute 30: resolved
+      - eval_time: 32m
+        alertname: BackfillJobStuck
+        exp_alerts: []
+
+  - name: BackfillJobStuck rides out a short restart and stays quiet for finished or unread jobs
+    interval: 1m
+    input_series:
+      # the age is above 900 for only 3 minutes (minutes 16 to 18), a restart that resumed the job
+      - series: 'dlap_logingest_backfill_heartbeat_age_seconds{job="dlap-services", service="da-logingest", binding="aws-main"}'
+        values: '0+60x18 0+60x40'
+      # a job that was stuck, then ended: the gauge reads 0 from minute 25
+      - series: 'dlap_logingest_backfill_heartbeat_age_seconds{job="dlap-services", service="da-logingest", binding="gcp-main"}'
+        values: '1000x24 0x36'
+      # a job table that cannot be read: NaN compares false
+      - series: 'dlap_logingest_backfill_heartbeat_age_seconds{job="dlap-services", service="da-logingest", binding="azure-main"}'
+        values: 'NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN'
+    alert_rule_test:
+      # gcp-main is above 900 from minute 0 and pending until minute 5; aws-main is above it for minutes 16 to 18 only
+      - eval_time: 4m
+        alertname: BackfillJobStuck
+        exp_alerts: []
+      - eval_time: 19m
+        alertname: BackfillJobStuck
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-logingest
+              binding: gcp-main
+            exp_annotations:
+              summary: "da-logingest: the backfill job of binding gcp-main has not moved for 16m 40s"
+              description: "The oldest RUNNING backfill job of binding gcp-main last wrote its progress heartbeat 16m 40s ago (limit 15 minutes). The job is stuck behind a failing or throttled source, or its replica died and nobody resumed it. List jobs with GET /api/v1/logingest/backfills?status=RUNNING and read the progress heartbeat."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+      - eval_time: 24m
+        alertname: BackfillJobStuck
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-logingest
+              binding: gcp-main
+            exp_annotations:
+              summary: "da-logingest: the backfill job of binding gcp-main has not moved for 16m 40s"
+              description: "The oldest RUNNING backfill job of binding gcp-main last wrote its progress heartbeat 16m 40s ago (limit 15 minutes). The job is stuck behind a failing or throttled source, or its replica died and nobody resumed it. List jobs with GET /api/v1/logingest/backfills?status=RUNNING and read the progress heartbeat."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+      - eval_time: 30m
+        alertname: BackfillJobStuck
+        exp_alerts: []
+
+  - name: BackfillJobFailed fires when the FAILED count rises and not for old failures
+    interval: 1m
+    input_series:
+      # one old failure, a second at minute 20
+      - series: 'dlap_logingest_backfill_jobs{job="dlap-services", service="da-logingest", status="FAILED"}'
+        values: '1x19 2x80'
+      - series: 'dlap_logingest_backfill_jobs{job="dlap-services", service="da-logingest", status="SUCCEEDED"}'
+        values: '0+1x99'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: BackfillJobFailed
+        exp_alerts: []
+      - eval_time: 30m
+        alertname: BackfillJobFailed
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-logingest
+            exp_annotations:
+              summary: "da-logingest: a backfill job failed"
+              description: "1 backfill job(s) became FAILED in the last hour: a configuration problem, or too many failed attempts (max-attempts). The job stopped for good; read its errorDetail with GET /api/v1/logingest/backfills?status=FAILED and start a new job once the cause is fixed."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+      # an hour and more after the failure the gauge is flat at 2: quiet
+      - eval_time: 90m
+        alertname: BackfillJobFailed
+        exp_alerts: []
+
+  - name: DriftStateFlushFailing fires on a failed flush and not on a healthy persister
+    interval: 1m
+    input_series:
+      # registered at 0 at start; two failures at minutes 10 and 11
+      - series: 'dlap_logingest_drift_state_flush_failures_total{job="dlap-services", service="da-logingest", instance="da-logingest:9091"}'
+        values: '0x9 1 2 2x40'
+      - series: 'dlap_logingest_drift_state_flush_failures_total{job="dlap-services", service="da-logingest", instance="other:9091"}'
+        values: '0x50'
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: DriftStateFlushFailing
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: DriftStateFlushFailing
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: da-logingest
+            exp_annotations:
+              summary: "da-logingest could not persist the drift state"
+              description: "About 2 drift state flushes failed in the last 15 minutes. The unknown JSON paths and fill baselines of the drift report are held in memory only and are lost at the next restart. Check the dlap_logingest database and the log of da-logingest."
+              runbook: "docs/observability.md#approvals-and-backfill-runbook"
+      - eval_time: 40m
+        alertname: DriftStateFlushFailing
+        exp_alerts: []

@@ -1,0 +1,15 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - bigquery.googleapis.com:google.cloud.bigquery.v2.JobService.InsertJob
+variant_ids:
+  - log.folder-or-organization
+  - status.nonzero-code
+  - status.granted-false
+  - log.policy-denied
+  - status.org-policy-denial
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Denied reads in a folder-level and an organization-level sink, and a synthetic combination: a BigQuery v2 row in the Policy Denied log with an organization policy violation (the documentation shows Policy Denied entries without BigQuery metadata). A VPC Service Controls denial cannot be a v2 row: its metadata is VpcServiceControlAuditMetadata, which makes it an auditlog entry by the coverage spec's own version rule."

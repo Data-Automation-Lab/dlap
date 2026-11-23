@@ -1,0 +1,3 @@
+[submodule "new-ui"]
+	path = new-ui
+	url = https://github.com/Data-Automation-Lab/dlap-ui.git

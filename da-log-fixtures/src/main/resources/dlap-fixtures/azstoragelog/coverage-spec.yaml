@@ -1,0 +1,337 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# INDEPENDENT COVERAGE SPEC. READ-ONLY FOR PARSER PACKAGES.
+#
+# This file is the denominator of the azstoragelog coverage score (com.dlap.fixtures.CoverageSpec).
+# It was written from Microsoft Learn documentation by a package that does not build the parser
+# (SPEC-01). Parser and fixture packages use these ids in meta.yaml and never edit this file. A
+# change goes in its own commit, with no parser code and no fixture case in it;
+# scripts/ci-guards/post-test/coverage-spec-lock.sh fails any other commit.
+
+spec: dlap-coverage-spec/1
+family: azstoragelog
+title: Azure Storage resource logs for Blob and ADLS Gen2 (StorageRead, StorageWrite, StorageDelete)
+source_kind: AZURE_STORAGE_RESOURCE_LOG
+written_by: SPEC-01
+written_on: "2026-10-19"
+research:
+  - "Hardening research, Azure log sources report (2026-10-18): section 3 (Source B), section 8 (version-tolerant parsing) and section 9 (parser contract)"
+  - "OpenTelemetry azureencodingextension README (Apache-2.0), opened 2026-10-19"
+  - "docs/specs/log-event.md (LOG-01 contract): native key AZURE_STORAGE_RESOURCE_LOG|correlationId|operationCount"
+operation_id_rule: "StorageBlobLogs:<operationName>, with operationName exactly as the record spells it (OperationName in Log Analytics). The prefix is the table all three categories map to; the category never classifies an operation, because the operation-to-category mapping is not published."
+version_rule: >-
+  schemaVersion (the SchemaVersion column in Log Analytics) is the version; only 1.0 is documented and no change
+  history is published. operationVersion (the storage service version, x-ms-version) is a second axis, covered
+  as a variant. A missing or unknown schemaVersion is quarantined.
+notes: >-
+  Not scored here: classic Storage Analytics $logs (semicolon-delimited, its own version field), Event Grid blob
+  events (no read events exist), blob inventory and last-access-time tracking (the azinventory family, AZ-01), and
+  the Activity Log (the azactivity family).
+
+envelopes:
+  - id: resource-log
+    title: Diagnostic-settings export delivered to Event Hubs, a message body {"records":[...]} and the array forms consumers see
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/stream-monitoring-data-event-hubs
+    versions: ["1.0"]
+  - id: resource-log-jsonl
+    title: Diagnostic-settings export to a storage account, PT1H.json append blobs in JSON Lines (since 2018-11-01)
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/logs/resource-logs
+    versions: ["1.0"]
+  - id: log-analytics-row
+    title: Row of the StorageBlobLogs table in Log Analytics (TimeGenerated, OperationName, StatusCode as a string)
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/storagebloblogs
+    versions: ["1.0"]
+
+versions:
+  - id: "1.0"
+    title: Storage resource log schema 1.0, the only documented schemaVersion
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    detect: schemaVersion (export) or SchemaVersion (Log Analytics) equals 1.0
+    required_fields: [time, resourceId, category, operationName, statusCode, "properties.accountName or resourceId"]
+    optional_fields: [identity.requester, identity.type, identity.tokenHash, identity.authorization, identity.properties.objectKey, uri, callerIpAddress, correlationId, properties.operationCount, properties.requestUrl, properties.userAgentHeader, operationVersion]
+
+operations:
+  # ---------------------------------------------------------------- reads
+  - id: StorageBlobLogs:GetBlob
+    expected_category: DATA_READ
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3, read versus write signals (200 or 206)
+  - id: StorageBlobLogs:QueryBlobContents
+    expected_category: DATA_READ
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3
+  - id: StorageBlobLogs:ReadFile
+    expected_category: DATA_READ
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (ADLS Gen2 dfs operation)
+  # ---------------------------------------------------------------- listings and metadata reads (not data reads)
+  - id: StorageBlobLogs:ListBlobs
+    expected_category: MANAGEMENT
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (list operations are not data reads)
+  - id: StorageBlobLogs:ListFilesystemFile
+    expected_category: MANAGEMENT
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3
+  - id: StorageBlobLogs:GetBlobProperties
+    expected_category: MANAGEMENT
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-structure
+    research: Azure report sections 3 and 4 (does not update last access time)
+  - id: StorageBlobLogs:GetBlobMetadata
+    expected_category: MANAGEMENT
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-structure
+    research: Azure report sections 3 and 4
+  - id: StorageBlobLogs:GetBlobTags
+    expected_category: MANAGEMENT
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-structure
+    research: Azure report sections 3 and 4
+  # ---------------------------------------------------------------- writes
+  - id: StorageBlobLogs:PutBlob
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3; create versus overwrite cannot be told apart (section 8)
+  - id: StorageBlobLogs:PutBlock
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3
+  - id: StorageBlobLogs:PutBlockList
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3
+  - id: StorageBlobLogs:AppendBlock
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3
+  - id: StorageBlobLogs:CreatePathFile
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (dfs)
+  - id: StorageBlobLogs:AppendFile
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (dfs)
+  - id: StorageBlobLogs:FlushFile
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (dfs)
+  - id: StorageBlobLogs:CopyBlob
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3
+  - id: StorageBlobLogs:CopyBlobSource
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (internal entry that only exists in logging data)
+  - id: StorageBlobLogs:CopyBlobDestination
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (internal entry that only exists in logging data)
+  - id: StorageBlobLogs:SetBlobTier
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (listed among write operations)
+  - id: StorageBlobLogs:SetBlobMetadata
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (listed among write operations)
+  - id: StorageBlobLogs:SnapshotBlob
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (listed among write operations)
+  - id: StorageBlobLogs:RenamePathFile
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (dfs rename); section 8 maps a rename to UPDATE
+  - id: StorageBlobLogs:RenamePathDir
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (dfs rename)
+  # ---------------------------------------------------------------- deletes
+  - id: StorageBlobLogs:DeleteBlob
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3
+  - id: StorageBlobLogs:DeleteFile
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (dfs)
+  - id: StorageBlobLogs:DeleteDirectory
+    expected_category: DATA_WRITE
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3 (dfs)
+  - id: StorageBlobLogs:DeleteContainer
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 3
+
+variants:
+  # ---------------------------------------------------------------- envelopes
+  - id: envelope.records-object
+    title: An Event Hubs message body {"records":[...]}
+    envelopes: [resource-log]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/stream-monitoring-data-event-hubs
+    research: Azure report section 3, delivery formats
+  - id: envelope.array-of-records-objects
+    title: An array of {records, EventProcessedUtcTime, PartitionId, EventEnqueuedUtcTime} objects, as Stream Analytics-style consumers see it
+    envelopes: [resource-log]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/stream-monitoring-data-event-hubs
+    research: Azure report section 3, delivery formats
+  - id: envelope.bare-array
+    title: A bare JSON array of records
+    envelopes: [resource-log, resource-log-jsonl]
+    doc_url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/azureencodingextension
+    research: Azure report section 3 (accept all four shapes); the OTel extension auto-detects it
+  - id: envelope.jsonl
+    title: Newline-delimited records in a PT1H.json append blob
+    envelopes: [resource-log-jsonl]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/logs/resource-logs
+    research: Azure report section 3, storage account delivery
+  - id: envelope.pre-2018-records-blob
+    title: A PT1H.json written before 2018-11-01 holding one {"records":[...]} object
+    envelopes: [resource-log-jsonl]
+    doc_url: https://learn.microsoft.com/en-us/previous-versions/azure/azure-monitor/essentials/resource-logs-blob-format
+    research: Azure report sections 3 and 9
+  - id: envelope.torn-last-line
+    title: The last line of a growing append blob is torn; complete lines parse, the torn one waits for the next read
+    envelopes: [resource-log-jsonl]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/logs/resource-logs
+    research: Azure report sections 3 and 9 (tests must include a truncated last line); AZ-01 tailer
+  - id: envelope.records-outside-hour
+    title: A blob holds records outside its hour (filed by receipt time, up to 48 hours back); tail by committed offset
+    envelopes: [resource-log-jsonl]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/logs/resource-logs
+    research: Azure report sections 3 and 9
+  - id: envelope.blob-path-layout
+    title: Blob path resourceId=/SUBSCRIPTIONS/<sub>/RESOURCEGROUPS/<rg>/PROVIDERS/.../y=/m=/d=/h=/m=00/PT1H.json
+    envelopes: [resource-log-jsonl]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/logs/resource-logs
+    research: Azure report section 3, storage account delivery
+  - id: envelope.container-names
+    title: Containers insights-logs-storageread, insights-logs-storagewrite and insights-logs-storagedelete
+    envelopes: [resource-log-jsonl]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/logs/resource-logs
+    status: unverified
+    reason: The docs show the container naming rule only for another category; the storage container names are inferred (Azure report section 10)
+  - id: la.statuscode-string
+    title: StatusCode is a string column in Log Analytics (an integer in the export form)
+    envelopes: [log-analytics-row]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/storagebloblogs
+    research: Azure report sections 3 and 9
+  - id: la.extra-columns
+    title: Columns the export doc does not list (CopyDestinationArmId, DestinationUri, SourceUri, RequestRegion, TrafficClassification, EncryptionKeyTypeOfBlob, SasExpiryStatus, AuthenticationHash) are additive
+    envelopes: [log-analytics-row]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/storagebloblogs
+    research: Azure report sections 3 and 9
+  - id: la.object-key-quoted
+    title: ObjectKey in quotes and without a leading slash
+    envelopes: [log-analytics-row]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/storagebloblogs
+    research: Azure report sections 3 and 9
+  - id: la.basic-auxiliary-plan
+    title: Rows from Basic and Auxiliary plan tables parse like Analytics rows
+    envelopes: [log-analytics-row]
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/storagebloblogs
+    research: Azure report sections 3 and 9
+
+  # ---------------------------------------------------------------- record, version, time, dedup
+  - id: record.invalid-json
+    title: Input that is not valid JSON is quarantined, never dropped silently
+    negative: true
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/resource-logs-schema
+    research: Azure report section 8, unknown handling
+  - id: record.unknown-fields
+    title: Unknown extra fields are kept in raw_event and never cause rejection
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/resource-logs-schema
+    research: Azure report sections 8 and 9
+  - id: version.schema-version-unknown
+    title: schemaVersion missing or not 1.0 is quarantined
+    negative: true
+    envelopes: [resource-log, resource-log-jsonl]
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report sections 8 and 9
+  - id: version.operation-version-values
+    title: operationVersion values from 2017-04-17 onward parse alike
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report sections 3 and 9
+  - id: time.lenient-formats
+    title: Non-ISO log times (01/02/2006 15:04:05, 1/2/2006 3:04:05 PM -07:00) parse, as the OTel extension accepts by default
+    doc_url: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/encoding/azureencodingextension
+    research: Azure report sections 3 and 8
+  - id: dedup.correlation-operation-count
+    title: Duplicate records (best-effort export) collapse on correlationId plus properties.operationCount
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report sections 3 and 8; log-event.md section 5.2
+
+  # ---------------------------------------------------------------- result status
+  - id: status.unknown-string
+    title: statusCode is the string Unknown when the request was interrupted
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report sections 3 and 9
+  - id: status.non-2xx-failure
+    title: A non-2xx statusCode maps to FAILURE and never moves last read
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report section 8; AZ-01 acceptance
+  - id: status.denied-no-policy
+    title: identity.authorization[].result Denied (reason NoPolicy) maps to FAILURE
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report sections 3 and 9 (the OpenTelemetry storage-read-log testdata is such a record)
+  - id: status.partial-content-read
+    title: GetBlob with 206 (a range read, downloadRange set) is a read
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report section 3, read versus write signals
+
+  # ---------------------------------------------------------------- actors
+  - id: actor.oauth-requester
+    title: OAuth caller from identity.requester (objectId, upn, appId, tenantId)
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report section 3, DLAP field map
+  - id: actor.sas-unattributed
+    title: A SAS Key request has no principal; the actor is an explicit unattributed credential (tokenHash, caller IP, user agent)
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report section 3, actor caveat; AZ-01 acceptance
+  - id: actor.account-key-unattributed
+    title: An Account Key request has no principal; the actor is an explicit unattributed credential
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report section 3, actor caveat; AZ-01 acceptance
+  - id: actor.anonymous
+    title: identity.type Anonymous
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report section 3, identity.type values
+  - id: actor.kerberos
+    title: identity.type Kerberos
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report section 3, identity.type values
+
+  # ---------------------------------------------------------------- object identity
+  - id: object.key-leading-slash
+    title: identity.properties.objectKey /<account>/<container>/<path> with a leading slash
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report sections 3 and 8
+  - id: object.key-from-uri
+    title: objectKey absent, so container and blob come from uri or properties.requestUrl
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report section 3, DLAP field map
+  - id: object.arm-id-lowercased
+    title: resourceId appears uppercase in exports and is lowercased for joins
+    doc_url: https://learn.microsoft.com/en-us/azure/azure-monitor/logs/resource-logs
+    research: Azure report section 8; AZ-01 acceptance
+  - id: object.dfs-rename-source-in-url
+    title: A dfs rename names the source in the URL and the target in objectKey
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/common/storage-analytics-logging
+    status: unverified
+    reason: Shown for the classic $logs sample only; the Azure Monitor form likely matches but is unconfirmed (Azure report section 3)
+  - id: object.putblob-create-or-overwrite
+    title: PutBlob cannot tell create from overwrite; CREATE only when no prior asset exists
+    doc_url: https://learn.microsoft.com/en-us/rest/api/storageservices/storage-analytics-logged-operations-and-status-messages
+    research: Azure report section 8, change type mapping
+  - id: field.rehydrate-priority-spelling
+    title: rehydratePriority (the sample) and rehydrationPriority (the property table) both read
+    doc_url: https://learn.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
+    research: Azure report sections 3 and 9

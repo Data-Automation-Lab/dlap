@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package com.dlap.common.proto;
+
+option java_package = "com.dlap.common.proto";
+option java_multiple_files = true;
+
+// A generic event message that can be used as a base or for simple notifications
+message GenericEvent {
+  string event_id = 1;          // Unique ID for this event instance
+  string event_type = 2;        // Type of the event, e.g., "AssetUpdated", "PolicyEvaluationComplete"
+  string service_name = 3;      // Name of the microservice that originated this event
+  int64 timestamp = 4;          // Event creation timestamp (e.g., UTC epoch milliseconds)
+  string user_id = 5;           // Optional: ID of the user who triggered the event
+  map<string, string> metadata = 6; // Optional: Any additional key-value metadata
+  bytes payload = 7;            // Optional: The actual event payload, can be bytes of another serialized Protobuf message
+}
+
+// Standard Paging Info for list responses
+message PageInfo {
+  int32 page_number = 1;    // Current page number (1-indexed)
+  int32 page_size = 2;      // Number of items per page
+  int64 total_elements = 3; // Total number of elements available
+  int32 total_pages = 4;    // Total number of pages
+} 

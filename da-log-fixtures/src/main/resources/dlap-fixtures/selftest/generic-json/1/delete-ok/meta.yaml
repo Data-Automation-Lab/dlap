@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://www.rfc-editor.org/rfc/rfc8259
+doc_date: 2017-12-01
+license: synthetic
+covers:
+  - demo:delete
+variant_ids:
+  - demo-jsonl-input
+expected_outcome: PARSED
+anonymised: false
+notes: Two records, one per line.

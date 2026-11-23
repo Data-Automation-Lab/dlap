@@ -1,0 +1,17 @@
+origin: public-dataset
+repo: invictus-ir/aws_dataset
+commit: "4667aa9c26330bc3317ed8bd526f4b83cff13602"
+source_url: https://github.com/invictus-ir/aws_dataset/tree/4667aa9c26330bc3317ed8bd526f4b83cff13602/CloudTrail
+doc_date: 2023-07-12
+license: MIT
+covers:
+  - rds.amazonaws.com:DescribeDBSnapshots
+  - iam.amazonaws.com:GetUser
+variant_ids:
+  - uid.iam-user
+  - account.recipient-account-id
+  - field.tls-details
+  - file.gzip-records
+expected_outcome: PARSED
+anonymised: true
+notes: "Anonymised excerpt of invictus-ir/aws_dataset at 4667aa9c2633: *_CloudTrail_us-east-1_20230710T1230Z_s2m4APJ8BhmXSIE6.json, whole file. Changed from the source: identifiers anonymised by com.dlap.fixtures.anon.Anonymiser, records wrapped in the provider's delivery envelope, JSON re-indented. Real management-event trail files recorded 2023-07-10 while Stratus Red Team techniques ran in a lab account. Management events only: no S3 data events. A whole delivered trail file, stored gzip compressed the way S3 holds it."

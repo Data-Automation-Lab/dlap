@@ -1,0 +1,742 @@
+{
+  "id": "dlap",
+  "realm": "dlap",
+  "displayName": "Data Automation Lab",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>Data Automation Lab</span></div>",
+  "notBefore": 0,
+  "defaultSignatureAlgorithm": "RS256",
+  "revokeRefreshToken": false,
+  "refreshTokenMaxReuse": 0,
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "ssoSessionIdleTimeoutRememberMe": 0,
+  "ssoSessionMaxLifespanRememberMe": 0,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespanEnabled": false,
+  "offlineSessionMaxLifespan": 5184000,
+  "clientSessionIdleTimeout": 0,
+  "clientSessionMaxLifespan": 0,
+  "clientOfflineSessionIdleTimeout": 0,
+  "clientOfflineSessionMaxLifespan": 0,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "oauth2DeviceCodeLifespan": 600,
+  "oauth2DevicePollingInterval": 5,
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "roles": {
+    "realm": [
+      {
+        "id": "8e986fb5-dafb-43bf-a7c2-7e57572d3d80",
+        "name": "ROLE_ADMIN",
+        "description": "Data Automation Lab administrator role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "ec5705e1-fc1d-4d21-8364-abd3bd4efcd0",
+        "name": "ROLE_CDO",
+        "description": "Chief Data Officer role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "f1b19afd-f612-4a79-bdf8-26a99b89b10b",
+        "name": "ROLE_DIRECTOR",
+        "description": "Director role (Engineering/Product)",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "a2c73e7b-a2d7-40e9-8ebc-2af00454e8aa",
+        "name": "ROLE_DATA_ENGINEER",
+        "description": "Data Engineer role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "b3d84f8c-b3e8-41fa-9fcd-3bf01555f9bb",
+        "name": "ROLE_DATA_SCIENTIST",
+        "description": "Data Scientist role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "c4c95f9d-c4f9-42gb-9gde-4cg12666gcc",
+        "name": "ROLE_DATA_ANALYST",
+        "description": "Data analysis and reporting role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "d5da6ga0-d5ga-53hc-0hef-5dh23777hdd",
+        "name": "ROLE_POLICY_MANAGER",
+        "description": "Policy management role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "e6eb7hb1-e6hb-64id-1ifg-6ei34888iee",
+        "name": "ROLE_AUDITOR",
+        "description": "Audit and compliance role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "f7fc8ic2-f7ic-75je-2jgh-7fj45999jff",
+        "name": "ROLE_VIEWER",
+        "description": "Read-only access role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "e1b19afd-f612-4a79-bdf8-26a99b89b10b",
+        "name": "offline_access",
+        "description": "${role_offline-access}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "d2b73e7b-a2d7-40e9-8ebc-2af00454e8aa",
+        "name": "default-roles-dlap",
+        "description": "${role_default-roles}",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "uma_authorization"
+          ],
+          "client": {
+            "account": [
+              "view-profile",
+              "manage-account"
+            ]
+          }
+        },
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "2eec61d0-9581-4dbf-8c7b-f32dc5fac3ce",
+        "name": "uma_authorization",
+        "description": "${role_uma_authorization}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      },
+      {
+        "id": "b39379c0-aff9-5c9e-b242-a15227a23e3d",
+        "name": "ROLE_SERVICE_ACCOUNT",
+        "description": "Machine principal for service-to-service (M2M) calls; least-privilege, allow-listed per endpoint.",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "dlap",
+        "attributes": {}
+      }
+    ]
+  },
+  "groups": [
+    {
+      "id": "afb0c768-ab0f-454c-a8ea-bc9e70b50248",
+      "name": "Administrators",
+      "path": "/Administrators",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_ADMIN"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
+      "id": "bfc1c769-bc1f-455d-b9fb-cd9f71c51249",
+      "name": "CDOs",
+      "path": "/CDOs",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_CDO"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
+      "id": "cfd2d86a-cd2g-466e-cafc-de9g82d62350",
+      "name": "Directors",
+      "path": "/Directors",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_DIRECTOR"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
+      "id": "dge3e97b-de3h-577f-dbgd-ef9h93e73461",
+      "name": "DataEngineers",
+      "path": "/DataEngineers",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_DATA_ENGINEER"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
+      "id": "ehf4fa8c-ef4i-688g-echd-fg9i04f84572",
+      "name": "DataScientists",
+      "path": "/DataScientists",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_DATA_SCIENTIST"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
+      "id": "fif5gb9d-fg5j-799h-fdie-ghj56000hgg",
+      "name": "DataAnalysts",
+      "path": "/DataAnalysts",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_DATA_ANALYST"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
+      "id": "gjg6hc0e-gh6k-800i-gejf-hik67111ihh",
+      "name": "PolicyManagers",
+      "path": "/PolicyManagers",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_POLICY_MANAGER"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
+      "id": "hkh7id1f-hi7l-911j-hfkg-ijl78222jii",
+      "name": "Auditors",
+      "path": "/Auditors",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_AUDITOR"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    },
+    {
+      "id": "ili8je2g-ij8m-022k-iglh-jkm89333kjj",
+      "name": "Viewers",
+      "path": "/Viewers",
+      "attributes": {},
+      "realmRoles": [
+        "ROLE_VIEWER"
+      ],
+      "clientRoles": {},
+      "subGroups": []
+    }
+  ],
+  "defaultRole": {
+    "id": "d2b73e7b-a2d7-40e9-8ebc-2af00454e8aa",
+    "name": "default-roles-dlap",
+    "description": "${role_default-roles}",
+    "composite": true,
+    "clientRole": false,
+    "containerId": "dlap"
+  },
+  "requiredCredentials": [
+    "password"
+  ],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "otpPolicyCodeReusable": false,
+  "otpSupportedApplications": [
+    "totpAppGoogleName",
+    "totpAppFreeOTPName",
+    "totpAppMicrosoftAuthenticatorName"
+  ],
+  "clients": [
+    {
+      "id": "6e8deddb-b4d6-4e2e-b389-b397d3f74fcd",
+      "clientId": "dlap-ui",
+      "rootUrl": "http://localhost:3000",
+      "adminUrl": "http://localhost:3000",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://127.0.0.1:3000/*",
+        "https://localhost:3000/*",
+        "https://127.0.0.1:3000/*",
+        "http://localhost:8081/*",
+        "http://127.0.0.1:8081/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://localhost:3000",
+        "https://127.0.0.1:3000",
+        "http://localhost:8081",
+        "http://127.0.0.1:8081"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "saml.assertion.signature": "false",
+        "saml.force.post.binding": "false",
+        "saml.multivalued.roles": "false",
+        "saml.encrypt": "false",
+        "post.logout.redirect.uris": "+",
+        "saml.server.signature": "false",
+        "saml.server.signature.keyinfo.ext": "false",
+        "exclude.session.state.from.auth.response": "false",
+        "saml_force_name_id_format": "false",
+        "saml.client.signature": "false",
+        "tls.client.certificate.bound.access.tokens": "false",
+        "saml.authnstatement": "false",
+        "display.on.consent.screen": "false",
+        "saml.onetimeuse.condition": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "name": "dlap-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "${DLAP_API_AUDIENCE:dlap-api}",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "basic",
+        "dlap",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "microprofile-jwt"
+      ]
+    },
+    {
+      "id": "7f9fefec-c5e7-4f3f-c49a-c4a8e4f85fde",
+      "clientId": "dlap-backend",
+      "rootUrl": "http://localhost:8080",
+      "adminUrl": "http://localhost:8080",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${DLAP_BACKEND_CLIENT_SECRET:change-me-dev-only}",
+      "redirectUris": [],
+      "webOrigins": [],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "saml.assertion.signature": "false",
+        "saml.force.post.binding": "false",
+        "saml.multivalued.roles": "false",
+        "saml.encrypt": "false",
+        "post.logout.redirect.uris": "+",
+        "saml.server.signature": "false",
+        "saml.server.signature.keyinfo.ext": "false",
+        "exclude.session.state.from.auth.response": "false",
+        "saml_force_name_id_format": "false",
+        "saml.client.signature": "false",
+        "tls.client.certificate.bound.access.tokens": "false",
+        "saml.authnstatement": "false",
+        "display.on.consent.screen": "false",
+        "saml.onetimeuse.condition": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "name": "dlap-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "${DLAP_API_AUDIENCE:dlap-api}",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "basic",
+        "dlap",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "microprofile-jwt"
+      ]
+    },
+    {
+      "id": "ae9cce23-a282-41f0-8ec4-48d127ba71a5",
+      "clientId": "dlap-mcp-gateway",
+      "name": "MCP gateway callers of da-mcp-pep",
+      "description": "Client-credentials client for MCP gateways that call da-mcp-pep (PEP-02). The service account carries ROLE_SERVICE_ACCOUNT; tokens carry the audience dlap-mcp-pep.",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${DLAP_MCP_GATEWAY_CLIENT_SECRET:change-me-dev-only}",
+      "redirectUris": [],
+      "webOrigins": [],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "post.logout.redirect.uris": "+",
+        "display.on.consent.screen": "false",
+        "tls.client.certificate.bound.access.tokens": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "id": "bd3822d1-11e0-4676-8e04-129e3eae3b30",
+          "name": "dlap-mcp-pep-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "dlap-mcp-pep",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "basic",
+        "dlap",
+        "roles"
+      ],
+      "optionalClientScopes": []
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "basic",
+    "dlap"
+  ],
+  "clientScopes": [
+    {
+      "name": "basic",
+      "description": "OpenID Connect scope for add all basic claims to the token",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "auth_time",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "AUTH_TIME",
+            "id.token.claim": "true",
+            "introspection.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "auth_time",
+            "jsonType.label": "long"
+          }
+        }
+      ]
+    },
+    {
+      "id": "9816de82-24b7-42fe-a85a-1264868ec293",
+      "name": "dlap",
+      "description": "Data Automation Lab specific claims",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "id": "69729907-8d1c-4961-81c0-91766f548cc9",
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "4c973896-5761-41fc-8217-07c5d13a004b",
+      "createdTimestamp": 1505479415590,
+      "username": "admin",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "Administrator",
+      "email": "admin@dalab.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "offline_access",
+        "uma_authorization",
+        "ROLE_ADMIN"
+      ],
+      "notBefore": 0,
+      "groups": [
+        "/Administrators"
+      ]
+    },
+    {
+      "id": "5d084a07-6872-5gd4-9328-18d6e14b115c",
+      "createdTimestamp": 1505479415590,
+      "username": "cdo",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": true,
+      "firstName": "Sarah",
+      "lastName": "Johnson",
+      "email": "cdo@dalab.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "offline_access",
+        "uma_authorization",
+        "ROLE_CDO"
+      ],
+      "notBefore": 0,
+      "groups": [
+        "/CDOs"
+      ]
+    },
+    {
+      "id": "6e195b18-7983-6he5-a439-29e7f25c226d",
+      "createdTimestamp": 1505479415590,
+      "username": "director",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": true,
+      "firstName": "Michael",
+      "lastName": "Chen",
+      "email": "director@dalab.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "offline_access",
+        "uma_authorization",
+        "ROLE_DIRECTOR"
+      ],
+      "notBefore": 0,
+      "groups": [
+        "/Directors"
+      ]
+    },
+    {
+      "id": "7f2a6c29-8a94-7if6-b54a-3af8g36d337e",
+      "createdTimestamp": 1505479415590,
+      "username": "dataengineer",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": true,
+      "firstName": "Emily",
+      "lastName": "Rodriguez",
+      "email": "dataengineer@dalab.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "offline_access",
+        "uma_authorization",
+        "ROLE_DATA_ENGINEER"
+      ],
+      "notBefore": 0,
+      "groups": [
+        "/DataEngineers"
+      ]
+    },
+    {
+      "id": "8g3b7d3a-9ba5-8jg7-c65b-4bga47e448f",
+      "createdTimestamp": 1505479415590,
+      "username": "datascientist",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": true,
+      "firstName": "David",
+      "lastName": "Kumar",
+      "email": "datascientist@dalab.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password123!",
+          "temporary": false
+        }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "offline_access",
+        "uma_authorization",
+        "ROLE_DATA_SCIENTIST"
+      ],
+      "notBefore": 0,
+      "groups": [
+        "/DataScientists"
+      ]
+    },
+    {
+      "username": "service-account-dlap-backend",
+      "enabled": true,
+      "serviceAccountClientId": "dlap-backend",
+      "realmRoles": [
+        "ROLE_SERVICE_ACCOUNT"
+      ]
+    },
+    {
+      "username": "service-account-dlap-mcp-gateway",
+      "enabled": true,
+      "serviceAccountClientId": "dlap-mcp-gateway",
+      "realmRoles": [
+        "ROLE_SERVICE_ACCOUNT"
+      ]
+    }
+  ]
+}

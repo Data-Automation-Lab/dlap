@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/bigquery/docs/information-schema-jobs
+doc_date: 2026-10-19
+license: synthetic
+covers:
+  - QUERY:TRUNCATE_TABLE
+variant_ids:
+  - write.destination-table
+expected_outcome: PARSED
+anonymised: false
+notes: "TRUNCATE TABLE is a write and its referenced table is not a read (the statement type is on the scan's no-read list)."

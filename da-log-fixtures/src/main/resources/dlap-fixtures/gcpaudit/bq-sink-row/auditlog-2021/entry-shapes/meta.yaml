@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://docs.cloud.google.com/logging/docs/export/bigquery
+doc_date: 2026-10-16
+license: synthetic
+covers:
+  - storage.googleapis.com:storage.objects.get
+variant_ids:
+  - dedup.same-insert-id
+expected_outcome: PARSED
+anonymised: false
+notes: "Hand-written BigQuery Log Router sink rows for GCP-01: one JSON object per row, one member per column, NULL columns left out, TIMESTAMP columns as RFC 3339 text with microseconds, as BqSinkTransport delivers them. Two rows that share insertId but not timestamp are two events: the native key is logName|timestamp|insertId (that the same triple twice is one event is GcpAuditDedupTest). The third row spells every column and payload field in lower case, with a flattened statuscode, and parses the same, because the casing of a live sink schema is unverified (envelope.bq-statuscode-casing stays unverified until a LIVE-00 capture)."

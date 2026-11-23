@@ -1,0 +1,11 @@
+origin: synthetic-from-doc
+source_url: https://www.rfc-editor.org/rfc/rfc8259
+doc_date: 2017-12-01
+license: synthetic
+covers:
+  - demo:write
+variant_ids:
+  - demo-denied
+expected_outcome: PARSED
+anonymised: false
+notes: A denied write maps to a FAILURE result.

@@ -1,0 +1,9 @@
+{
+  "name": "folders/200100",
+  "parent": "organizations/300100",
+  "displayName": "data-platform",
+  "state": "ACTIVE",
+  "createTime": "2024-06-01T09:00:00.000Z",
+  "updateTime": "2024-06-01T09:00:00.000Z",
+  "etag": "W/\"folderetag\""
+}

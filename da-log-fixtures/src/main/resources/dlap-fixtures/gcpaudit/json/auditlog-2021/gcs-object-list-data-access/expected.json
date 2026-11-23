@@ -1,0 +1,17 @@
+{
+  "outcome": "PARSED",
+  "events": [
+    {
+      "nativeEventId": "projects/proj-7a14f7af/logs/cloudaudit.googleapis.com%2Fdata_access|2021-09-13T03:03:08.918318174Z|-kj1h22dqg3c",
+      "eventTime": "2021-09-13T03:03:08.918318174Z",
+      "observedTime": "2021-09-13T03:03:09.951986944Z",
+      "sourceProvider": "GCP",
+      "sourceService": "storage.googleapis.com",
+      "operation": "storage.objects.list",
+      "resultStatus": "SUCCESS",
+      "eventCategory": "EVENT_CATEGORY_MANAGEMENT",
+      "sourceFormat": "GCP_CLOUD_AUDIT/json",
+      "sourceSchemaVersion": "auditlog"
+    }
+  ]
+}

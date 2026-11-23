@@ -1,0 +1,53 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAEXAMPLE922ZQZ52VG",
+        "arn": "arn:aws:iam::999945223994:user/user-bf68fc",
+        "accountId": "999945223994",
+        "accessKeyId": "ASIAEXAMPLE8KF7AQCF7",
+        "userName": "user-bf68fc",
+        "sessionContext": {
+          "sessionIssuer": {},
+          "webIdFederationData": {},
+          "attributes": {
+            "creationDate": "2023-07-10T11:42:31Z",
+            "mfaAuthenticated": "true"
+          }
+        },
+        "invokedBy": "health.amazonaws.com"
+      },
+      "eventTime": "2023-07-10T11:42:38Z",
+      "eventSource": "health.amazonaws.com",
+      "eventName": "DescribeEventAggregates",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "health.amazonaws.com",
+      "userAgent": "AWS Internal",
+      "requestParameters": {
+        "filter": {
+          "startTimes": [
+            {
+              "from": "Jul 3, 2023, 11:42:38 AM"
+            }
+          ],
+          "eventStatusCodes": [
+            "open",
+            "upcoming"
+          ]
+        },
+        "aggregateField": "eventTypeCategory"
+      },
+      "responseElements": null,
+      "requestID": "7c17e742-76e2-4be7-8708-96a194a85e04",
+      "eventID": "21c87313-5709-46b6-9a83-c7096a761200",
+      "readOnly": true,
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "999945223994",
+      "eventCategory": "Management",
+      "sessionCredentialFromConsole": "true"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "kind": "storage#buckets",
+  "items": [
+    {
+      "kind": "storage#bucket",
+      "id": "dlap-demo-curated",
+      "name": "dlap-demo-curated",
+      "projectNumber": "123456789012",
+      "location": "US",
+      "storageClass": "STANDARD",
+      "iamConfiguration": {
+        "uniformBucketLevelAccess": { "enabled": true, "lockedTime": "2025-04-15T10:00:00.000Z" },
+        "publicAccessPrevention": "enforced"
+      }
+    },
+    {
+      "kind": "storage#bucket",
+      "id": "dlap-demo-website",
+      "name": "dlap-demo-website",
+      "projectNumber": "123456789012",
+      "location": "US",
+      "storageClass": "STANDARD",
+      "iamConfiguration": {
+        "uniformBucketLevelAccess": { "enabled": true },
+        "publicAccessPrevention": "inherited"
+      }
+    },
+    {
+      "kind": "storage#bucket",
+      "id": "dlap-demo-legacy",
+      "name": "dlap-demo-legacy",
+      "projectNumber": "123456789012",
+      "location": "EU",
+      "storageClass": "NEARLINE",
+      "iamConfiguration": {
+        "uniformBucketLevelAccess": { "enabled": false },
+        "publicAccessPrevention": "inherited"
+      }
+    }
+  ]
+}

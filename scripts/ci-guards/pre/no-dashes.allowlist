@@ -1,0 +1,33 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# Allowlist for scripts/ci-guards/pre/no-dashes.sh --all (CLAUDE.md section 11).
+#
+# One line per file: path|max|category|reason
+#   max       ceiling on the number of lines in the file that hold an em-dash or
+#             en-dash. The file fails when it holds more, so a kept dash cannot
+#             spread. Lower the number when you remove one.
+#   category  append-only | checksummed | data
+#   reason    why the dash stays; required.
+# Everything else in the tree must hold no em-dash and no en-dash.
+
+docs/DECISIONS.md|138|append-only|Append-only ADR log; past entries keep their text (D41). New entries must be dash-free.
+da-catalog/src/main/resources/db/migration/V2__lineage_edge_unique.sql|1|checksummed|Shipped Flyway migration; editing a comment changes its checksum and fails validation on existing databases.
+da-logingest/src/main/resources/db/migration/V1__init_logingest_schema.sql|1|checksummed|Shipped Flyway migration; editing a comment changes its checksum and fails validation on existing databases.
+deployment/platform/database/upgrades/2026-04-11_add_asset_fk_indexes.sql|1|checksummed|Shipped dlap_common delta; run-upgrades.sh refuses a file whose checksum differs from the ledger (ADR-0056).
+deployment/platform/database/upgrades/2026-06-28_dlap_common_schema_grants.sql|1|checksummed|Shipped dlap_common delta; run-upgrades.sh refuses a file whose checksum differs from the ledger (ADR-0056).
+deployment/platform/database/upgrades/2026-06-29_confidence_score_to_double.sql|1|checksummed|Shipped dlap_common delta; run-upgrades.sh refuses a file whose checksum differs from the ledger (ADR-0056).
