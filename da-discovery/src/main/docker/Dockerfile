@@ -5,7 +5,7 @@
 # liblcms2-2 on 2026-10-20), while java21-debian13 carries JDK 21.0.12 and the current packages (VULN-01).
 # Pinned by digest (Q-587): this index carries libbrotli1 1.1.0-2+deb13u1 (CVE-2026-111497). Bump it with the tag's
 # current digest: docker buildx imagetools inspect gcr.io/distroless/java21-debian13:nonroot
-FROM gcr.io/distroless/java21-debian13:nonroot@sha256:ba6c75fda24af8a9aee3ec7633bd7369ee390c054d4e4292d52f17014cc9a11a
+FROM gcr.io/distroless/java21-debian13:nonroot@sha256:128bd878463537eef7771b50fecf68faace9089f654a2d233f1c4f344e6817d9
 
 # Set working directory
 WORKDIR /app
