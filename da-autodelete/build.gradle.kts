@@ -34,7 +34,7 @@ dependencies {
     // EXEC-01 (Q-722): STS for an optional Actor role (credentials-ref, ADR-0110); Apache-2.0, same version as the rest.
     implementation("software.amazon.awssdk:sts:2.25.1")
     implementation("com.azure:azure-storage-blob:12.23.0")
-    implementation("com.azure:azure-identity:1.11.1")
+    implementation("com.azure:azure-identity:1.19.0")
     implementation("com.azure:azure-cosmos:4.53.1")
     implementation("com.azure.resourcemanager:azure-resourcemanager:2.36.0")
     implementation("com.azure.resourcemanager:azure-resourcemanager-sql:2.36.0")

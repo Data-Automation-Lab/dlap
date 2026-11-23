@@ -31,7 +31,7 @@ dependencies {
     implementation("software.amazon.awssdk:sts:2.25.1")
     implementation("com.azure:azure-storage-blob:12.23.0")
     // EXEC-01 (Q-724): DefaultAzureCredential for the blob data plane; MIT, the version da-autodelete uses.
-    implementation("com.azure:azure-identity:1.11.1")
+    implementation("com.azure:azure-identity:1.19.0")
     implementation("com.google.cloud:google-cloud-storage:2.28.0")
     
     // Additional dependencies specific to da-autoarchival
