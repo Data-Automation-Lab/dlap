@@ -25,7 +25,7 @@ dependencies {
     implementation(project(":da-protos"))
     
     // Cloud Storage SDKs
-    implementation("software.amazon.awssdk:s3:2.25.1")
+    implementation("software.amazon.awssdk:s3:2.59.5")
     implementation("software.amazon.awssdk:glacier:2.25.1")
     // EXEC-01 (Q-722): STS for an optional Actor role (credentials-ref, ADR-0110); Apache-2.0, same version as the rest.
     implementation("software.amazon.awssdk:sts:2.25.1")
