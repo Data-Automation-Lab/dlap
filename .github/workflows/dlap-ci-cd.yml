@@ -27,7 +27,7 @@
 #   - the module matrix is derived from settings.gradle.kts
 #   - the integration job (cloud-pipeline-e2e.sh) runs only on non-draft pull
 #     requests that touch the log/discovery/catalog spine, nightly, and manual runs
-#   - the lifecycle-aws job (cloud-lifecycle-e2e.sh aws, Q-742) runs only on a push to feature/deployment,
+#   - the lifecycle-aws job (cloud-lifecycle-e2e.sh aws, Q-742) runs only on a push to main,
 #     in CI lean mode (heap ceilings and container limits, Q-787) so it fits the 7.9 GB hosted runner;
 #     the scale and soak run is a separate workflow, nightly-soak.yml (E2E-02)
 #   - the iac-validate job (terraform validate and cfn-lint on deployment/iam, Q-770) runs on every event
@@ -701,7 +701,7 @@ jobs:
   # The retire lifecycle of the aws harness (Q-742, work package E2E-02): policies, dual-control approvals,
   # the age-based S3 rule applied to an emulator, the CloudTrail trail file that proves it, and the rule
   # end. It starts the whole stack (about ten services plus the emulator) for roughly half an hour, so it
-  # runs on a push to feature/deployment only, not on pull requests, nightly or manual runs (those use the
+  # runs on a push to main only, not on pull requests, nightly or manual runs (those use the
   # integration job). The gcp and azure harnesses stay local until a run here has measured their cost.
   #
   # CI lean mode (Q-787, decision D41): DLAP_E2E_CI_LEAN=1 caps every JVM heap and every container
@@ -710,7 +710,7 @@ jobs:
   # 6,000 MiB. The first two runs without it filled the disk and then died with exit 137 (7,932 MB, 3 GB swap).
   lifecycle-aws:
     name: Lifecycle (aws harness)
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/deployment' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
