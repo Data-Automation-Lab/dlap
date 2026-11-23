@@ -71,7 +71,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     // Keycloak Admin Client (if direct Keycloak interaction is needed for users/roles)
-    implementation("org.keycloak:keycloak-admin-client:24.0.4") 
+    implementation("org.keycloak:keycloak-admin-client:26.0.13") 
 }
 
 tasks.withType<Test> {
