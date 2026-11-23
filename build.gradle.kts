@@ -283,7 +283,7 @@ subprojects {
             add("implementation", "org.springframework.boot:spring-boot-starter-kafka")
             // springdoc 3.1 is the line for Spring Boot 4.0 and 4.1 (start.spring.io dependency range).
             // It also ends Q-272: the old swagger-annotations 2.1.10 came with the Confluent serializer.
-            add("implementation", "org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+            add("implementation", "org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
             add("implementation", "org.mapstruct:mapstruct:1.5.5.Final")
             // BOOT-01 (Q-107): io.confluent:kafka-protobuf-serializer was never referenced by any source
             // or configuration file and is removed with its repository.
