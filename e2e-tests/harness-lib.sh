@@ -106,14 +106,25 @@ _hl_holder_text() { # _hl_holder_text <record file>
   echo "pid $hp, $lab, $cwd, running $(( $(date +%s) - hs ))s"
 }
 
-# Remove a stale mkdir lock. Serialised by a second mkdir guard so two waiters cannot both
+# Take a directory as an exclusive claim: create it, then create <dir>/<file> with O_EXCL (the
+# shell's noclobber redirection) and write <record> into it. mkdir alone is not enough: the mkdir of
+# uutils coreutils 0.10.0, the default on Ubuntu 26.04, let several concurrent callers succeed (220
+# of 300 rounds with six callers, against 0 of 300 for GNU mkdir), so two harnesses could both
+# believe they held the lock. Whoever creates the file owns the directory; a caller whose mkdir
+# "succeeded" beside the owner's fails here and waits like any other.
+_hl_claim_dir() { # _hl_claim_dir <dir> <file name> <record>
+  mkdir "$1" 2>/dev/null || return 1
+  ( set -o noclobber; printf '%s\n' "$3" > "$1/$2" ) 2>/dev/null
+}
+
+# Remove a stale mkdir lock. Serialised by a second guard directory so two waiters cannot both
 # decide "stale" and one of them delete a lock the other has just taken. The decision is
 # re-checked under the guard.
 _hl_reclaim() { # _hl_reclaim <lock dir> <holder pid seen, or empty>
   local d="$1" seen="$2" g="$1.reclaim" cur="" cs=""
-  if ! mkdir "$g" 2>/dev/null; then
+  if ! _hl_claim_dir "$g" owner "$$"; then
     # Someone else is reclaiming. A guard older than a minute belongs to a crashed reclaimer.
-    find "$g" -maxdepth 0 -mmin +1 -exec rmdir {} \; 2>/dev/null || true
+    find "$g" -maxdepth 0 -mmin +1 -exec rm -rf {} \; 2>/dev/null || true
     return 0
   fi
   read -r cur cs _ 2>/dev/null < "$d/pid" || { cur=""; cs=""; }
@@ -121,7 +132,7 @@ _hl_reclaim() { # _hl_reclaim <lock dir> <holder pid seen, or empty>
     _hl_say "reclaiming stale harness lock (holder pid ${cur:-none} is gone or too old)"
     rm -rf "$d"
   fi
-  rmdir "$g" 2>/dev/null || true
+  rm -rf "$g" 2>/dev/null || true
 }
 
 _hl_lock_flock() { # _hl_lock_flock <lock file> <label> <timeout secs>
@@ -148,8 +159,7 @@ _hl_lock_mkdir() { # _hl_lock_mkdir <lock dir> <label> <timeout secs>
   local max_age="${DLAP_HARNESS_LOCK_MAX_AGE:-14400}" nopid_since=-1
   deadline=$((SECONDS + timeout)); next_msg=$SECONDS
   while :; do
-    if mkdir "$d" 2>/dev/null; then
-      printf '%s %s %s %s\n' "$$" "$(date +%s)" "$label" "$PWD" > "$d/pid"
+    if _hl_claim_dir "$d" pid "$$ $(date +%s) $label $PWD"; then
       _HL_LOCK_BACKEND="mkdir"; _HL_LOCK_PATH="$d"
       return 0
     fi
