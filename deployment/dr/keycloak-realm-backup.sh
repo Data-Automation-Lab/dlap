@@ -191,16 +191,28 @@ docker inspect "$CONTAINER" > /dev/null 2>&1 || refuse "no container named $CONT
 
 umask 077
 mkdir -p "$STATE_DIR/shipped"
-# A directory is the lock: mkdir is atomic everywhere (flock is not on every host). A lock whose process is gone is stale.
+# A directory is the lock (flock is not on every host), and the pid file created in it with noclobber
+# (O_EXCL) decides the owner: mkdir alone is not exclusive with uutils coreutils 0.10.0, the default on
+# Ubuntu 26.04, which lets several concurrent callers succeed. A lock whose process is gone is stale.
 LOCK="$STATE_DIR/lock.d"
-if ! mkdir "$LOCK" 2> /dev/null; then
+claim_lock() { mkdir "$1" 2> /dev/null && (set -o noclobber; echo "$$" > "$1/pid") 2> /dev/null; }
+if ! claim_lock "$LOCK"; then
   other="$(cat "$LOCK/pid" 2> /dev/null || true)"
   if [ -n "$other" ] && kill -0 "$other" 2> /dev/null; then refuse "another run is in progress (process $other)"; fi
-  warn "removing the stale lock of process ${other:-unknown}"
-  rm -rf "$LOCK"
-  mkdir "$LOCK" 2> /dev/null || refuse "another run took the lock"
+  # Take over under a guard so two runs that both saw a stale lock cannot both remove and take it.
+  if ! claim_lock "$LOCK.reclaim"; then
+    find "$LOCK.reclaim" -maxdepth 0 -mmin +1 -exec rm -rf {} \; 2> /dev/null || true
+    refuse "another run took the lock"
+  fi
+  # Re-check under the guard. A lock with no pid yet may be a run between mkdir and its pid file: stale after a minute.
+  if [ -d "$LOCK" ] && [ "$(cat "$LOCK/pid" 2> /dev/null || true)" = "$other" ] \
+    && { [ -n "$other" ] || [ -n "$(find "$LOCK" -maxdepth 0 -mmin +1 2> /dev/null)" ]; }; then
+    warn "removing the stale lock of process ${other:-unknown}"
+    rm -rf "$LOCK"
+  fi
+  claim_lock "$LOCK" || { rm -rf "$LOCK.reclaim"; refuse "another run took the lock"; }
+  rm -rf "$LOCK.reclaim"
 fi
-echo "$$" > "$LOCK/pid"
 
 STAGE=""
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"

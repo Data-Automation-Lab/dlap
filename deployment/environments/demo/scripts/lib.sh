@@ -201,7 +201,10 @@ demo_wait_healthy() { # demo_wait_healthy <timeout secs> <service>...
 # --- Locking ------------------------------------------------------------------------------------
 
 # One reset or measurement at a time per state folder. flock where it exists, a mkdir lock with a
-# PID check elsewhere. The lock dies with the script.
+# PID check elsewhere. The lock dies with the script. In the mkdir lock the pid file, created with
+# noclobber (O_EXCL), decides the owner: mkdir alone is not exclusive with uutils coreutils 0.10.0,
+# the default on Ubuntu 26.04, which lets several concurrent callers succeed.
+_demo_claim_dir() { mkdir "$1" 2>/dev/null && (set -o noclobber; echo "$$" > "$1/pid") 2>/dev/null; }
 demo_lock() { # demo_lock <name>
   local dir lockfile
   dir="$(demo_state_dir)"
@@ -211,16 +214,25 @@ demo_lock() { # demo_lock <name>
     flock -n 8 || demo_die "another '$1' is running (lock $lockfile)"
   else
     lockfile="$dir/.lock-$1.d"
-    if ! mkdir "$lockfile" 2>/dev/null; then
+    if ! _demo_claim_dir "$lockfile"; then
       local pid
       pid="$(cat "$lockfile/pid" 2>/dev/null || true)"
       if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
         demo_die "another '$1' is running (pid $pid)"
       fi
-      rm -rf "$lockfile"
-      mkdir "$lockfile" || demo_die "cannot take lock $lockfile"
+      # Take over under a guard, re-checked there, so two callers that both saw a stale lock cannot
+      # both remove and take it. A lock with no pid yet may be mid-claim: stale after a minute.
+      if ! _demo_claim_dir "$lockfile.reclaim"; then
+        find "$lockfile.reclaim" -maxdepth 0 -mmin +1 -exec rm -rf {} \; 2>/dev/null || true
+        demo_die "cannot take lock $lockfile"
+      fi
+      if [ -d "$lockfile" ] && [ "$(cat "$lockfile/pid" 2>/dev/null || true)" = "$pid" ] \
+        && { [ -n "$pid" ] || [ -n "$(find "$lockfile" -maxdepth 0 -mmin +1 2>/dev/null)" ]; }; then
+        rm -rf "$lockfile"
+      fi
+      _demo_claim_dir "$lockfile" || { rm -rf "$lockfile.reclaim"; demo_die "cannot take lock $lockfile"; }
+      rm -rf "$lockfile.reclaim"
     fi
-    echo "$$" > "$lockfile/pid"
     # shellcheck disable=SC2064
     trap "rm -rf '$lockfile'" EXIT
   fi
